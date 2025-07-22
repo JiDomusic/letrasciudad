@@ -6,7 +6,8 @@
       "Bash(pkill:*)",
       "Bash(curl:*)",
       "Bash(ss:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(python3:*)"
     ],
     "deny": []
   }

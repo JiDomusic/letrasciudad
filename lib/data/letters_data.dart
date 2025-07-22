@@ -301,7 +301,7 @@ class LettersData {
       name: 'equis',
       phoneme: 'eks',
       syllables: ['xa', 'xe', 'xi', 'xo', 'xu'],
-      exampleWords: ['xilófono', 'taxi', 'examen', 'México'],
+      exampleWords: ['xilófono', 'examen', 'México', 'oxígeno'],
       imagePath: 'assets/letters/x_house.png',
       audioPath: 'assets/audio/letters/x.mp3',
       primaryColor: Colors.brown,
