@@ -102,7 +102,7 @@ class _WordCarouselState extends State<WordCarousel> {
                           boxShadow: [
                             BoxShadow(
                               color: (isActive ? Colors.green : Colors.grey)
-                                  .withOpacity(0.3),
+                                  .withValues(alpha: 0.3),
                               blurRadius: isActive ? 12 : 6,
                               offset: const Offset(0, 4),
                             ),
@@ -115,7 +115,7 @@ class _WordCarouselState extends State<WordCarousel> {
                               width: 48,
                               height: 48,
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(24),
                               ),
                               child: const Icon(
@@ -143,7 +143,7 @@ class _WordCarouselState extends State<WordCarousel> {
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: Colors.white.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Text(

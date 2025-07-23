@@ -105,7 +105,6 @@ class AudioService {
     await initialize();
     
     try {
-      final audioPath = 'assets/audio/letters/${letterCharacter.toLowerCase()}.mp3';
       await _audioPlayer.play(AssetSource('audio/letters/${letterCharacter.toLowerCase()}.mp3'));
     } catch (e) {
       debugPrint('Error playing letter sound for $letterCharacter: $e');
@@ -117,7 +116,6 @@ class AudioService {
     await initialize();
     
     try {
-      final audioPath = 'assets/audio/words/${word.toLowerCase()}.mp3';
       await _audioPlayer.play(AssetSource('audio/words/${word.toLowerCase()}.mp3'));
     } catch (e) {
       debugPrint('Error playing word sound for $word: $e');
@@ -129,7 +127,6 @@ class AudioService {
     await initialize();
     
     try {
-      final audioPath = 'assets/audio/syllables/${syllable.toLowerCase()}.mp3';
       await _audioPlayer.play(AssetSource('audio/syllables/${syllable.toLowerCase()}.mp3'));
     } catch (e) {
       debugPrint('Error playing syllable sound for $syllable: $e');

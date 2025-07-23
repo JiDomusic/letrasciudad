@@ -124,7 +124,6 @@ class _ARCityScreenState extends State<ARCityScreen> {
       final provider = context.read<LetterCityProvider>();
       if (provider.unlockedLetters.isNotEmpty) {
         // Simular detección de mano en posición aleatoria
-        final randomIndex = math.Random().nextInt(provider.unlockedLetters.length);
         final randomPosition = Offset(
           0.3 + (math.Random().nextDouble() * 0.4), // Entre 0.3 y 0.7
           0.3 + (math.Random().nextDouble() * 0.4), // Entre 0.3 y 0.7
@@ -140,7 +139,7 @@ class _ARCityScreenState extends State<ARCityScreen> {
         _handleInteractionEvent(event);
         
         // Cancelar después de 10 simulaciones
-        if (timer.tick >= 10) {
+        if (timer.tick >= 20) {
           timer.cancel();
         }
       }
@@ -196,7 +195,7 @@ class _ARCityScreenState extends State<ARCityScreen> {
         if (mounted) {
           setState(() {
             _highlightedLetter = null;
-            _houseScale = 1.0;
+            _houseScale = 5.0;
           });
         }
       });
@@ -331,7 +330,7 @@ class _ARCityScreenState extends State<ARCityScreen> {
           children: [
             Container(
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: IconButton(
@@ -343,7 +342,7 @@ class _ARCityScreenState extends State<ARCityScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
+                color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Row(
@@ -364,7 +363,7 @@ class _ARCityScreenState extends State<ARCityScreen> {
             const Spacer(),
             Container(
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: IconButton(
@@ -380,7 +379,7 @@ class _ARCityScreenState extends State<ARCityScreen> {
 
   Widget _buildInstructionsOverlay() {
     return Container(
-      color: Colors.black.withOpacity(0.8),
+      color: Colors.black.withValues(alpha: 0.8),
       child: Center(
         child: Card(
           margin: const EdgeInsets.all(32),
@@ -499,14 +498,14 @@ class _ARCityScreenState extends State<ARCityScreen> {
                     height: 60,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [letter.primaryColor, letter.primaryColor.withOpacity(0.7)],
+                        colors: [letter.primaryColor, letter.primaryColor.withValues(alpha: 0.7)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(15),
                       boxShadow: [
                         BoxShadow(
-                          color: letter.primaryColor.withOpacity(0.3),
+                          color: letter.primaryColor.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -804,10 +803,10 @@ class _ARCityScreenState extends State<ARCityScreen> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.08),
+            color: color.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               width: 1.5,
             ),
           ),

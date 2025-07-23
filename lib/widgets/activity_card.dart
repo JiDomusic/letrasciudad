@@ -30,7 +30,7 @@ class ActivityCard extends StatelessWidget {
                   gradient: LinearGradient(
                     colors: [
                       _getActivityColor(activity.type),
-                      _getActivityColor(activity.type).withOpacity(0.7),
+                      _getActivityColor(activity.type).withValues(alpha: 0.7),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -88,11 +88,11 @@ class ActivityCard extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: _getDifficultyColor(activity.difficulty)
-                                .withOpacity(0.1),
+                                .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: _getDifficultyColor(activity.difficulty)
-                                  .withOpacity(0.3),
+                                  .withValues(alpha: 0.3),
                             ),
                           ),
                           child: Text(

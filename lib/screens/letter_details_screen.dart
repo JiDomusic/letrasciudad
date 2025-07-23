@@ -56,9 +56,9 @@ class _LetterDetailsScreenState extends State<LetterDetailsScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              widget.letter.primaryColor.withOpacity(0.8),
+              widget.letter.primaryColor.withValues(alpha: 0.8),
               widget.letter.primaryColor,
-              widget.letter.primaryColor.withOpacity(0.9),
+              widget.letter.primaryColor.withValues(alpha: 0.9),
             ],
           ),
         ),
@@ -91,7 +91,7 @@ class _LetterDetailsScreenState extends State<LetterDetailsScreen>
         children: [
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
@@ -110,7 +110,7 @@ class _LetterDetailsScreenState extends State<LetterDetailsScreen>
                       width: 60,
                       height: 60,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: Colors.white, width: 2),
                       ),
@@ -168,7 +168,7 @@ class _LetterDetailsScreenState extends State<LetterDetailsScreen>
           ),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
@@ -185,13 +185,13 @@ class _LetterDetailsScreenState extends State<LetterDetailsScreen>
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(16),
       ),
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: Colors.white.withOpacity(0.3),
+          color: Colors.white.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(16),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
@@ -308,10 +308,10 @@ class _LetterDetailsScreenState extends State<LetterDetailsScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: widget.letter.primaryColor.withOpacity(0.1),
+                color: widget.letter.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: widget.letter.primaryColor.withOpacity(0.3),
+                  color: widget.letter.primaryColor.withValues(alpha: 0.3),
                 ),
               ),
               child: Text(

@@ -99,7 +99,7 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
+                    color: Colors.black.withValues(alpha: 0.15),
                     blurRadius: 12,
                     offset: const Offset(0, 6),
                   ),
@@ -130,12 +130,12 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               colors: [
-                                houseColor.withOpacity(0.9),
+                                houseColor.withValues(alpha: 0.9),
                                 houseColor,
                               ],
                             ),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                               width: 2,
                             ),
                             borderRadius: const BorderRadius.only(
@@ -154,13 +154,13 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
                                       left: _shimmerAnimation.value * 100,
                                       child: Container(
                                         width: 40,
-                                        height: double.infinity,
+                                        height: 100,
                                         decoration: BoxDecoration(
                                           gradient: LinearGradient(
                                             colors: [
-                                              Colors.white.withOpacity(0.0),
-                                              Colors.white.withOpacity(0.3),
-                                              Colors.white.withOpacity(0.0),
+                                              Colors.white.withValues(alpha: 0.0),
+                                              Colors.white.withValues(alpha: 0.3),
+                                              Colors.white.withValues(alpha: 0.0),
                                             ],
                                           ),
                                         ),
@@ -174,7 +174,7 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
                                 child: Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.95),
+                                    color: Colors.white.withValues(alpha: 0.95),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(color: houseColor, width: 2),
                                   ),
@@ -183,7 +183,7 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
                                     style: TextStyle(
                                       fontSize: 32,
                                       fontWeight: FontWeight.bold,
-                                      color: houseColor.withOpacity(0.9),
+                                      color: houseColor.withValues(alpha: 0.9),
                                     ),
                                   ),
                                 ),
@@ -280,7 +280,7 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: Colors.orange.withOpacity(0.9),
+                                      color: Colors.orange.withValues(alpha: 0.9),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: const Text(
@@ -304,7 +304,7 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
                   if (!widget.letter.isUnlocked)
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
+                        color: Colors.black.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Center(
@@ -325,12 +325,12 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.95),
+                          color: Colors.white.withValues(alpha: 0.95),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: houseColor, width: 1),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
@@ -356,7 +356,7 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
                     child: Container(
                       height: 3,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                       child: widget.letter.activities.isNotEmpty

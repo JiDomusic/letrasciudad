@@ -141,7 +141,7 @@ class _SyllableGridState extends State<SyllableGrid>
                             boxShadow: [
                               BoxShadow(
                                 color: (isSelected ? Colors.purple : Colors.blue)
-                                    .withOpacity(0.3),
+                                    .withValues(alpha: 0.3),
                                 blurRadius: isSelected ? 12 : 6,
                                 offset: const Offset(0, 4),
                               ),
@@ -158,7 +158,7 @@ class _SyllableGridState extends State<SyllableGrid>
                                   color: Colors.white,
                                   shadows: [
                                     Shadow(
-                                      color: Colors.black.withOpacity(0.3),
+                                      color: Colors.black.withValues(alpha: 0.3),
                                       offset: const Offset(1, 1),
                                       blurRadius: 2,
                                     ),
