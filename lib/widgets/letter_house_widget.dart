@@ -8,7 +8,7 @@ class LetterHouseWidget extends StatefulWidget {
   const LetterHouseWidget({
     super.key,
     required this.letter,
-    required this.onTap,
+    required this.onTap, required bool showPhonetic,
   });
 
   @override
@@ -78,11 +78,11 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
   @override
   Widget build(BuildContext context) {
     final houseColors = [
-      Colors.red[400]!, Colors.blue[400]!, Colors.green[400]!, 
+      Colors.red[400]!, Colors.blue[400]!, Colors.green[400]!,
       Colors.purple[400]!, Colors.orange[400]!, Colors.teal[400]!,
       Colors.pink[400]!, Colors.cyan[400]!, Colors.indigo[400]!
     ];
-    final houseColor = widget.letter.isUnlocked 
+    final houseColor = widget.letter.isUnlocked
         ? houseColors[widget.letter.character.codeUnitAt(0) % houseColors.length]
         : Colors.grey[400]!;
 
@@ -168,7 +168,7 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
                                     );
                                   },
                                 ),
-                              
+
                               // Letra principal en el centro
                               Center(
                                 child: Container(
@@ -188,7 +188,7 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
                                   ),
                                 ),
                               ),
-                              
+
                               // Ventanas
                               Positioned(
                                 top: 8,
@@ -216,7 +216,7 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
                                   ),
                                 ),
                               ),
-                              
+
                               // Puerta
                               Positioned(
                                 bottom: 0,
@@ -247,7 +247,7 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
                                   ),
                                 ),
                               ),
-                              
+
                               // Indicadores de estado
                               if (widget.letter.stars > 0)
                                 Positioned(
@@ -272,7 +272,7 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
                                     ),
                                   ),
                                 ),
-                              
+
                               if (widget.letter.isUnlocked && widget.letter.stars == 0)
                                 Positioned(
                                   top: 4,
@@ -299,7 +299,7 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
                       ),
                     ],
                   ),
-                  
+
                   // Overlay de bloqueo
                   if (!widget.letter.isUnlocked)
                     Container(
@@ -315,42 +315,12 @@ class _LetterHouseWidgetState extends State<LetterHouseWidget>
                         ),
                       ),
                     ),
-                  
-                  // Etiqueta del nombre en la parte inferior
-                  Positioned(
-                    bottom: -8,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.95),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: houseColor, width: 1),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          widget.letter.name.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: houseColor,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  
+
+                  // Etiqueta del nombre eliminada - solo se mostrará la letra
+
                   // Barra de progreso en la parte inferior
                   Positioned(
-                    bottom: -20,
+                    bottom: -8,
                     left: 8,
                     right: 8,
                     child: Container(
@@ -402,7 +372,7 @@ class _HouseRoofPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     final path = Path();
-    
+
     // Techo principal
     path.moveTo(0, size.height);
     path.lineTo(size.width / 2, 0);

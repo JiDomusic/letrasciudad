@@ -20,604 +20,294 @@ class AROverlayWidget extends StatefulWidget {
   State<AROverlayWidget> createState() => _AROverlayWidgetState();
 }
 
-class _AROverlayWidgetState extends State<AROverlayWidget>
-    with TickerProviderStateMixin {
-  late AnimationController _floatController;
-  late AnimationController _rotationController;
-  late List<Animation<double>> _floatAnimations;
-
-  @override
-  void initState() {
-    super.initState();
-    
-    try {
-      _floatController = AnimationController(
-        duration: const Duration(seconds: 4),
-        vsync: this,
-      );
-      
-      _rotationController = AnimationController(
-        duration: const Duration(seconds: 30), // Rotación más lenta
-        vsync: this,
-      );
-
-
-      // Asegurar que tenemos letras antes de crear animaciones (máximo 27)
-      final letterCount = math.max(1, math.min(27, widget.letters.length));
-      _floatAnimations = List.generate(
-        letterCount,
-        (index) => Tween<double>(
-          begin: -8, // Flotación más sutil
-          end: 8,
-        ).animate(CurvedAnimation(
-          parent: _floatController,
-          curve: Interval(
-            (index * 0.1).clamp(0.0, 0.7),
-            ((index * 0.1) + 0.3).clamp(0.3, 1.0),
-            curve: Curves.easeInOut,
-          ),
-        )),
-      );
-
-      // Temporalmente deshabilitado para evitar loops
-      // WidgetsBinding.instance.addPostFrameCallback((_) {
-      //   if (mounted) {
-      //     _floatController.repeat(reverse: true);
-      //     _rotationController.repeat();
-      //   }
-      // });
-    } catch (e) {
-      // En caso de error en inicialización, crear animaciones básicas limitadas
-      _floatController = AnimationController(
-        duration: const Duration(seconds: 4),
-        vsync: this,
-      );
-      _rotationController = AnimationController(
-        duration: const Duration(seconds: 30),
-        vsync: this,
-      );
-      
-      // Crear solo las animaciones necesarias (máximo 27)
-      final fallbackCount = math.min(27, math.max(1, widget.letters.length));
-      _floatAnimations = List.generate(
-        fallbackCount,
-        (index) => Tween<double>(begin: 0, end: 0).animate(_floatController),
-      );
-    }
-  }
-
-  @override
-  void dispose() {
-    _floatController.dispose();
-    _rotationController.dispose();
-    super.dispose();
-  }
-
+class _AROverlayWidgetState extends State<AROverlayWidget> {
   @override
   Widget build(BuildContext context) {
+    if (widget.letters.isEmpty) {
+      return const Center(
+        child: Text(
+          'No hay letras disponibles',
+          style: TextStyle(color: Colors.white, fontSize: 18),
+        ),
+      );
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Use LayoutBuilder to ensure we have valid constraints
         if (constraints.maxWidth <= 0 || constraints.maxHeight <= 0) {
           return const SizedBox.shrink();
         }
+
+        // Limitar letras y crear distribución simple
+        final limitedLetters = widget.letters.take(27).toList();
         
-        final size = Size(constraints.maxWidth, constraints.maxHeight);
-        
-        // Temporalmente sin animaciones para evitar loop
-        try {
-          // Limitar el número de letras para evitar overflow
-          final limitedLetters = widget.letters.take(27).toList(); // Máximo 27 letras
-          
-          
-          return Stack(
-                clipBehavior: Clip.hardEdge,
-                children: limitedLetters.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final letter = entry.value;
-                  
-                  // Protección contra índices fuera de rango
-                  if (index >= _floatAnimations.length || index >= 27) {
-                    return const SizedBox.shrink();
-                  }
-                  
-                  // Valores fijos temporalmente para evitar loop
-                  const floatValue = 0.0;
-                  const rotationValue = 0.0;
-                  
-                  return _buildFloatingHouse(
-                    letter,
-                    index,
-                    size,
-                    floatValue,
-                    rotationValue,
-                  );
-                }).toList(),
-              );
-            } catch (e) {
-              // En caso de error, mostrar algo simple en lugar de pantalla roja
-              return Container(
-                constraints: BoxConstraints(
-                  minWidth: constraints.maxWidth,
-                  minHeight: constraints.maxHeight,
-                ),
-                child: const Center(
-                  child: Text(
-                    'Cargando VR...',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                ),
-              );
-        }
+        return Stack(
+          children: limitedLetters.asMap().entries.map((entry) {
+            final index = entry.key;
+            final letter = entry.value;
+            
+            return _build3DHouse(letter, index, constraints);
+          }).toList(),
+        );
       },
     );
   }
 
-  Widget _buildFloatingHouse(
-    Letter letter,
-    int index,
-    Size screenSize,
-    double floatOffset,
-    double rotation,
-  ) {
-    try {
-      // Verificaciones de seguridad
-      if (screenSize.width <= 0 || screenSize.height <= 0) {
-        return const SizedBox.shrink();
-      }
-
-      // Sistema responsivo para diferentes tamaños de pantalla
-      final isSmallScreen = screenSize.width < 600;
-      final isMediumScreen = screenSize.width >= 600 && screenSize.width < 1200;
-
-      // Distribución espacial responsiva
-      final lettersPerRing = isSmallScreen ? 4 : (isMediumScreen ? 6 : 8);
-      final ring = (index / lettersPerRing).floor();
-      final positionInRing = index % lettersPerRing;
-      
-      // Radios MASIVOS para casas más visibles
-      final baseRadiusMultiplier = isSmallScreen ? 0.15 : (isMediumScreen ? 0.18 : 0.20);
-      final minRadius = isSmallScreen ? 120.0 : (isMediumScreen ? 150.0 : 180.0);
-      final ringSpacing = isSmallScreen ? 120.0 : (isMediumScreen ? 140.0 : 160.0);
-      
-      final baseRadius = math.max(
-        minRadius + (ring * ringSpacing),
-        screenSize.width * baseRadiusMultiplier + (ring * ringSpacing)
-      );
-      
-      // Rotación más suave
-      final safeRotation = rotation.isFinite ? rotation : 0.0;
-      final angle = (positionInRing / lettersPerRing) * 2 * math.pi + 
-                    safeRotation * 0.05 + (ring * 0.1);
-      
-      // Variación orgánica más sutil
-      final randomOffset = (index * 11) % 30 - 15;
-      final finalRadius = (baseRadius + randomOffset).clamp(minRadius, screenSize.width * 0.45);
-      
-      // Márgenes reducidos para casas más centralizadas y visibles
-      final marginX = isSmallScreen ? 20.0 : (isMediumScreen ? 40.0 : 100.0);
-      final marginY = isSmallScreen ? 20.0 : (isMediumScreen ? 40.0 : 120.0);
-      
-      final safeFloatOffset = floatOffset.isFinite ? floatOffset.clamp(-15.0, 15.0) : 0.0;
-      final x = (screenSize.width * 0.5 + finalRadius * math.cos(angle))
-          .clamp(marginX, screenSize.width - marginX);
-      final y = (screenSize.height * 0.5 + 
-                (finalRadius * math.sin(angle) * 0.4) + 
-                safeFloatOffset + 
-                (ring * 10)).clamp(marginY, screenSize.height - marginY);
-      
-      // Sistema de escala responsivo - casas grandes pero un poco más chicas
-      final baseScale = isSmallScreen ? 1.1 : (isMediumScreen ? 1.4 : 1.1);
-      final distanceFromCenter = math.sqrt(
-        math.pow(x - screenSize.width * 0.5, 2) + 
-        math.pow(y - screenSize.height * 0.5, 2)
-      );
-      final maxDistance = math.min(screenSize.width, screenSize.height) * 0.2;
-      final normalizedDistance = (distanceFromCenter / maxDistance).clamp(0.0, 1.0);
-      
-      // Escala mínima balanceada para casas visibles
-      final minScale = isSmallScreen ? 1.2 : (isMediumScreen ? 1.5 : 1.8);
-      final scale = (baseScale - (normalizedDistance * 0.3)).clamp(minScale, baseScale * 1.2);
-      final opacity = (1.0 - (normalizedDistance * 0.2)).clamp(0.6, 1.0);
-
-      // Escala interactiva mejorada
-      final isHighlighted = widget.highlightedLetter == letter.character;
-      final safeHouseScale = widget.houseScale.isFinite ? widget.houseScale.clamp(1.0, 3.0) : 1.0;
-      final finalScale = isHighlighted 
-          ? (scale * safeHouseScale).clamp(minScale, baseScale * 1.5)
-          : scale;
-
-      // Tamaños reducidos para las casas con valores mínimos seguros
-      final itemWidth = math.max(120.0, isSmallScreen ? 160.0 : (isMediumScreen ? 200.0 : 240.0));
-      final itemHeight = math.max(140.0, isSmallScreen ? 180.0 : (isMediumScreen ? 220.0 : 260.0));
-      
-      // Offsets ajustados para casas más pequeñas
-      final positionOffsetWidth = isSmallScreen ? 80.0 : (isMediumScreen ? 100.0 : 120.0);
-      final positionOffsetHeight = isSmallScreen ? 90.0 : (isMediumScreen ? 110.0 : 130.0);
-      
-      // Asegurar que las posiciones estén dentro de los límites de pantalla
-      final safeLeft = (x - positionOffsetWidth).clamp(0.0, screenSize.width - itemWidth);
-      final safeTop = (y - positionOffsetHeight).clamp(0.0, screenSize.height - itemHeight);
-
-      return Positioned(
-        left: safeLeft,
-        top: safeTop,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minWidth: itemWidth,
-            maxWidth: itemWidth,
-            minHeight: itemHeight,
-            maxHeight: itemHeight,
-          ),
-          child: SizedBox(
-            width: itemWidth,
-            height: itemHeight,
-            child: AnimatedScale(
-              duration: const Duration(milliseconds: 300),
-              scale: finalScale.clamp(1.0, 2.0), // Escala más controlada
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                constraints: BoxConstraints(
-                  minWidth: itemWidth * 0.8,
-                  maxWidth: itemWidth * 1.2,
-                  minHeight: itemHeight * 0.8,
-                  maxHeight: itemHeight * 1.2,
-                ),
-                decoration: isHighlighted ? BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.yellow.withValues(alpha: 0.6),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ) : null,
-                child: Opacity(
-                  opacity: opacity.clamp(0.3, 1.0),
-                  child: GestureDetector(
-                    onTap: () => widget.onLetterTap(letter),
-                    child: _buildHouseWidget(letter, normalizedDistance, screenSize),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    } catch (e) {
-      // En caso de error en esta casa específica, devolver placeholder
-      return Positioned(
-        left: 100,
-        top: 100,
-        child: Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Center(
-            child: Icon(Icons.home, color: Colors.grey),
-          ),
-        ),
-      );
-    }
-  }
-
-  Widget _buildHouseWidget(Letter letter, double distance, Size screenSize) {
-    try {
-      final isNear = distance < 0.5;
-      
-      // Sistema responsivo para las casas
-      final isSmallScreen = screenSize.width < 600;
-      final isMediumScreen = screenSize.width >= 600 && screenSize.width < 1200;
-      
-      // Tamaños reducidos para VR con valores mínimos seguros
-      final houseWidth = math.max(120.0, isSmallScreen ? 160.0 : (isMediumScreen ? 200.0 : 240.0));
-      final houseHeight = math.max(140.0, isSmallScreen ? 180.0 : (isMediumScreen ? 220.0 : 260.0));
-      final roofWidth = houseWidth;
-      final roofHeight = math.min(houseHeight * 0.4, isSmallScreen ? 60.0 : (isMediumScreen ? 80.0 : 100.0));
-      final bodyHeight = math.max(60.0, houseHeight - roofHeight);
-      
-      final houseColors = [
-        Colors.red[300]!, Colors.blue[300]!, Colors.green[300]!, 
-        Colors.purple[300]!, Colors.orange[300]!, Colors.teal[300]!
-      ];
-      final colorIndex = letter.character.codeUnitAt(0) % houseColors.length;
-      final houseColor = houseColors[colorIndex];
+  Widget _build3DHouse(Letter letter, int index, BoxConstraints constraints) {
+    final screenWidth = constraints.maxWidth;
+    final screenHeight = constraints.maxHeight;
     
-      return ConstrainedBox(
-        constraints: BoxConstraints(
-          minWidth: math.max(80.0, houseWidth * 0.8),
-          maxWidth: math.min(screenSize.width * 0.4, houseWidth * 1.2),
-          minHeight: math.max(100.0, houseHeight * 0.8),
-          maxHeight: math.min(screenSize.height * 0.4, houseHeight * 1.2),
-        ),
-        child: LayoutBuilder(
-          builder: (context, outerConstraints) {
-            if (outerConstraints.maxWidth <= 0 || outerConstraints.maxHeight <= 0) {
-              return const SizedBox.shrink();
-            }
-            
-            final constrainedWidth = math.min(houseWidth, outerConstraints.maxWidth);
-            final constrainedHeight = math.min(houseHeight, outerConstraints.maxHeight);
-            
-            return SizedBox(
-              width: constrainedWidth,
-              height: constrainedHeight,
-              child: Stack(
-                children: [
-                  // Sombra de la casa
-                  Container(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.25),
-                          blurRadius: 8,
-                          offset: Offset(2, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        // Techo triangular responsivo
-                        ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minWidth: math.max(60.0, roofWidth * 0.8),
-                            maxWidth: roofWidth,
-                            minHeight: math.max(30.0, roofHeight * 0.8),
-                            maxHeight: roofHeight,
-                          ),
-                          child: CustomPaint(
-                            size: Size(roofWidth, roofHeight),
-                            painter: _RoofPainter(
-                              color: Colors.brown[600]!,
-                              shadowColor: Colors.brown[800]!,
-                            ),
-                          ),
-                        ),
-                        // Cuerpo de la casa responsivo
-                        Container(
-                          width: houseWidth,
-                          height: bodyHeight,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                houseColor.withValues(alpha: 0.9),
-                                houseColor,
-                              ],
-                            ),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              width: isSmallScreen ? 2.0 : (isMediumScreen ? 3.0 : 4.0),
-                            ),
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(8),
-                              bottomRight: Radius.circular(8),
-                            ),
-                          ),
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              if (constraints.maxWidth <= 0 || constraints.maxHeight <= 0) {
-                                return const SizedBox.shrink();
-                              }
-                              return Stack(
-                                clipBehavior: Clip.hardEdge,
-                                children: [
-                                  // Letra principal responsiva
-                                  Center(
-                                    child: Container(
-                                      padding: EdgeInsets.all(
-                                        isSmallScreen ? 8.0 : (isMediumScreen ? 10.0 : 12.0)
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.9),
-                                        borderRadius: BorderRadius.circular(
-                                          isSmallScreen ? 8.0 : (isMediumScreen ? 10.0 : 12.0)
-                                        ),
-                                        border: Border.all(
-                                          color: houseColor, 
-                                          width: isSmallScreen ? 2.0 : (isMediumScreen ? 3.0 : 4.0)
-                                        ),
-                                      ),
-                                      child: Text(
-                                        letter.character,
-                                        style: TextStyle(
-                                          fontSize: isSmallScreen 
-                                            ? (isNear ? 36 : 32) // Reducidos
-                                            : (isMediumScreen 
-                                              ? (isNear ? 44 : 40) // Reducidos
-                                              : (isNear ? 52 : 48)), // Reducidos
-                                          fontWeight: FontWeight.bold,
-                                          color: houseColor.withValues(alpha: 0.8),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  // Ventanas responsivas
-                                  Positioned(
-                                    top: math.max(4.0, constraints.maxHeight * 0.1),
-                                    left: math.max(4.0, constraints.maxWidth * 0.1),
-                                    child: Container(
-                                      width: math.min(constraints.maxWidth * 0.3, isSmallScreen ? 60 : (isMediumScreen ? 80 : 100)),
-                                      height: math.min(constraints.maxHeight * 0.4, isSmallScreen ? 60 : (isMediumScreen ? 80 : 100)),
-                                      decoration: BoxDecoration(
-                                        color: Colors.lightBlue[100],
-                                        border: Border.all(
-                                          color: Colors.brown[400]!, 
-                                          width: isSmallScreen ? 1 : (isMediumScreen ? 1.5 : 2)
-                                        ),
-                                        borderRadius: BorderRadius.circular(3),
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: math.max(4.0, constraints.maxHeight * 0.1),
-                                    right: math.max(4.0, constraints.maxWidth * 0.1),
-                                    child: Container(
-                                      width: math.min(constraints.maxWidth * 0.3, isSmallScreen ? 60 : (isMediumScreen ? 80 : 100)),
-                                      height: math.min(constraints.maxHeight * 0.4, isSmallScreen ? 60 : (isMediumScreen ? 80 : 100)),
-                                      decoration: BoxDecoration(
-                                        color: Colors.lightBlue[100],
-                                        border: Border.all(
-                                          color: Colors.brown[400]!, 
-                                          width: isSmallScreen ? 1 : (isMediumScreen ? 1.5 : 2)
-                                        ),
-                                        borderRadius: BorderRadius.circular(3),
-                                      ),
-                                    ),
-                                  ),
-                                  // Puerta responsiva
-                                  Positioned(
-                                    bottom: 0,
-                                    left: math.max(0.0, (constraints.maxWidth - math.min(constraints.maxWidth * 0.5, isSmallScreen ? 80 : (isMediumScreen ? 100 : 120))) / 2),
-                                    child: Container(
-                                      width: math.min(constraints.maxWidth * 0.5, isSmallScreen ? 80 : (isMediumScreen ? 100 : 120)),
-                                      height: math.min(constraints.maxHeight * 0.6, isSmallScreen ? 90 : (isMediumScreen ? 110 : 130)),
-                                      decoration: BoxDecoration(
-                                        color: Colors.brown[400],
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(isSmallScreen ? 8 : (isMediumScreen ? 10 : 12)),
-                                          topRight: Radius.circular(isSmallScreen ? 8 : (isMediumScreen ? 10 : 12)),
-                                        ),
-                                        border: Border.all(
-                                          color: Colors.brown[600]!, 
-                                          width: isSmallScreen ? 1 : (isMediumScreen ? 1.5 : 2)
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Container(
-                                          width: math.min(constraints.maxWidth * 0.1, isSmallScreen ? 20 : (isMediumScreen ? 25 : 30)),
-                                          height: math.min(constraints.maxHeight * 0.1, isSmallScreen ? 20 : (isMediumScreen ? 25 : 30)),
-                                          decoration: BoxDecoration(
-                                            color: Colors.yellow[600],
-                                            shape: BoxShape.circle,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  // Indicador de estrellas responsivo
-                                  if (letter.stars > 0)
-                                    Positioned(
-                                      top: math.max(2.0, constraints.maxHeight * 0.05),
-                                      left: math.max(2.0, constraints.maxWidth * 0.05),
-                                      child: Container(
-                                        padding: EdgeInsets.all(
-                                          math.max(2.0, math.min(constraints.maxWidth * 0.02, isSmallScreen ? 3.0 : (isMediumScreen ? 4.0 : 5.0)))
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.amber[600],
-                                          borderRadius: BorderRadius.circular(
-                                            isSmallScreen ? 4 : (isMediumScreen ? 6 : 8)
-                                          ),
-                                        ),
-                                        child: Text(
-                                          '★${letter.stars}',
-                                          style: TextStyle(
-                                            fontSize: isSmallScreen ? 12 : (isMediumScreen ? 14 : 16),
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+    // Detectar tamaño de pantalla para responsive design
+    final isSmallScreen = screenWidth < 600;
+    final isMediumScreen = screenWidth >= 600 && screenWidth < 1200;
+    
+    // Área disponible SOLO en la mitad SUPERIOR de la pantalla
+    // Reservamos TODO el 50% inferior para evitar cualquier interferencia
+    final upperHalfOnly = screenHeight * 0.45; // Solo usar el 45% superior
+    final availableHeight = upperHalfOnly - 100; // Margen generoso desde arriba
+    final availableWidth = screenWidth - 100; // 50px margen en cada lado
+    
+    // Asegurar que tenemos espacio mínimo incluso en pantallas pequeñas
+    final safeAvailableHeight = math.max(availableHeight, 120.0);
+    
+    // Distribución orgánica adaptativa
+    final totalLetters = widget.letters.length;
+    
+    // Adaptar columnas según orientación y tamaño
+    final isLandscape = screenWidth > screenHeight;
+    int cols;
+    if (isSmallScreen) {
+      cols = isLandscape ? 6 : 4;
+    } else if (isMediumScreen) {
+      cols = isLandscape ? 8 : 5;
+    } else {
+      cols = isLandscape ? 10 : 6;
+    }
+    
+    final rows = (totalLetters / cols).ceil();
+    final col = index % cols;
+    final row = index ~/ cols;
+    
+    // Calcular posición base en cuadrícula - SOLO en parte superior
+    final cellWidth = availableWidth / cols;
+    final cellHeight = math.max(safeAvailableHeight / rows, 90.0); // Mínimo 90px de altura
+    
+    // Añadir variación aleatoria para efecto natural
+    final random = math.Random(index + letter.character.codeUnitAt(0));
+    final offsetX = (random.nextDouble() - 0.5) * (cellWidth * 0.3); // Reducir variación horizontal
+    final offsetY = (random.nextDouble() - 0.5) * (cellHeight * 0.2); // Reducir variación vertical
+    
+    // Posición final SOLO en la mitad superior de la pantalla
+    var finalX = 50 + (col * cellWidth) + (cellWidth / 2) + offsetX;
+    var finalY = 50 + (row * cellHeight) + (cellHeight / 2) + offsetY; // Comenzar bien arriba
+    
+    // Tamaño de casa más pequeño para evitar interferencias
+    final houseSize = isSmallScreen ? 60.0 : (isMediumScreen ? 70.0 : 80.0);
+    
+    // Asegurar que las casas estén ESTRICTAMENTE en la parte superior
+    finalX = finalX.clamp(houseSize / 2 + 15, screenWidth - houseSize / 2 - 15);
+    // Límite ABSOLUTO - NUNCA pasar del 45% de la pantalla
+    final absoluteMaxY = screenHeight * 0.45; // Máximo ABSOLUTO 45% de altura
+    finalY = finalY.clamp(houseSize / 2 + 25, absoluteMaxY - houseSize / 2);
+    
+    // DEBUG: Mostrar información de posicionamiento
+    // print('Letra ${letter.character}: x=$finalX, y=$finalY, maxY=$maxY, screenHeight=$screenHeight');
+    
+    // Verificar si está resaltada
+    final isHighlighted = widget.highlightedLetter == letter.character;
+    
+    return Positioned(
+      left: finalX - houseSize / 2,
+      top: finalY - houseSize / 2,
+      child: Draggable<String>(
+        data: letter.character,
+        feedback: Material(
+          color: Colors.transparent,
+          child: Transform.scale(
+            scale: isSmallScreen ? 1.2 : (isMediumScreen ? 1.25 : 1.3),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(isSmallScreen ? 8 : 12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.yellow.withValues(alpha: 0.6),
+                    blurRadius: isSmallScreen ? 12 : 15,
+                    spreadRadius: isSmallScreen ? 3 : 5,
                   ),
-                  // Etiqueta de nombre responsiva
-                  if (isNear)
-                    Positioned(
-                      top: -(isSmallScreen ? 30.0 : (isMediumScreen ? 35.0 : 40.0)),
-                      left: -(isSmallScreen ? 15.0 : (isMediumScreen ? 20.0 : 25.0)),
-                      right: -(isSmallScreen ? 15.0 : (isMediumScreen ? 20.0 : 25.0)),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: isSmallScreen ? 8.0 : (isMediumScreen ? 10.0 : 12.0),
-                          vertical: isSmallScreen ? 4.0 : (isMediumScreen ? 5.0 : 6.0),
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.95),
-                          borderRadius: BorderRadius.circular(
-                            isSmallScreen ? 8.0 : (isMediumScreen ? 10.0 : 12.0)
-                          ),
-                          border: Border.all(
-                            color: houseColor, 
-                            width: isSmallScreen ? 1.5 : (isMediumScreen ? 2.0 : 2.5)
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: isSmallScreen ? 4.0 : (isMediumScreen ? 6.0 : 8.0),
-                              offset: Offset(0, isSmallScreen ? 2.0 : (isMediumScreen ? 3.0 : 4.0)),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          letter.name.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: isSmallScreen ? 14.0 : (isMediumScreen ? 18.0 : 22.0),
-                            fontWeight: FontWeight.bold,
-                            color: houseColor,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
                 ],
               ),
-            );
-          },
-        ),
-    );
-    } catch (e) {
-      // Fallback responsivo en caso de error - MÁS GRANDE para niños
-      final isSmallScreen = screenSize.width < 600;
-      final isMediumScreen = screenSize.width >= 600 && screenSize.width < 1200;
-      final fallbackWidth = isSmallScreen ? 160.0 : (isMediumScreen ? 200.0 : 240.0);
-      final fallbackHeight = isSmallScreen ? 180.0 : (isMediumScreen ? 220.0 : 260.0);
-      
-      return ConstrainedBox(
-        constraints: BoxConstraints(
-          minWidth: math.max(80.0, fallbackWidth * 0.8),
-          maxWidth: math.min(screenSize.width * 0.3, fallbackWidth),
-          minHeight: math.max(100.0, fallbackHeight * 0.8),
-          maxHeight: math.min(screenSize.height * 0.3, fallbackHeight),
-        ),
-        child: Container(
-          width: fallbackWidth,
-          height: fallbackHeight,
-          decoration: BoxDecoration(
-            color: Colors.grey[400],
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Center(
-            child: Icon(
-              Icons.home,
-              size: isSmallScreen ? 60 : (isMediumScreen ? 80 : 100), // Icono fallback reducido
-              color: Colors.white,
+              child: _buildHouseStructure(letter, houseSize, true, isSmallScreen, isMediumScreen),
             ),
           ),
         ),
-      );
-    }
+        childWhenDragging: Opacity(
+          opacity: 0.3,
+          child: _buildHouseStructure(letter, houseSize, false, isSmallScreen, isMediumScreen),
+        ),
+        child: GestureDetector(
+          onTap: () => widget.onLetterTap(letter),
+          child: AnimatedScale(
+            duration: const Duration(milliseconds: 300),
+            scale: isHighlighted ? (isSmallScreen ? 1.15 : 1.2) : 1.0,
+            child: _buildHouseStructure(letter, houseSize, false, isSmallScreen, isMediumScreen),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHouseStructure(Letter letter, double size, bool isDragging, bool isSmallScreen, bool isMediumScreen) {
+    return ClipRect(
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            // Techo - altura fija muy pequeña para evitar overflow
+            SizedBox(
+              height: size * 0.3, // Reducido significativamente
+              child: ClipRect(
+                child: CustomPaint(
+                  size: Size(size, size * 0.3),
+                  painter: _RoofPainter(
+                    color: Colors.brown[600]!,
+                    shadowColor: Colors.brown[800]!,
+                    isSmallScreen: isSmallScreen,
+                  ),
+                ),
+              ),
+            ),
+            // Cuerpo de la casa - altura fija
+            SizedBox(
+              height: size * 0.7, // El resto del espacio disponible
+              child: ClipRect(
+                child: Container(
+                  width: size,
+                  decoration: BoxDecoration(
+                    color: letter.primaryColor,
+                    border: isDragging ? Border.all(
+                      color: Colors.yellow,
+                      width: 1,
+                    ) : null,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(8),
+                      bottomRight: Radius.circular(8),
+                    ),
+                  ),
+                  child: Stack(
+                    clipBehavior: Clip.hardEdge,
+                    children: [
+                      // Letra principal - centrada y simple
+                      Center(
+                        child: ClipRect(
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              letter.character,
+                              style: TextStyle(
+                                fontSize: size * 0.25, // Tamaño proporcional pero limitado
+                                fontWeight: FontWeight.bold,
+                                color: letter.primaryColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Elementos decorativos solo en pantallas grandes
+                      if (!isSmallScreen) ...[
+                        // Ventanas pequeñas
+                        Positioned(
+                          top: 4,
+                          left: 4,
+                          child: Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: Colors.lightBlue[200],
+                              borderRadius: BorderRadius.circular(1),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: Colors.lightBlue[200],
+                              borderRadius: BorderRadius.circular(1),
+                            ),
+                          ),
+                        ),
+                        // Puerta pequeña
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Colors.brown[400],
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(4),
+                                  topRight: Radius.circular(4),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                      // Indicador de estrellas - solo si hay espacio
+                      if (letter.stars > 0 && !isSmallScreen)
+                        Positioned(
+                          top: 2,
+                          left: 2,
+                          child: Container(
+                            width: 10,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: Colors.amber[600],
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${letter.stars}',
+                                style: const TextStyle(
+                                  fontSize: 6,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
-// Painter personalizado para el techo triangular
+// Painter personalizado para el techo triangular 3D
 class _RoofPainter extends CustomPainter {
   final Color color;
   final Color shadowColor;
+  final bool isSmallScreen;
 
-  _RoofPainter({required this.color, required this.shadowColor});
+  _RoofPainter({required this.color, required this.shadowColor, this.isSmallScreen = false});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -629,20 +319,20 @@ class _RoofPainter extends CustomPainter {
       ..color = shadowColor
       ..style = PaintingStyle.fill;
 
-    final path = Path();
-    
     // Techo principal
+    final path = Path();
     path.moveTo(0, size.height);
     path.lineTo(size.width / 2, 0);
     path.lineTo(size.width, size.height);
     path.close();
 
-    // Sombra del techo (lado derecho)
+    // Sombra del techo (lado derecho para efecto 3D) responsiva
     final shadowPath = Path();
+    final shadowOffset = isSmallScreen ? 2.0 : 4.0;
     shadowPath.moveTo(size.width / 2, 0);
     shadowPath.lineTo(size.width, size.height);
-    shadowPath.lineTo(size.width - 4, size.height);
-    shadowPath.lineTo(size.width / 2, 4);
+    shadowPath.lineTo(size.width - shadowOffset, size.height);
+    shadowPath.lineTo(size.width / 2, shadowOffset);
     shadowPath.close();
 
     canvas.drawPath(path, paint);
