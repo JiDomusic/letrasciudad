@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:camera/camera.dart';
+// import 'package:camera/camera.dart'; // Removido - funcionalidad AR deshabilitada
 import '../providers/letter_city_provider.dart';
 import '../services/audio_service.dart';
 import '../widgets/ar_overlay_widget.dart';
@@ -14,7 +14,7 @@ class ARCityScreen extends StatefulWidget {
 }
 
 class _ARCityScreenState extends State<ARCityScreen> {
-  CameraController? _cameraController;
+  // CameraController? _cameraController; // Comentado - AR deshabilitado
   bool _isCameraInitialized = false;
   bool _showInstructions = true;
   final AudioService _audioService = AudioService();
@@ -27,51 +27,36 @@ class _ARCityScreenState extends State<ARCityScreen> {
   }
 
   Future<void> _initializeCamera() async {
-    try {
-      final cameras = await availableCameras();
-      if (cameras.isEmpty) {
-        _showCameraError('No hay cámaras disponibles');
-        return;
-      }
-
-      _cameraController = CameraController(
-        cameras.first,
-        ResolutionPreset.medium,
-        enableAudio: false,
-      );
-
-      await _cameraController!.initialize();
-      
-      if (mounted) {
-        setState(() {
-          _isCameraInitialized = true;
-        });
-      }
-    } catch (e) {
-      _showCameraError('Error al inicializar la cámara: $e');
-    }
-  }
-
-  void _showCameraError(String message) {
+    // FUNCIONALIDAD AR DESHABILITADA - Simular inicialización
+    await Future.delayed(const Duration(milliseconds: 500));
+    
     if (mounted) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Error de Cámara'),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              },
-              child: const Text('Volver'),
-            ),
-          ],
-        ),
-      );
+      setState(() {
+        _isCameraInitialized = true;
+      });
     }
   }
+
+  // void _showCameraError(String message) { // Comentado - no se usa
+  //   if (mounted) {
+  //     showDialog(
+  //       context: context,
+  //       builder: (context) => AlertDialog(
+  //         title: const Text('Error de Cámara'),
+  //         content: Text(message),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //               Navigator.of(context).pop();
+  //             },
+  //             child: const Text('Volver'),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }
+  // }
 
   void _playWelcomeMessage() async {
     await Future.delayed(const Duration(milliseconds: 1000));
@@ -88,31 +73,32 @@ class _ARCityScreenState extends State<ARCityScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenWidth = constraints.maxWidth;
-        final screenHeight = constraints.maxHeight;
+        // final screenHeight = constraints.maxHeight; // No se usa actualmente
         final isSmallScreen = screenWidth < 600;
         final isMediumScreen = screenWidth >= 600 && screenWidth < 1200;
         
-        // Altura adaptativa
+        // Altura adaptativa - más pequeña para estar realmente abajo
         final gameZoneHeight = isSmallScreen 
-            ? screenHeight * 0.15  // 15% en móviles
+            ? 120.0  // Altura fija pequeña en móviles
             : isMediumScreen 
-                ? screenHeight * 0.18  // 18% en tablets
-                : screenHeight * 0.20; // 20% en desktop
+                ? 140.0  // Altura fija en tablets
+                : 160.0; // Altura fija en desktop
         
         // Margen adaptativo
-        final margin = isSmallScreen ? 12.0 : (isMediumScreen ? 16.0 : 24.0);
+        final margin = isSmallScreen ? 8.0 : (isMediumScreen ? 12.0 : 16.0);
         
         return Positioned(
-          bottom: -50, // Movido aún más abajo para estar en la parte inferior
+          bottom: 0, // Pegado completamente a la parte inferior
           left: 0,
           right: 0,
-          child: Container(
-            height: gameZoneHeight,
-            margin: EdgeInsets.only(
-              left: margin,
-              right: margin,
-              bottom: 5, // Margen mínimo para que esté pegado abajo
-            ),
+          child: SafeArea(
+            child: Container(
+              height: gameZoneHeight,
+              margin: EdgeInsets.only(
+                left: margin,
+                right: margin,
+                bottom: 10, // Pequeño margen desde el borde
+              ),
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(isSmallScreen ? 16 : 20),
@@ -297,7 +283,8 @@ class _ARCityScreenState extends State<ARCityScreen> {
             ],
           ),
         ),
-      );
+      ),
+    );
     },
   );
 }
@@ -322,6 +309,7 @@ class _ARCityScreenState extends State<ARCityScreen> {
   void _checkForValidWord() {
     // Diccionario de palabras válidas con sus imágenes
     final validWords = {
+      'yo': 'assets/images/words/yo.png',
       'casa': 'assets/images/words/casa.png',
       'mama': 'assets/images/words/mama.png',
       'papa': 'assets/images/words/papa.png',
@@ -422,7 +410,7 @@ class _ARCityScreenState extends State<ARCityScreen> {
 
   @override
   void dispose() {
-    _cameraController?.dispose();
+    // _cameraController?.dispose(); // Comentado - AR deshabilitado
     super.dispose();
   }
 
@@ -443,7 +431,7 @@ class _ARCityScreenState extends State<ARCityScreen> {
   }
 
   Widget _buildCameraView() {
-    if (!_isCameraInitialized || _cameraController == null) {
+    if (!_isCameraInitialized) {
       return Container(
         color: Colors.black,
         child: const Center(
@@ -455,7 +443,7 @@ class _ARCityScreenState extends State<ARCityScreen> {
               ),
               SizedBox(height: 16),
               Text(
-                'Inicializando cámara...',
+                'Inicializando vista...',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -467,10 +455,41 @@ class _ARCityScreenState extends State<ARCityScreen> {
       );
     }
 
-    return SizedBox(
+    // VISTA SIMULADA SIN CÁMARA - Fondo degradado
+    return Container(
       width: double.infinity,
       height: double.infinity,
-      child: CameraPreview(_cameraController!),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF87CEEB), // Azul cielo
+            Color(0xFFB0E2FF), // Azul claro
+            Color(0xFF98FB98), // Verde claro
+            Color(0xFF90EE90), // Verde lima
+          ],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Efecto de partículas flotantes
+          ...List.generate(20, (index) => 
+            Positioned(
+              left: (index * 50.0) % MediaQuery.of(context).size.width,
+              top: (index * 80.0) % MediaQuery.of(context).size.height,
+              child: Container(
+                width: 4,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.6),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

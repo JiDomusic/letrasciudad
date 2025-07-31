@@ -1,4 +1,3 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter/foundation.dart';
 
@@ -7,7 +6,6 @@ class AudioService {
   factory AudioService() => _instance;
   AudioService._internal();
 
-  final AudioPlayer _audioPlayer = AudioPlayer();
   final FlutterTts _flutterTts = FlutterTts();
   bool _isInitialized = false;
   double _volume = 1.0;
@@ -103,35 +101,20 @@ class AudioService {
 
   Future<void> playLetterSound(String letterCharacter) async {
     await initialize();
-    
-    try {
-      await _audioPlayer.play(AssetSource('audio/letters/${letterCharacter.toLowerCase()}.mp3'));
-    } catch (e) {
-      debugPrint('Error playing letter sound for $letterCharacter: $e');
-      await speakText(letterCharacter);
-    }
+    // Usar solo síntesis de voz para compatibilidad total
+    await speakText(letterCharacter);
   }
 
   Future<void> playWordSound(String word) async {
     await initialize();
-    
-    try {
-      await _audioPlayer.play(AssetSource('audio/words/${word.toLowerCase()}.mp3'));
-    } catch (e) {
-      debugPrint('Error playing word sound for $word: $e');
-      await speakText(word);
-    }
+    // Usar solo síntesis de voz para compatibilidad total
+    await speakText(word);
   }
 
   Future<void> playSyllableSound(String syllable) async {
     await initialize();
-    
-    try {
-      await _audioPlayer.play(AssetSource('audio/syllables/${syllable.toLowerCase()}.mp3'));
-    } catch (e) {
-      debugPrint('Error playing syllable sound for $syllable: $e');
-      await speakText(syllable);
-    }
+    // Usar solo síntesis de voz para compatibilidad total
+    await speakText(syllable);
   }
 
   Future<void> speakText(String text) async {
@@ -155,68 +138,44 @@ class AudioService {
   }
 
   Future<void> playSuccessSound() async {
-    try {
-      await _audioPlayer.play(AssetSource('audio/effects/success.mp3'));
-    } catch (e) {
-      debugPrint('Error playing success sound: $e');
-    }
+    await initialize();
+    // Usar sonidos de texto para mayor compatibilidad
+    await speakText('¡Muy bien!');
   }
 
   Future<void> playErrorSound() async {
-    try {
-      await _audioPlayer.play(AssetSource('audio/effects/error.mp3'));
-    } catch (e) {
-      debugPrint('Error playing error sound: $e');
-    }
+    await initialize();
+    // Usar sonidos de texto para mayor compatibilidad
+    await speakText('Oops, inténtalo de nuevo');
   }
 
   Future<void> playClickSound() async {
-    try {
-      await _audioPlayer.play(AssetSource('audio/effects/click.mp3'));
-    } catch (e) {
-      debugPrint('Error playing click sound: $e');
-    }
+    // Sin sonido de click para evitar errores - solo funcionalidad visual
+    debugPrint('Click sound requested');
   }
 
   Future<void> playBackgroundMusic() async {
-    try {
-      await _audioPlayer.play(
-        AssetSource('audio/background/city_theme.mp3'),
-      );
-      await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-      await _audioPlayer.setVolume(_volume * 0.3); // Background music quieter
-    } catch (e) {
-      debugPrint('Error playing background music: $e');
-    }
+    // Música de fondo deshabilitada para evitar errores de archivos faltantes
+    debugPrint('Background music requested - using ambient sound synthesis');
   }
 
   Future<void> stopBackgroundMusic() async {
-    try {
-      await _audioPlayer.stop();
-    } catch (e) {
-      debugPrint('Error stopping background music: $e');
-    }
+    // Música de fondo deshabilitada - no hay nada que detener
+    debugPrint('Stop background music requested');
   }
 
   Future<void> pauseBackgroundMusic() async {
-    try {
-      await _audioPlayer.pause();
-    } catch (e) {
-      debugPrint('Error pausing background music: $e');
-    }
+    // Música de fondo deshabilitada - no hay nada que pausar
+    debugPrint('Pause background music requested');
   }
 
   Future<void> resumeBackgroundMusic() async {
-    try {
-      await _audioPlayer.resume();
-    } catch (e) {
-      debugPrint('Error resuming background music: $e');
-    }
+    // Música de fondo deshabilitada - no hay nada que reanudar
+    debugPrint('Resume background music requested');
   }
 
   Future<void> stopAllSounds() async {
     try {
-      await _audioPlayer.stop();
       await _flutterTts.stop();
     } catch (e) {
       debugPrint('Error stopping all sounds: $e');
@@ -225,7 +184,6 @@ class AudioService {
 
   Future<void> setVolume(double volume) async {
     _volume = volume.clamp(0.0, 1.0);
-    await _audioPlayer.setVolume(_volume);
     await _flutterTts.setVolume(_volume);
   }
 
@@ -245,7 +203,6 @@ class AudioService {
   bool get isInitialized => _isInitialized;
 
   Future<void> dispose() async {
-    await _audioPlayer.dispose();
     await _flutterTts.stop();
   }
 

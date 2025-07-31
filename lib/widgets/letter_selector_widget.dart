@@ -19,62 +19,71 @@ class LetterSelectorWidget extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 600;
-    
-    // Tamaños responsivos para evitar overflow
-    final containerHeight = isSmallScreen ? 70.0 : 80.0;
-    final itemWidth = isSmallScreen ? 50.0 : 60.0;
-    final itemHeight = isSmallScreen ? 50.0 : 60.0;
-    final fontSize = isSmallScreen ? 18.0 : 24.0;
-    final selectedFontSize = isSmallScreen ? 22.0 : 28.0;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = constraints.maxWidth;
+        final isSmallScreen = screenWidth < 600;
+        final isMediumScreen = screenWidth >= 600 && screenWidth < 1200;
+        
+        // Tamaños responsivos más precisos
+        final containerHeight = isSmallScreen ? 65.0 : (isMediumScreen ? 75.0 : 85.0);
+        final itemWidth = isSmallScreen ? 45.0 : (isMediumScreen ? 55.0 : 65.0);
+        final itemHeight = isSmallScreen ? 45.0 : (isMediumScreen ? 55.0 : 65.0);
+        final fontSize = isSmallScreen ? 16.0 : (isMediumScreen ? 20.0 : 24.0);
+        final selectedFontSize = isSmallScreen ? 20.0 : (isMediumScreen ? 24.0 : 28.0);
+        final horizontalPadding = isSmallScreen ? 6.0 : 8.0;
+        final itemSpacing = isSmallScreen ? 3.0 : 4.0;
 
-    return Container(
-      height: containerHeight,
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        itemCount: letters.length,
-        itemBuilder: (context, index) {
+        return Container(
+          height: containerHeight,
+          padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 6 : 8),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.7),
+            borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 16),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+              width: isSmallScreen ? 0.8 : 1,
+            ),
+          ),
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            itemCount: letters.length,
+            itemBuilder: (context, index) {
           try {
             final letter = letters[index];
             final isSelected = selectedLetter?.character == letter.character;
             
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: GestureDetector(
-                onTap: () => onLetterSelected(letter),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: itemWidth,
-                  height: itemHeight,
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? letter.primaryColor
-                        : letter.primaryColor.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? Colors.white : Colors.transparent,
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: itemSpacing),
+                child: GestureDetector(
+                  onTap: () => onLetterSelected(letter),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: itemWidth,
+                    height: itemHeight,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? letter.primaryColor
+                          : letter.primaryColor.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(isSmallScreen ? 8 : 12),
+                      border: Border.all(
+                        color: isSelected ? Colors.white : Colors.transparent,
+                        width: isSmallScreen ? 1.5 : 2,
                       ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Stack(
-                      clipBehavior: Clip.hardEdge,
-                      children: [
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: isSmallScreen ? 6 : 8,
+                          offset: Offset(0, isSmallScreen ? 3 : 4),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(isSmallScreen ? 8 : 12),
+                      child: Stack(
+                        clipBehavior: Clip.hardEdge,
+                        children: [
                         // Letra principal - centrada y con tamaño fijo
                         Positioned.fill(
                           child: Center(
@@ -95,80 +104,82 @@ class LetterSelectorWidget extends StatelessWidget {
                             ),
                           ),
                         ),
-                        // Indicador de estrellas - solo si hay estrellas y hay espacio
-                        if (letter.stars > 0 && !isSmallScreen)
-                          Positioned(
-                            top: 2,
-                            right: 2,
-                            child: Container(
-                              constraints: const BoxConstraints(
-                                minWidth: 14,
-                                maxWidth: 16,
-                                minHeight: 14,
-                                maxHeight: 16,
-                              ),
-                              decoration: const BoxDecoration(
-                                color: Colors.amber,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '${letter.stars}',
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                          // Indicador de estrellas responsivo
+                          if (letter.stars > 0)
+                            Positioned(
+                              top: isSmallScreen ? 1 : 2,
+                              right: isSmallScreen ? 1 : 2,
+                              child: Container(
+                                constraints: BoxConstraints(
+                                  minWidth: isSmallScreen ? 10 : 14,
+                                  maxWidth: isSmallScreen ? 12 : 16,
+                                  minHeight: isSmallScreen ? 10 : 14,
+                                  maxHeight: isSmallScreen ? 12 : 16,
+                                ),
+                                decoration: const BoxDecoration(
+                                  color: Colors.amber,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '${letter.stars}',
+                                    style: TextStyle(
+                                      fontSize: isSmallScreen ? 7 : 9,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.center,
                                   ),
-                                  textAlign: TextAlign.center,
                                 ),
                               ),
                             ),
-                          ),
-                        // Indicador de selección - solo si está seleccionado
-                        if (isSelected)
-                          Positioned(
-                            bottom: 2,
-                            left: 4,
-                            right: 4,
-                            child: Container(
-                              height: 2,
-                              constraints: const BoxConstraints(
-                                minHeight: 2,
-                                maxHeight: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(1),
+                          // Indicador de selección responsivo
+                          if (isSelected)
+                            Positioned(
+                              bottom: isSmallScreen ? 1 : 2,
+                              left: isSmallScreen ? 3 : 4,
+                              right: isSmallScreen ? 3 : 4,
+                              child: Container(
+                                height: isSmallScreen ? 1.5 : 2,
+                                constraints: BoxConstraints(
+                                  minHeight: isSmallScreen ? 1.5 : 2,
+                                  maxHeight: isSmallScreen ? 2 : 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(1),
+                                ),
                               ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
+              );
           } catch (e) {
-            // Fallback en caso de error con una letra específica
-            return Container(
-              width: itemWidth,
-              height: itemHeight,
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                color: Colors.grey[600],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.error_outline,
-                  color: Colors.white,
-                  size: 20,
+              // Fallback responsivo en caso de error
+              return Container(
+                width: itemWidth,
+                height: itemHeight,
+                margin: EdgeInsets.symmetric(horizontal: itemSpacing),
+                decoration: BoxDecoration(
+                  color: Colors.grey[600],
+                  borderRadius: BorderRadius.circular(isSmallScreen ? 8 : 12),
                 ),
-              ),
-            );
+                child: Center(
+                  child: Icon(
+                    Icons.error_outline,
+                    color: Colors.white,
+                    size: isSmallScreen ? 16 : 20,
+                  ),
+                ),
+              );
           }
-        },
-      ),
+            },
+          ),
+        );
+      },
     );
   }
 }

@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.letrasciudad"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973" // Requerido por flutter_tts
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

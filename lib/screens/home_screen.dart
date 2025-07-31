@@ -3,10 +3,11 @@ import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../providers/letter_city_provider.dart';
 import '../services/audio_service.dart';
-import 'ar_city_screen.dart';
-import 'letter_details_screen.dart';
-import '../widgets/letter_house_widget.dart';
+// import 'letter_details_screen.dart'; // No se usa actualmente
+import 'interactive_letter_games_screen.dart';
 import '../widgets/progress_header.dart';
+import '../widgets/reference_style_house.dart';
+import '../widgets/rolling_hills_terrain.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,6 +21,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _animatedElementsController;
   late Animation<double> _gridAnimation;
   final AudioService _audioService = AudioService();
+  
+  // Lista para almacenar posiciones ocupadas (detección de colisiones)
+  final List<Map<String, double>> _occupiedPositions = [];
 
   @override
   void initState() {
@@ -89,7 +93,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   const ProgressHeader(),
                   Expanded(
                     child: SingleChildScrollView(
+                      // CONFIGURACIÓN OPTIMIZADA PARA ANDROID
                       padding: const EdgeInsets.all(16),
+                      physics: const BouncingScrollPhysics(), // Scroll suave tipo iOS
+                      scrollDirection: Axis.vertical,
                       child: Column(
                         children: [
                           _buildWelcomeCard(),
@@ -97,6 +104,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           _buildActionButtons(),
                           const SizedBox(height: 20),
                           _buildLetterGrid(),
+                          // ESPACIO EXTRA PARA SCROLL COMPLETO EN TELÉFONOS
+                          const SizedBox(height: 100),
                         ],
                       ),
                     ),
@@ -160,11 +169,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: provider.isCameraPermissionGranted
-                    ? () => _navigateToARCity()
-                    : () => _showCameraPermissionDialog(),
-                icon: const Icon(Icons.camera_alt),
-                label: const Text('Vista AR'),
+                onPressed: () => _navigateToAvatarMode(),
+                icon: const Icon(Icons.person),
+                label: const Text('Modo Jugador'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
                   foregroundColor: Colors.white,
@@ -201,59 +208,120 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           animation: _gridAnimation,
           builder: (context, child) {
             final size = MediaQuery.of(context).size;
+            // ALTURA DINÁMICA PARA SCROLL EN ANDROID
+            final screenHeight = MediaQuery.of(context).size.height;
+            final isPhone = screenHeight < 800; // Detectar teléfonos
+            final contentHeight = isPhone ? 1400.0 : 1000.0; // Más altura en teléfonos para scroll
+            
             return SizedBox(
-              height: 700,
+              height: contentHeight,
               child: Stack(
                 children: [
+                  // Paisaje ondulado con montañas y valles
+                  Positioned.fill(
+                    child: RollingHillsTerrain(
+                      terrainSize: Size(size.width, 700),
+                    ),
+                  ),
+                  
+                  // Sol animado
                   _buildAnimatedSun(),
+                  
+                  // Globos flotantes
                   ..._buildFloatingBalloons(),
-                  ..._buildWalkingAnimals(),
+                  
+                  // Efectos de videojuego: partículas brillantes
+                  ..._buildSparkleEffects(),
+                  
+                  // Mariposas animadas
+                  ..._buildAnimatedButterflies(),
+
+                  // Avatar del jugador en el sendero
                   Positioned(
-                    left: (size.width - 40) / 2 - 25,
-                    top: 400 - 25,
+                    left: size.width * 0.15,
+                    top: 500,
                     child: Container(
-                      width: 50,
-                      height: 50,
+                      width: 45,
+                      height: 45,
                       decoration: BoxDecoration(
-                        color: Colors.blue[400],
+                        gradient: const RadialGradient(
+                          colors: [
+                            Color(0xFF42A5F5),
+                            Color(0xFF1976D2),
+                          ],
+                        ),
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 3),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
+                            color: Colors.black.withOpacity(0.4),
+                            blurRadius: 15,
+                            offset: const Offset(2, 8),
                           ),
                         ],
                       ),
                       child: const Icon(
                         Icons.child_care,
                         color: Colors.white,
-                        size: 28,
+                        size: 24,
                       ),
                     ),
                   ),
+                  
+                  // Casas coloridas distribuidas naturalmente por el terreno
                   ...sortedLetters.asMap().entries.map((entry) {
                     final index = entry.key;
                     final letter = entry.value;
-                    final delay = index * 0.1;
-                    final position = _calculatePathPosition(index, sortedLetters.length, size);
+                    // final delay = index * 0.08; // No se usa - reemplazado por alphabetDelay
+                    final position = _calculateOptimalPosition(index, sortedLetters.length, size);
+                    final elevation = position['elevation']!;
+                    final row = position['row']!.toInt();
+                    // final col = position['col']!.toInt(); // No se usa en este contexto
+                    
+                    // EFECTOS VISUALES MEJORADOS PARA CASAS GRANDES
+                    final depthScale = 1.0 - (row * 0.02); // Efecto profundidad más sutil
+                    final depthOpacity = 1.0 - (row * 0.015); // Transparencia muy sutil
+                    
+                    // ANIMACIÓN EN CASCADA ALFABÉTICA MEJORADA
+                    final alphabetDelay = index * 60; // Delay más rápido y fluido
 
                     return Positioned(
                       left: position['x'],
                       top: position['y'],
                       child: Transform.scale(
-                        scale: _gridAnimation.value,
+                        scale: _gridAnimation.value * depthScale.clamp(0.92, 1.0), // Escala más consistente
                         child: AnimatedOpacity(
-                          duration: Duration(milliseconds: 300 + (delay * 100).round()),
-                          opacity: _gridAnimation.value,
-                          child: SizedBox(
-                            width: position['size'],
-                            height: position['size']! * 1.3,
-                            child: LetterHouseWidget(
-                              letter: letter,
-                              showPhonetic: false, // Esto oculta el texto interno
+                          duration: Duration(milliseconds: 500 + alphabetDelay),
+                          opacity: (_gridAnimation.value * depthOpacity).clamp(0.0, 1.0), // Opacidad segura
+                          child: Container(
+                            // SOMBRAS MEJORADAS PARA CASAS GRANDES
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                // Sombra principal más prominente
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.25),
+                                  blurRadius: 12 + (elevation * 6), // Sombras más suaves y grandes
+                                  offset: Offset(
+                                    4 + (elevation * 3), // Sombra hacia la derecha
+                                    6 + (elevation * 4), // Sombra hacia abajo
+                                  ),
+                                ),
+                                // Sombra secundaria para más profundidad
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 20 + (elevation * 8),
+                                  offset: Offset(
+                                    6 + (elevation * 4),
+                                    8 + (elevation * 5),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            child: ReferenceStyleHouse(
+                              letter: letter.character,
+                              size: position['size']!,
                               onTap: () => _onLetterTap(letter.character),
+                              isUnlocked: letter.isUnlocked,
                             ),
                           ),
                         ),
@@ -269,33 +337,137 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Map<String, double> _calculatePathPosition(int index, int totalLetters, Size size) {
-    final parkWidth = size.width - 80; // Más margen
-    final baseSize = 60.0; // Casas un poco más pequeñas
+  Map<String, double> _calculateOptimalPosition(int index, int totalLetters, Size size) {
+    // Limpiar posiciones si es el primer elemento
+    if (index == 0) {
+      _occupiedPositions.clear();
+    }
     
-    // Configuración del paseo serpenteante
-    final housesPerRow = (parkWidth / (baseSize + 20)).floor(); // Espaciado de 20px entre casas
-    final rowHeight = baseSize + 30; // Espaciado vertical entre filas
+    // === CONFIGURACIÓN RESPONSIVA ===
+    final screenWidth = size.width;
+    final isSmallScreen = screenWidth < 400;
+    final isMediumScreen = screenWidth >= 400 && screenWidth < 600;
     
-    final row = index ~/ housesPerRow;
-    final col = index % housesPerRow;
+    // CASAS GRANDES Y RESPONSIVAS
+    double houseSize;
+    if (isSmallScreen) {
+      houseSize = 85.0;
+    } else if (isMediumScreen) {
+      houseSize = 95.0;
+    } else {
+      houseSize = 105.0;
+    }
     
-    // Alternar dirección en filas pares/impares para efecto serpenteante
-    final adjustedCol = row % 2 == 0 ? col : (housesPerRow - 1 - col);
+    final parkWidth = screenWidth - 40;
+    final parkHeight = 1200.0; // Mayor altura para acomodar scroll
     
-    // Posición base
-    final baseX = 40 + adjustedCol * (baseSize + 20);
-    final baseY = 50 + row * rowHeight;
+    // === DISEÑO TIPO COLINA NATURAL ===
+    // Crear un sendero alfabético serpenteante a través de colinas
     
-    // Añadir pequeña variación para efecto de sendero natural
-    final xVariation = (index % 3 - 1) * 5; // Variación de -5 a +5
-    final yVariation = (index % 2) * 3; // Pequeña variación vertical
+    // Progreso a lo largo del sendero alfabético (0.0 a 1.0)
+    final progress = index / (totalLetters - 1);
+    
+    // SENDERO SERPENTEANTE: zigzag natural a través del paisaje
+    final pathCenterX = parkWidth * 0.5; // Centro del sendero
+    final pathAmplitude = parkWidth * 0.35; // Qué tan ancho es el zigzag
+    
+    // Crear ondas múltiples para sendero natural
+    final wave1 = math.sin(progress * math.pi * 4) * pathAmplitude * 0.6;
+    final wave2 = math.cos(progress * math.pi * 2.5) * pathAmplitude * 0.3;
+    final wave3 = math.sin(progress * math.pi * 6) * pathAmplitude * 0.1;
+    
+    final baseX = pathCenterX + wave1 + wave2 + wave3;
+    
+    // DISTRIBUCIÓN VERTICAL TIPO COLINA
+    // Las casas suben y bajan como en colinas
+    final hillWave1 = math.sin(progress * math.pi * 3) * 80;
+    final hillWave2 = math.cos(progress * math.pi * 2) * 50;
+    final hillWave3 = math.sin(progress * math.pi * 5) * 30;
+    
+    final baseY = 150 + (progress * (parkHeight - 300)) + hillWave1 + hillWave2 + hillWave3;
+    
+    // SEPARACIÓN NATURAL - Evitar superposiciones
+    final minDistance = houseSize + 70.0; // Distancia mínima entre casas
+    
+    // Buscar posición libre con algoritmo de separación natural
+    double finalX = baseX;
+    double finalY = baseY;
+    int attempts = 0;
+    const maxAttempts = 50;
+    
+    while (attempts < maxAttempts && !_isPositionFree(finalX, finalY, houseSize)) {
+      // Mover en espiral desde la posición base
+      final angle = (attempts * 0.5) * math.pi;
+      final radius = (attempts * 8.0) + 20;
+      
+      finalX = baseX + math.cos(angle) * radius;
+      finalY = baseY + math.sin(angle) * radius;
+      
+      // Mantener dentro de los límites
+      finalX = finalX.clamp(houseSize / 2, parkWidth - houseSize / 2);
+      finalY = finalY.clamp(120.0, parkHeight - houseSize);
+      
+      attempts++;
+    }
+    
+    // Registrar posición ocupada
+    _occupiedPositions.add({
+      'x': finalX,
+      'y': finalY,
+      'size': houseSize,
+    });
+    
+    // Calcular elevación para efectos visuales
+    final elevation = (parkHeight - finalY) / parkHeight;
     
     return {
-      'x': baseX + xVariation,
-      'y': baseY + yVariation,
-      'size': baseSize,
+      'x': finalX,
+      'y': finalY,
+      'size': houseSize,
+      'row': (finalY / 120).floor().toDouble(), // Fila aproximada para efectos
+      'col': (finalX / 120).floor().toDouble(), // Columna aproximada
+      'elevation': elevation,
+      'progress': progress, // Progreso alfabético para debugging
     };
+  }
+  
+  bool _isPositionFree(double x, double y, double size) {
+    // VERIFICACIÓN DE COLISIONES PARA DISEÑO NATURAL DE COLINAS
+    
+    const padding = 75.0; // Padding generoso para separación natural
+    
+    for (final occupied in _occupiedPositions) {
+      final occupiedX = occupied['x']!;
+      final occupiedY = occupied['y']!;
+      final occupiedSize = occupied['size']!;
+      
+      // Verificación de distancia euclidiana
+      final distance = math.sqrt(
+        math.pow(x - occupiedX, 2) + math.pow(y - occupiedY, 2)
+      );
+      final minDistance = (size + occupiedSize) / 2 + padding;
+      
+      if (distance < minDistance) {
+        return false; // Muy cerca
+      }
+      
+      // Verificación adicional rectangular para mayor seguridad
+      final rect1 = Rect.fromCenter(
+        center: Offset(x, y), 
+        width: size + padding, 
+        height: size + padding
+      );
+      final rect2 = Rect.fromCenter(
+        center: Offset(occupiedX, occupiedY), 
+        width: occupiedSize + padding, 
+        height: occupiedSize + padding
+      );
+      
+      if (rect1.overlaps(rect2)) {
+        return false; // Superposición rectangular
+      }
+    }
+    return true; // Posición completamente libre
   }
 
   Widget _buildAnimatedSun() {
@@ -459,16 +631,122 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return balloons;
   }
 
-  List<Widget> _buildWalkingAnimals() {
-    final animals = <Widget>[];
-
-    animals.add(_buildWalkingCat(0, 150, Colors.orange[300]!, '🐱'));
-    animals.add(_buildWalkingCat(0.5, 250, Colors.grey[400]!, '🐱'));
-    animals.add(_buildWalkingDog(0.3, 350, Colors.brown[300]!, '🐶'));
-    animals.add(_buildWalkingDog(0.8, 450, Colors.yellow[700]!, '🐕'));
-
-    return animals;
+  List<Widget> _buildSparkleEffects() {
+    final sparkles = <Widget>[];
+    
+    // Partículas brillantes dispersas por el paisaje
+    for (int i = 0; i < 15; i++) {
+      sparkles.add(
+        AnimatedBuilder(
+          animation: _animatedElementsController,
+          builder: (context, child) {
+            final sparkleTime = (_animatedElementsController.value + i * 0.2) % 1.0;
+            final opacity = math.sin(sparkleTime * math.pi * 2) * 0.5 + 0.5;
+            final scale = 0.5 + math.sin(sparkleTime * math.pi * 3) * 0.3;
+            
+            return Positioned(
+              left: 50 + (i * 25) + math.sin(sparkleTime * math.pi * 4) * 10,
+              top: 200 + (i % 4) * 80 + math.cos(sparkleTime * math.pi * 3) * 15,
+              child: Transform.scale(
+                scale: scale,
+                child: Opacity(
+                  opacity: opacity,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [
+                          Colors.yellow[200]!,
+                          Colors.orange[300]!,
+                          Colors.pink[200]!,
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.yellow.withOpacity(0.6),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+    
+    return sparkles;
   }
+
+  List<Widget> _buildAnimatedButterflies() {
+    final butterflies = <Widget>[];
+    
+    for (int i = 0; i < 4; i++) {
+      butterflies.add(
+        AnimatedBuilder(
+          animation: _animatedElementsController,
+          builder: (context, child) {
+            final progress = (_animatedElementsController.value + i * 0.25) % 1.0;
+            final size = MediaQuery.of(context).size;
+            
+            // Movimiento en figura de 8
+            final x = size.width * 0.2 + 
+                     math.sin(progress * math.pi * 2) * 100 +
+                     i * size.width * 0.2;
+            final y = 300 + 
+                     math.sin(progress * math.pi * 4) * 60 +
+                     math.cos(progress * math.pi * 2) * 40;
+            
+            final flutter = math.sin(progress * math.pi * 20) * 0.1 + 1.0;
+            
+            return Positioned(
+              left: x,
+              top: y,
+              child: Transform.scale(
+                scale: flutter,
+                child: Container(
+                  width: 20,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.purple[300]!,
+                        Colors.pink[200]!,
+                        Colors.orange[200]!,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.purple.withOpacity(0.3),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Text(
+                      '🦋',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+    
+    return butterflies;
+  }
+
+
 
   Widget _buildWalkingCat(double offset, double baseY, Color color, String emoji) {
     return AnimatedBuilder(
@@ -565,33 +843,123 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => LetterDetailsScreen(letter: letter),
+          builder: (context) => InteractiveLetterGamesScreen(letter: letter),
         ),
       );
     }
   }
 
-  void _navigateToARCity() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const ARCityScreen(),
-      ),
-    );
+  void _navigateToAvatarMode() {
+    _showAvatarModeDialog();
   }
 
-  void _showCameraPermissionDialog() {
+  void _showAvatarModeDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Permiso de Cámara'),
-        content: const Text(
-          'Para usar la realidad aumentada necesitamos acceso a tu cámara.',
+        title: Row(
+          children: [
+            Icon(Icons.person, color: Colors.blue[600], size: 28),
+            const SizedBox(width: 8),
+            const Text('Modo Jugador'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                gradient: const RadialGradient(
+                  colors: [
+                    Color(0xFF42A5F5),
+                    Color(0xFF1976D2),
+                  ],
+                ),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 4),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.child_care,
+                color: Colors.white,
+                size: 60,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '¡Hola ${context.read<LetterCityProvider>().playerName.isNotEmpty ? context.read<LetterCityProvider>().playerName : 'pequeño explorador'}!',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1976D2),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Soy Luna, tu guía en este parque mágico de letras. ¿Estás listo para una nueva aventura de aprendizaje?',
+              style: TextStyle(fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue[200]!),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.star, color: Colors.amber[600], size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Estrellas: ${context.read<LetterCityProvider>().totalStars}',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.school, color: Colors.green[600], size: 20),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Nivel: Explorador Principiante',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Entendido'),
+            child: const Text('Cerrar'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _audioService.speakText('¡Genial! Vamos a explorar juntos las casitas de las letras. ¡Toca cualquier casa que te llame la atención!');
+            },
+            icon: const Icon(Icons.play_arrow),
+            label: const Text('¡Vamos a Jugar!'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+            ),
           ),
         ],
       ),
