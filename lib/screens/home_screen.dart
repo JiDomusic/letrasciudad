@@ -55,6 +55,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void dispose() {
     _gridAnimationController.dispose();
     _animatedElementsController.dispose();
+    // DETENER VOZ AL SALIR DE LA PÁGINA PRINCIPAL
+    _audioService.stop();
     super.dispose();
   }
 
@@ -93,9 +95,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   const ProgressHeader(),
                   Expanded(
                     child: SingleChildScrollView(
-                      // CONFIGURACIÓN OPTIMIZADA PARA ANDROID
+                      // SCROLL VERTICAL PRINCIPAL
                       padding: const EdgeInsets.all(16),
-                      physics: const BouncingScrollPhysics(), // Scroll suave tipo iOS
+                      physics: const BouncingScrollPhysics(),
                       scrollDirection: Axis.vertical,
                       child: Column(
                         children: [
@@ -103,8 +105,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           const SizedBox(height: 20),
                           _buildActionButtons(),
                           const SizedBox(height: 20),
+                          // GRID DE LETRAS SIN SCROLL HORIZONTAL
                           _buildLetterGrid(),
-                          // ESPACIO EXTRA PARA SCROLL COMPLETO EN TELÉFONOS
+                          // ESPACIO EXTRA PARA SCROLL COMPLETO
                           const SizedBox(height: 100),
                         ],
                       ),
@@ -201,8 +204,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildLetterGrid() {
     return Consumer<LetterCityProvider>(
       builder: (context, provider, child) {
-        final sortedLetters = List.from(provider.letters)
-          ..sort((a, b) => a.character.compareTo(b.character));
+        // USAR ORDEN ALFABÉTICO ESPAÑOL CORRECTO (tal como está definido en letters_data.dart)
+        final sortedLetters = List.from(provider.letters);
 
         return AnimatedBuilder(
           animation: _gridAnimation,
@@ -211,18 +214,37 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             // ALTURA DINÁMICA PARA SCROLL EN ANDROID
             final screenHeight = MediaQuery.of(context).size.height;
             final isPhone = screenHeight < 800; // Detectar teléfonos
-            final contentHeight = isPhone ? 1400.0 : 1000.0; // Más altura en teléfonos para scroll
+            // ALTURA SIMPLE Y DIRECTA
+            final lettersPerRow = size.width < 500 ? 5 : 6;
+            final totalRows = (27 / lettersPerRow).ceil(); // 27 letras total incluyendo Ñ
+            final rowHeight = 180.0; 
+            final baseHeight = 150.0; // Espacio superior
+            final extraSpace = 300.0; // Espacio extra para scroll
+            final contentHeight = baseHeight + (totalRows * rowHeight) + extraSpace;
             
             return SizedBox(
+              width: size.width, // Solo el ancho visible de la pantalla
               height: contentHeight,
               child: Stack(
                 children: [
-                  // Paisaje ondulado con montañas y valles
+                  // COLINAS Y LOMAS DEL PARQUE
+                  ..._buildParkHills(size),
+                  
+                  // Paisaje de parque real con senderos y áreas verdes
                   Positioned.fill(
                     child: RollingHillsTerrain(
-                      terrainSize: Size(size.width, 700),
+                      terrainSize: Size(size.width, 800),
                     ),
                   ),
+                  
+                  // Senderos curvos del parque
+                  ..._buildParkPaths(size),
+                  
+                  // Carrusel central divertido
+                  _buildCentralPlayground(size),
+                  
+                  // Árboles decorativos
+                  ..._buildParkTrees(size),
                   
                   // Sol animado
                   _buildAnimatedSun(),
@@ -236,58 +258,62 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   // Mariposas animadas
                   ..._buildAnimatedButterflies(),
 
-                  // Avatar del jugador en el sendero
-                  Positioned(
-                    left: size.width * 0.15,
-                    top: 500,
-                    child: Container(
-                      width: 45,
-                      height: 45,
-                      decoration: BoxDecoration(
-                        gradient: const RadialGradient(
-                          colors: [
-                            Color(0xFF42A5F5),
-                            Color(0xFF1976D2),
-                          ],
-                        ),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.4),
-                            blurRadius: 15,
-                            offset: const Offset(2, 8),
+                  // Avatar del jugador caminando por el sendero del parque
+                  AnimatedBuilder(
+                    animation: _animatedElementsController,
+                    builder: (context, child) {
+                      final walkBounce = math.sin(_animatedElementsController.value * 6 * math.pi) * 3;
+                      return Positioned(
+                        left: size.width * 0.2,
+                        top: 200 + walkBounce,
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            gradient: const RadialGradient(
+                              colors: [
+                                Color(0xFF42A5F5),
+                                Color(0xFF1976D2),
+                              ],
+                            ),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.3),
+                                blurRadius: 20,
+                                offset: const Offset(2, 8),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.child_care,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
+                          child: const Icon(
+                            Icons.child_care,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   
                   // Casas coloridas distribuidas naturalmente por el terreno
                   ...sortedLetters.asMap().entries.map((entry) {
                     final index = entry.key;
                     final letter = entry.value;
-                    // final delay = index * 0.08; // No se usa - reemplazado por alphabetDelay
                     final position = _calculateOptimalPosition(index, sortedLetters.length, size);
-                    final elevation = position['elevation']!;
-                    final row = position['row']!.toInt();
-                    // final col = position['col']!.toInt(); // No se usa en este contexto
+                    final elevation = position['elevation'] ?? 0.0;
+                    final zone = position['zone'] ?? 0;
                     
                     // EFECTOS VISUALES MEJORADOS PARA CASAS GRANDES
-                    final depthScale = 1.0 - (row * 0.02); // Efecto profundidad más sutil
-                    final depthOpacity = 1.0 - (row * 0.015); // Transparencia muy sutil
+                    final depthScale = 1.0 - (zone * 0.02); // Efecto profundidad basado en zona
+                    final depthOpacity = 1.0 - (zone * 0.015); // Transparencia basada en zona
                     
                     // ANIMACIÓN EN CASCADA ALFABÉTICA MEJORADA
                     final alphabetDelay = index * 60; // Delay más rápido y fluido
 
                     return Positioned(
-                      left: position['x'],
-                      top: position['y'],
+                      left: position['x'] ?? 0.0,
+                      top: position['y'] ?? 0.0,
                       child: Transform.scale(
                         scale: _gridAnimation.value * depthScale.clamp(0.92, 1.0), // Escala más consistente
                         child: AnimatedOpacity(
@@ -319,7 +345,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ),
                             child: ReferenceStyleHouse(
                               letter: letter.character,
-                              size: position['size']!,
+                              size: position['size'] ?? 75.0,
                               onTap: () => _onLetterTap(letter.character),
                               isUnlocked: letter.isUnlocked,
                             ),
@@ -343,91 +369,78 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _occupiedPositions.clear();
     }
     
-    // === CONFIGURACIÓN RESPONSIVA ===
+    // === CONFIGURACIÓN SIMPLE Y SEGURA ===
     final screenWidth = size.width;
-    final isSmallScreen = screenWidth < 400;
-    final isMediumScreen = screenWidth >= 400 && screenWidth < 600;
+    final screenHeight = size.height;
+    final houseSize = 70.0; // Tamaño fijo más pequeño
     
-    // CASAS GRANDES Y RESPONSIVAS
-    double houseSize;
-    if (isSmallScreen) {
-      houseSize = 85.0;
-    } else if (isMediumScreen) {
-      houseSize = 95.0;
-    } else {
-      houseSize = 105.0;
-    }
+    // MÁRGENES MUY SEGUROS
+    final marginX = houseSize; // Margen igual al tamaño de casa
+    final marginY = houseSize; // Margen igual al tamaño de casa
+    final safeWidth = screenWidth - (marginX * 2); // Ancho seguro
+    final safeHeight = math.min(800.0, screenHeight - 300.0); // Altura controlada
     
-    final parkWidth = screenWidth - 40;
-    final parkHeight = 1200.0; // Mayor altura para acomodar scroll
+    // === DISTRIBUCIÓN EN FILAS Y COLUMNAS ORGÁNICAS ===
+    final housesPerRow = (safeWidth / (houseSize * 1.5)).floor().clamp(3, 6); // Entre 3 y 6 casas por fila
+    final currentRow = (index / housesPerRow).floor();
+    final currentCol = index % housesPerRow;
     
-    // === DISEÑO TIPO COLINA NATURAL ===
-    // Crear un sendero alfabético serpenteante a través de colinas
+    // POSICIÓN BASE EN GRID ORGÁNICO
+    final baseX = marginX + (currentCol * (safeWidth / (housesPerRow - 1)));
+    final baseY = marginY + (currentRow * (houseSize * 1.8));
     
-    // Progreso a lo largo del sendero alfabético (0.0 a 1.0)
-    final progress = index / (totalLetters - 1);
+    // VARIACIONES ORGÁNICAS PEQUEÑAS (mantienen orden alfabético)
+    final personalityX = ((index * 17 + 5) % 40) - 20; // ±20px máximo
+    final personalityY = ((index * 23 + 7) % 30) - 15; // ±15px máximo
     
-    // SENDERO SERPENTEANTE: zigzag natural a través del paisaje
-    final pathCenterX = parkWidth * 0.5; // Centro del sendero
-    final pathAmplitude = parkWidth * 0.35; // Qué tan ancho es el zigzag
+    // POSICIÓN TENTATIVA
+    double tentativeX = baseX + personalityX;
+    double tentativeY = baseY + personalityY;
     
-    // Crear ondas múltiples para sendero natural
-    final wave1 = math.sin(progress * math.pi * 4) * pathAmplitude * 0.6;
-    final wave2 = math.cos(progress * math.pi * 2.5) * pathAmplitude * 0.3;
-    final wave3 = math.sin(progress * math.pi * 6) * pathAmplitude * 0.1;
+    // FORZAR LÍMITES ESTRICTOS - NUNCA salir de la pantalla
+    final minX = marginX;
+    final maxX = screenWidth - marginX - houseSize;
+    final minY = marginY + 100; // Espacio para header
+    final maxY = minY + safeHeight - houseSize;
     
-    final baseX = pathCenterX + wave1 + wave2 + wave3;
+    tentativeX = tentativeX.clamp(minX, maxX);
+    tentativeY = tentativeY.clamp(minY, maxY);
     
-    // DISTRIBUCIÓN VERTICAL TIPO COLINA
-    // Las casas suben y bajan como en colinas
-    final hillWave1 = math.sin(progress * math.pi * 3) * 80;
-    final hillWave2 = math.cos(progress * math.pi * 2) * 50;
-    final hillWave3 = math.sin(progress * math.pi * 5) * 30;
-    
-    final baseY = 150 + (progress * (parkHeight - 300)) + hillWave1 + hillWave2 + hillWave3;
-    
-    // SEPARACIÓN NATURAL - Evitar superposiciones
-    final minDistance = houseSize + 70.0; // Distancia mínima entre casas
-    
-    // Buscar posición libre con algoritmo de separación natural
-    double finalX = baseX;
-    double finalY = baseY;
+    // VERIFICACIÓN DE COLISIONES Y AJUSTE
     int attempts = 0;
-    const maxAttempts = 50;
-    
-    while (attempts < maxAttempts && !_isPositionFree(finalX, finalY, houseSize)) {
-      // Mover en espiral desde la posición base
-      final angle = (attempts * 0.5) * math.pi;
-      final radius = (attempts * 8.0) + 20;
+    while (attempts < 10 && !_isPositionFree(tentativeX, tentativeY, houseSize)) {
+      // Si hay colisión, mover ligeramente
+      tentativeX += (attempts % 2 == 0) ? 30 : -30;
+      tentativeY += (attempts > 5) ? 40 : 0;
       
-      finalX = baseX + math.cos(angle) * radius;
-      finalY = baseY + math.sin(angle) * radius;
-      
-      // Mantener dentro de los límites
-      finalX = finalX.clamp(houseSize / 2, parkWidth - houseSize / 2);
-      finalY = finalY.clamp(120.0, parkHeight - houseSize);
+      // Re-aplicar límites después del ajuste
+      tentativeX = tentativeX.clamp(minX, maxX);
+      tentativeY = tentativeY.clamp(minY, maxY);
       
       attempts++;
     }
     
-    // Registrar posición ocupada
+    // REGISTRAR POSICIÓN OCUPADA
     _occupiedPositions.add({
-      'x': finalX,
-      'y': finalY,
+      'x': tentativeX,
+      'y': tentativeY,
       'size': houseSize,
     });
     
-    // Calcular elevación para efectos visuales
-    final elevation = (parkHeight - finalY) / parkHeight;
+    // CALCULAR ZONA BASADA EN FILA
+    final zone = (currentRow / 2).floor().clamp(0, 3).toDouble();
+    final elevation = 1.0 - (currentRow / 10.0).clamp(0.0, 1.0);
     
     return {
-      'x': finalX,
-      'y': finalY,
+      'x': tentativeX,
+      'y': tentativeY,
       'size': houseSize,
-      'row': (finalY / 120).floor().toDouble(), // Fila aproximada para efectos
-      'col': (finalX / 120).floor().toDouble(), // Columna aproximada
+      'walkProgress': index / (totalLetters - 1),
       'elevation': elevation,
-      'progress': progress, // Progreso alfabético para debugging
+      'zone': zone,
+      'progress': index / (totalLetters - 1),
+      'row': currentRow.toDouble(),
+      'col': currentCol.toDouble(),
     };
   }
   
@@ -1099,6 +1112,401 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
+
+  // Métodos para crear elementos del parque real tipo videojuego
+  List<Widget> _buildParkPaths(Size size) {
+    return [
+      // Sendero principal curvo
+      Positioned(
+        top: 150,
+        left: size.width * 0.1,
+        child: CustomPaint(
+          size: Size(size.width * 0.8, 400),
+          painter: _CurvedPathPainter(),
+        ),
+      ),
+      // Sendero secundario en forma de 8
+      Positioned(
+        top: 600,
+        left: size.width * 0.2,
+        child: CustomPaint(
+          size: Size(size.width * 0.6, 300),
+          painter: _FigureEightPathPainter(),
+        ),
+      ),
+    ];
+  }
+
+  Widget _buildCentralPlayground(Size size) {
+    return AnimatedBuilder(
+      animation: _animatedElementsController,
+      builder: (context, child) {
+        final bounce = math.sin(_animatedElementsController.value * 2 * math.pi) * 3;
+        return Positioned(
+          left: size.width * 0.5 - 50,
+          top: 450,
+          child: Container(
+            width: 100,
+            height: 80,
+            child: Stack(
+              children: [
+                // CARRUSEL DIVERTIDO
+                Positioned(
+                  left: 20,
+                  top: 10 + bounce,
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [
+                          Colors.pink[300]!,
+                          Colors.purple[400]!,
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      children: [
+                        // Rayitas del carrusel que giran
+                        ...List.generate(8, (index) {
+                          final angle = (index / 8) * 2 * math.pi + _animatedElementsController.value * 2 * math.pi;
+                          return Positioned(
+                            left: 30 + math.cos(angle) * 20 - 1,
+                            top: 30 + math.sin(angle) * 20 - 8,
+                            child: Container(
+                              width: 2,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                color: Colors.yellow[300],
+                                borderRadius: BorderRadius.circular(1),
+                              ),
+                            ),
+                          );
+                        }),
+                        Center(
+                          child: Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.child_friendly,
+                              color: Colors.pink[400],
+                              size: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // BANDERITAS DECORATIVAS
+                ...List.generate(3, (index) {
+                  final flagColors = [Colors.red[400]!, Colors.blue[400]!, Colors.green[400]!];
+                  return Positioned(
+                    left: 10 + index * 30.0,
+                    top: -5 + math.sin(_animatedElementsController.value * 3 * math.pi + index) * 2,
+                    child: Container(
+                      width: 8,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: flagColors[index],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  List<Widget> _buildParkTrees(Size size) {
+    final trees = <Widget>[];
+    final treePositions = [
+      {'x': 0.1, 'y': 200.0, 'size': 60.0},
+      {'x': 0.9, 'y': 180.0, 'size': 70.0},
+      {'x': 0.15, 'y': 500.0, 'size': 55.0},
+      {'x': 0.85, 'y': 520.0, 'size': 65.0},
+      {'x': 0.05, 'y': 800.0, 'size': 50.0},
+      {'x': 0.95, 'y': 820.0, 'size': 60.0},
+      {'x': 0.2, 'y': 1000.0, 'size': 55.0},
+      {'x': 0.8, 'y': 1020.0, 'size': 65.0},
+    ];
+
+    for (int i = 0; i < treePositions.length; i++) {
+      final pos = treePositions[i];
+      trees.add(
+        AnimatedBuilder(
+          animation: _animatedElementsController,
+          builder: (context, child) {
+            final sway = math.sin(_animatedElementsController.value * 2 * math.pi + i * 0.5) * 3;
+            return Positioned(
+              left: size.width * (pos['x']! as double) - (pos['size']! as double) / 2,
+              top: (pos['y']! as double) + sway,
+              child: Container(
+                width: pos['size']! as double,
+                height: (pos['size']! as double) * 1.2,
+                child: Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    // Tronco
+                    Positioned(
+                      bottom: 0,
+                      child: Container(
+                        width: (pos['size']! as double) * 0.2,
+                        height: (pos['size']! as double) * 0.5,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF8B4513),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                      ),
+                    ),
+                    // Copa del árbol con frutas
+                    Positioned(
+                      bottom: (pos['size']! as double) * 0.3,
+                      child: Container(
+                        width: pos['size']! as double,
+                        height: (pos['size']! as double) * 0.8,
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            colors: [
+                              const Color(0xFF32CD32),
+                              const Color(0xFF228B22),
+                            ],
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 8,
+                              offset: const Offset(2, 4),
+                            ),
+                          ],
+                        ),
+                        child: Stack(
+                          children: [
+                            // FRUTAS EN EL ÁRBOL
+                            ...List.generate(4, (fruitIndex) {
+                              final fruits = ['🍎', '🍊', '🍋', '🍒'];
+                              final fruitAngles = [0.5, 1.2, 2.1, 3.4];
+                              final radius = (pos['size']! as double) * 0.3;
+                              return Positioned(
+                                left: (pos['size']! as double) * 0.5 + math.cos(fruitAngles[fruitIndex]) * radius - 8,
+                                top: (pos['size']! as double) * 0.4 + math.sin(fruitAngles[fruitIndex]) * radius - 8,
+                                child: Text(
+                                  fruits[fruitIndex % fruits.length],
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+    return trees;
+  }
+
+  // COLINAS Y LOMAS DIVERTIDAS DEL PARQUE
+  List<Widget> _buildParkHills(Size size) {
+    return [
+      // Colina izquierda
+      Positioned(
+        left: -50,
+        top: 200,
+        child: Container(
+          width: 200,
+          height: 120,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                const Color(0xFF7CB342),
+                const Color(0xFF8BC34A),
+              ],
+            ),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(100),
+              topRight: Radius.circular(100),
+            ),
+          ),
+        ),
+      ),
+      // Colina central
+      Positioned(
+        left: size.width * 0.3,
+        top: 300,
+        child: Container(
+          width: 180,
+          height: 100,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                const Color(0xFF689F38),
+                const Color(0xFF7CB342),
+              ],
+            ),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(90),
+              topRight: Radius.circular(90),
+            ),
+          ),
+        ),
+      ),
+      // Colina derecha
+      Positioned(
+        right: -30,
+        top: 250,
+        child: Container(
+          width: 160,
+          height: 90,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                const Color(0xFF8BC34A),
+                const Color(0xFF9CCC65),
+              ],
+            ),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(80),
+              topRight: Radius.circular(80),
+            ),
+          ),
+        ),
+      ),
+      // Loma trasera
+      Positioned(
+        left: size.width * 0.1,
+        top: 600,
+        child: Container(
+          width: size.width * 0.8,
+          height: 150,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                const Color(0xFF7CB342),
+                const Color(0xFF689F38),
+              ],
+            ),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(200),
+              topRight: Radius.circular(200),
+            ),
+          ),
+        ),
+      ),
+    ];
+  }
+}
+
+// Pintores personalizados para senderos curvos
+class _CurvedPathPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFDEB887).withOpacity(0.7)
+      ..strokeWidth = 25
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path();
+    path.moveTo(0, size.height * 0.8);
+    
+    // Sendero en S suave
+    path.quadraticBezierTo(
+      size.width * 0.3, size.height * 0.2,
+      size.width * 0.6, size.height * 0.5,
+    );
+    path.quadraticBezierTo(
+      size.width * 0.8, size.height * 0.7,
+      size.width, size.height * 0.3,
+    );
+    
+    canvas.drawPath(path, paint);
+    
+    // Bordes del sendero
+    paint.color = const Color(0xFFCD853F);
+    paint.strokeWidth = 30;
+    canvas.drawPath(path, paint);
+    
+    paint.color = const Color(0xFFDEB887);
+    paint.strokeWidth = 20;
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _FigureEightPathPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFDEB887).withOpacity(0.6)
+      ..strokeWidth = 20
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path();
+    // Figura de 8 acostada (∞)
+    path.moveTo(size.width * 0.2, size.height * 0.5);
+    
+    // Primera curva
+    path.cubicTo(
+      size.width * 0.3, size.height * 0.2,
+      size.width * 0.7, size.height * 0.2,
+      size.width * 0.8, size.height * 0.5,
+    );
+    
+    // Cruce central
+    path.cubicTo(
+      size.width * 0.7, size.height * 0.8,
+      size.width * 0.3, size.height * 0.8,
+      size.width * 0.2, size.height * 0.5,
+    );
+    
+    canvas.drawPath(path, paint);
+    
+    // Bordes
+    paint.color = const Color(0xFFCD853F);
+    paint.strokeWidth = 25;
+    canvas.drawPath(path, paint);
+    
+    paint.color = const Color(0xFFDEB887);
+    paint.strokeWidth = 15;
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _ParkBackgroundPainter extends CustomPainter {

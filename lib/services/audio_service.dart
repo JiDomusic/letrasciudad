@@ -182,6 +182,11 @@ class AudioService {
     }
   }
 
+  // Método abreviado para detener sonidos al navegar
+  Future<void> stop() async {
+    await stopAllSounds();
+  }
+
   Future<void> setVolume(double volume) async {
     _volume = volume.clamp(0.0, 1.0);
     await _flutterTts.setVolume(_volume);

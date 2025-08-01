@@ -8,7 +8,12 @@
       "Bash(ss:*)",
       "Bash(grep:*)",
       "Bash(python3:*)",
-      "Bash(dart fix:*)"
+      "Bash(dart fix:*)",
+      "Bash(rm:*)",
+      "Bash(dart analyze:*)",
+      "Bash(find:*)",
+      "Bash(/home/jido/Android/Sdk/emulator/emulator -list-avds)",
+      "Bash(export:*)"
     ],
     "deny": []
   }
