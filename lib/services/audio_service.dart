@@ -16,84 +16,23 @@ class AudioService {
     if (_isInitialized) return;
 
     try {
+      debugPrint('🎤 Inicializando AudioService...');
+      debugPrint('🌐 Plataforma: ${kIsWeb ? "Web" : "Móvil"}');
+      
+      // Configuración básica universal
       await _flutterTts.setLanguage("es-ES");
-      await _flutterTts.setSpeechRate(_speechRate);
-      await _flutterTts.setVolume(_volume);
-      await _flutterTts.setPitch(_speechPitch);
+      await _flutterTts.setSpeechRate(0.8);
+      await _flutterTts.setVolume(1.0);
+      await _flutterTts.setPitch(1.3);
       
-      if (!kIsWeb) {
-        // Buscar voces femeninas animadas para personaje de dibujos
-        final voices = await _flutterTts.getVoices;
-        if (voices != null) {
-          // Prioridad 1: Voces femeninas jóvenes y expresivas en español
-          var preferredVoices = voices.where((voice) => 
-            (voice['name']?.toString().toLowerCase().contains('female') == true ||
-             voice['name']?.toString().toLowerCase().contains('mujer') == true ||
-             voice['name']?.toString().toLowerCase().contains('woman') == true ||
-             voice['name']?.toString().toLowerCase().contains('girl') == true ||
-             voice['name']?.toString().toLowerCase().contains('young') == true ||
-             voice['name']?.toString().toLowerCase().contains('elena') == true ||
-             voice['name']?.toString().toLowerCase().contains('sofia') == true ||
-             voice['name']?.toString().toLowerCase().contains('maria') == true ||
-             voice['name']?.toString().toLowerCase().contains('lucia') == true ||
-             voice['name']?.toString().toLowerCase().contains('carmen') == true) &&
-             voice['locale']?.toString().startsWith('es') == true &&
-             !(voice['name']?.toString().toLowerCase().contains('old') ?? false) &&
-             !(voice['name']?.toString().toLowerCase().contains('senior') ?? false)
-          ).toList();
-          
-          // Prioridad 2: Cualquier voz femenina en español si no hay específicas
-          if (preferredVoices.isEmpty) {
-            preferredVoices = voices.where((voice) => 
-              (voice['name']?.toString().toLowerCase().contains('female') == true ||
-               voice['name']?.toString().toLowerCase().contains('woman') == true) &&
-               voice['locale']?.toString().startsWith('es') == true
-            ).toList();
-          }
-          
-          if (preferredVoices.isNotEmpty) {
-            await _flutterTts.setVoice(preferredVoices.first);
-            debugPrint('Usando voz animada femenina: ${preferredVoices.first['name']}');
-          } else {
-            // Buscar cualquier voz en español
-            final spanishVoices = voices.where((voice) => 
-              voice['locale']?.toString().startsWith('es') == true
-            ).toList();
-            
-            if (spanishVoices.isNotEmpty) {
-              await _flutterTts.setVoice(spanishVoices.first);
-              debugPrint('Usando voz en español: ${spanishVoices.first['name']}');
-            }
-          }
-        }
-      } else {
-        // En web, configurar voz femenina española expresiva
-        try {
-          await _flutterTts.setVoice({
-            "name": "Microsoft Helena - Spanish (Spain)",
-            "locale": "es-ES"
-          });
-          debugPrint('Usando Helena (voz femenina española)');
-        } catch (e) {
-          try {
-            await _flutterTts.setVoice({
-              "name": "Google español",
-              "locale": "es-ES"
-            });
-            debugPrint('Usando Google español (femenina)');
-          } catch (e2) {
-            await _flutterTts.setVoice({
-              "name": "es-ES",
-              "locale": "es-ES"
-            });
-            debugPrint('Usando voz española por defecto');
-          }
-        }
-      }
       
-      await _flutterTts.awaitSpeakCompletion(true);
+      // Probar hablar inmediatamente para verificar funcionamiento
+      debugPrint('🧪 Probando TTS con texto simple...');
+      await _flutterTts.speak("Test");
+      await Future.delayed(const Duration(milliseconds: 500));
       
       _isInitialized = true;
+      debugPrint('✅ AudioService inicializado correctamente');
     } catch (e) {
       debugPrint('Error initializing AudioService: $e');
     }
@@ -118,12 +57,28 @@ class AudioService {
   }
 
   Future<void> speakText(String text) async {
-    await initialize();
-    
     try {
+      debugPrint('🎤 Intentando hablar: "$text"');
+      debugPrint('🎤 TTS inicializado: $_isInitialized');
+      
+      if (!_isInitialized) {
+        debugPrint('⚠️ TTS no inicializado, inicializando...');
+        await initialize();
+      }
+      
+      // Configurar parámetros básicos
+      await _flutterTts.setLanguage("es-ES");
+      await _flutterTts.setSpeechRate(0.8);
+      await _flutterTts.setPitch(1.3);
+      await _flutterTts.setVolume(1.0);
+      
+      debugPrint('✅ Parámetros configurados, hablando...');
       await _flutterTts.speak(text);
+      debugPrint('✅ Comando speak enviado');
+      
     } catch (e) {
-      debugPrint('Error speaking text: $text, Error: $e');
+      debugPrint('❌ Error completo hablando: $e');
+      debugPrint('❌ Stack trace: ${StackTrace.current}');
     }
   }
 

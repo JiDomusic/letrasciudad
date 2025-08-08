@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../providers/letter_city_provider.dart';
 import '../services/audio_service.dart';
 // import 'letter_details_screen.dart'; // No se usa actualmente
 import 'interactive_letter_games_screen.dart';
+import 'letter_park_3d_screen.dart';
+// import 'first_person_park_screen.dart'; // Removido
 import '../widgets/progress_header.dart';
 import '../widgets/reference_style_house.dart';
 import '../widgets/rolling_hills_terrain.dart';
@@ -168,32 +171,40 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildActionButtons() {
     return Consumer<LetterCityProvider>(
       builder: (context, provider, child) {
-        return Row(
+        return Column(
           children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () => _navigateToAvatarMode(),
-                icon: const Icon(Icons.person),
-                label: const Text('Modo Jugador'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _navigateToAvatarMode(),
+                    icon: const Icon(Icons.person),
+                    label: const Text('Modo Jugador'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () => _showSettingsDialog(),
-                icon: const Icon(Icons.settings),
-                label: const Text('Configurar'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6B7280),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _navigateTo3DPark(),
+                    icon: const Icon(Icons.threesixty),
+                    label: const Text('Parque 3D'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF8B5CF6),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
         );
@@ -205,7 +216,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Consumer<LetterCityProvider>(
       builder: (context, provider, child) {
         // USAR ORDEN ALFABÉTICO ESPAÑOL CORRECTO (tal como está definido en letters_data.dart)
-        final sortedLetters = List.from(provider.letters);
+        // Ordenar las letras según el alfabeto español correcto (A-Z, con Ñ entre N y O)
+        const spanishAlphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'Ñ', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+        final sortedLetters = List.from(provider.letters)
+          ..sort((a, b) {
+            final indexA = spanishAlphabet.indexOf(a.character.toUpperCase());
+            final indexB = spanishAlphabet.indexOf(b.character.toUpperCase());
+            return indexA.compareTo(indexB);
+          });
 
         return AnimatedBuilder(
           animation: _gridAnimation,
@@ -369,79 +387,213 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _occupiedPositions.clear();
     }
     
-    // === CONFIGURACIÓN SIMPLE Y SEGURA ===
     final screenWidth = size.width;
     final screenHeight = size.height;
-    final houseSize = 70.0; // Tamaño fijo más pequeño
+    final isMobile = screenWidth < 600;
     
-    // MÁRGENES MUY SEGUROS
-    final marginX = houseSize; // Margen igual al tamaño de casa
-    final marginY = houseSize; // Margen igual al tamaño de casa
-    final safeWidth = screenWidth - (marginX * 2); // Ancho seguro
-    final safeHeight = math.min(800.0, screenHeight - 300.0); // Altura controlada
-    
-    // === DISTRIBUCIÓN EN FILAS Y COLUMNAS ORGÁNICAS ===
-    final housesPerRow = (safeWidth / (houseSize * 1.5)).floor().clamp(3, 6); // Entre 3 y 6 casas por fila
-    final currentRow = (index / housesPerRow).floor();
-    final currentCol = index % housesPerRow;
-    
-    // POSICIÓN BASE EN GRID ORGÁNICO
-    final baseX = marginX + (currentCol * (safeWidth / (housesPerRow - 1)));
-    final baseY = marginY + (currentRow * (houseSize * 1.8));
-    
-    // VARIACIONES ORGÁNICAS PEQUEÑAS (mantienen orden alfabético)
-    final personalityX = ((index * 17 + 5) % 40) - 20; // ±20px máximo
-    final personalityY = ((index * 23 + 7) % 30) - 15; // ±15px máximo
-    
-    // POSICIÓN TENTATIVA
-    double tentativeX = baseX + personalityX;
-    double tentativeY = baseY + personalityY;
-    
-    // FORZAR LÍMITES ESTRICTOS - NUNCA salir de la pantalla
-    final minX = marginX;
-    final maxX = screenWidth - marginX - houseSize;
-    final minY = marginY + 100; // Espacio para header
-    final maxY = minY + safeHeight - houseSize;
-    
-    tentativeX = tentativeX.clamp(minX, maxX);
-    tentativeY = tentativeY.clamp(minY, maxY);
-    
-    // VERIFICACIÓN DE COLISIONES Y AJUSTE
-    int attempts = 0;
-    while (attempts < 10 && !_isPositionFree(tentativeX, tentativeY, houseSize)) {
-      // Si hay colisión, mover ligeramente
-      tentativeX += (attempts % 2 == 0) ? 30 : -30;
-      tentativeY += (attempts > 5) ? 40 : 0;
-      
-      // Re-aplicar límites después del ajuste
-      tentativeX = tentativeX.clamp(minX, maxX);
-      tentativeY = tentativeY.clamp(minY, maxY);
-      
-      attempts++;
+    if (isMobile) {
+      // === MÓVIL: ALINEADO Y ORDENADO ===
+      return _calculateMobilePosition(index, totalLetters, size);
+    } else {
+      // === WEB: DISPERSO PERO ORDENADO ===
+      return _calculateWebPosition(index, totalLetters, size);
     }
+  }
+  
+  // POSICIONAMIENTO MÓVIL: ORGÁNICO PERO CON ORDEN ALFABÉTICO VISUAL
+  Map<String, double> _calculateMobilePosition(int index, int totalLetters, Size size) {
+    final screenWidth = size.width;
+    final screenHeight = size.height;
+    final houseSize = 55.0;
     
-    // REGISTRAR POSICIÓN OCUPADA
-    _occupiedPositions.add({
-      'x': tentativeX,
-      'y': tentativeY,
-      'size': houseSize,
-    });
+    // USAR TODA LA PÁGINA MÓVIL
+    final headerSpace = 120.0;
+    final bottomSpace = 80.0;
+    final sideSpace = 20.0;
+    final availableHeight = screenHeight - headerSpace - bottomSpace;
+    final availableWidth = screenWidth - (sideSpace * 2);
     
-    // CALCULAR ZONA BASADA EN FILA
-    final zone = (currentRow / 2).floor().clamp(0, 3).toDouble();
-    final elevation = 1.0 - (currentRow / 10.0).clamp(0.0, 1.0);
+    // FLUJO ALFABÉTICO MÓVIL: 3 CASAS POR FILA PERO ORGÁNICO
+    final housesPerRow = 3; // Ideal para móvil
+    final totalRows = (totalLetters / housesPerRow).ceil();
+    final row = (index / housesPerRow).floor();
+    final col = index % housesPerRow;
+    
+    // ZONA ALFABÉTICA BASE EN MÓVIL (flujo de lectura)
+    final baseX = sideSpace + (col * (availableWidth / housesPerRow));
+    final baseY = headerSpace + (row * (availableHeight / totalRows));
+    
+    // VARIACIONES ORGÁNICAS DENTRO DE CADA ZONA ALFABÉTICA MÓVIL
+    final letterSeed = index * 89 + 23; // Diferentes semillas para móvil
+    
+    // Tamaño de zona alfabética más pequeño en móvil
+    final zoneWidth = availableWidth / housesPerRow;
+    final zoneHeight = availableHeight / totalRows;
+    
+    // Variaciones orgánicas dentro de cada zona (más pequeñas para móvil)
+    final organicX = ((letterSeed * 67 + index * 37) % 1000) / 1000 * (zoneWidth * 0.6);
+    final organicY = ((letterSeed * 79 + index * 59) % 1000) / 1000 * (zoneHeight * 0.6);
+    
+    // Variaciones adicionales para efecto natural (adaptadas a móvil)
+    final majorVariationX = ((index * 131 + 41) % 40) - 20; // ±20px
+    final majorVariationY = ((index * 173 + 61) % 30) - 15; // ±15px
+    final microVariationX = ((index * 199 + 83) % 20) - 10; // ±10px
+    final microVariationY = ((index * 227 + 101) % 16) - 8; // ±8px
+    
+    // POSICIÓN FINAL: ORGÁNICA PERO CON FLUJO ALFABÉTICO MÓVIL
+    final naturalX = baseX + organicX + majorVariationX + microVariationX;
+    final naturalY = baseY + organicY + majorVariationY + microVariationY;
+    
+    // ASEGURAR QUE ESTÉN DENTRO DE LA PANTALLA
+    final finalX = naturalX.clamp(sideSpace, screenWidth - houseSize - sideSpace);
+    final finalY = naturalY.clamp(headerSpace, screenHeight - houseSize - bottomSpace);
+    
+    // EVITAR COLISIONES MANTENIENDO ORDEN ALFABÉTICO
+    final position = _avoidCollisions(finalX, finalY, houseSize, index);
+    
+    // PROPIEDADES VISUALES ORGÁNICAS PARA MÓVIL
+    final radiusGenerator = (letterSeed * 47 + index * 19) % 10000;
+    final elevation = 0.4 + (radiusGenerator / 10000) * 0.6;
+    final walkSpeed = 0.6 + ((index * 113) % 100) / 300.0;
     
     return {
-      'x': tentativeX,
-      'y': tentativeY,
-      'size': houseSize,
-      'walkProgress': index / (totalLetters - 1),
+      'x': position['x']!,
+      'y': position['y']!,
+      'size': houseSize + ((index * 71) % 10) - 5, // Variaciones más pequeñas en móvil
+      'walkProgress': walkSpeed,
       'elevation': elevation,
-      'zone': zone,
+      'zone': row.toDouble(), // Zona basada en fila alfabética
       'progress': index / (totalLetters - 1),
-      'row': currentRow.toDouble(),
-      'col': currentCol.toDouble(),
     };
+  }
+  
+  // POSICIONAMIENTO WEB: ORGÁNICO PERO CON ORDEN ALFABÉTICO VISUAL
+  Map<String, double> _calculateWebPosition(int index, int totalLetters, Size size) {
+    final screenWidth = size.width;
+    final screenHeight = size.height;
+    final houseSize = 70.0; // Casas más grandes para web
+    
+    // USAR TODA LA PÁGINA COMPLETA
+    final headerSpace = 140.0;
+    final bottomSpace = 100.0;
+    final sideSpace = 60.0;
+    final availableHeight = screenHeight - headerSpace - bottomSpace;
+    final availableWidth = screenWidth - (sideSpace * 2);
+    
+    // FLUJO ALFABÉTICO ORGÁNICO: SEGUIR PATRÓN DE LECTURA PERO SIN RIGIDEZ
+    // Dividir en "franjas" horizontales flexibles que sigan el orden alfabético
+    final housesPerRow = screenWidth > 1200 ? 6 : (screenWidth > 900 ? 5 : 4);
+    final totalRows = (totalLetters / housesPerRow).ceil();
+    final row = (index / housesPerRow).floor();
+    final col = index % housesPerRow;
+    
+    // ZONA ALFABÉTICA BASE (flujo de lectura natural)
+    final baseX = sideSpace + (col * (availableWidth / housesPerRow));
+    final baseY = headerSpace + (row * (availableHeight / totalRows));
+    
+    // VARIACIONES ORGÁNICAS GRANDES DENTRO DE CADA ZONA ALFABÉTICA
+    // Cada casa se mueve naturalmente dentro de su "zona alfabética"
+    final letterSeed = index * 97 + 31;
+    
+    // Variaciones dentro de la zona para mantener orden pero ser orgánico
+    final zoneWidth = availableWidth / housesPerRow;
+    final zoneHeight = availableHeight / totalRows;
+    
+    // Variaciones orgánicas dentro de cada zona alfabética
+    final organicX = ((letterSeed * 73 + index * 41) % 1000) / 1000 * (zoneWidth * 0.8);
+    final organicY = ((letterSeed * 89 + index * 67) % 1000) / 1000 * (zoneHeight * 0.8);
+    
+    // Variaciones adicionales para efecto natural
+    final majorVariationX = ((index * 137 + 43) % 80) - 40; // ±40px
+    final majorVariationY = ((index * 181 + 71) % 60) - 30; // ±30px
+    final microVariationX = ((index * 211 + 91) % 30) - 15; // ±15px
+    final microVariationY = ((index * 241 + 113) % 20) - 10; // ±10px
+    
+    // POSICIÓN FINAL: ORGÁNICA PERO MANTENIENDO FLUJO ALFABÉTICO
+    final naturalX = baseX + organicX + majorVariationX + microVariationX;
+    final naturalY = baseY + organicY + majorVariationY + microVariationY;
+    
+    // ASEGURAR QUE ESTÉN DENTRO DE LA PANTALLA
+    final finalX = naturalX.clamp(sideSpace, screenWidth - houseSize - sideSpace);
+    final finalY = naturalY.clamp(headerSpace, screenHeight - houseSize - bottomSpace);
+    
+    // EVITAR COLISIONES MANTENIENDO ORDEN ALFABÉTICO
+    final position = _avoidCollisions(finalX, finalY, houseSize, index);
+    
+    // PROPIEDADES VISUALES ORGÁNICAS
+    final radiusGenerator = (letterSeed * 53 + index * 23) % 10000;
+    final elevation = 0.3 + (radiusGenerator / 10000) * 0.7;
+    final walkSpeed = 0.5 + ((index * 127) % 100) / 200.0;
+    
+    return {
+      'x': position['x']!,
+      'y': position['y']!,
+      'size': houseSize + ((index * 83) % 20) - 10, // Tamaños ligeramente diferentes
+      'walkProgress': walkSpeed,
+      'elevation': elevation,
+      'zone': row.toDouble(), // Zona basada en fila alfabética
+      'progress': index / (totalLetters - 1),
+    };
+  }
+  
+  // EVITAR COLISIONES SIMPLES PARA DISTRIBUCIÓN ORGÁNICA
+  Map<String, double> _avoidCollisions(double x, double y, double size, int index) {
+    double finalX = x;
+    double finalY = y;
+    final minDistance = size + 20; // Distancia mínima entre casas
+    
+    // Revisar colisiones con casas ya posicionadas
+    for (final occupied in _occupiedPositions) {
+      final dx = finalX - occupied['x']!;
+      final dy = finalY - occupied['y']!;
+      final distance = math.sqrt(dx * dx + dy * dy);
+      
+      if (distance < minDistance) {
+        // Mover ligeramente para evitar colisión
+        final angle = math.atan2(dy, dx);
+        finalX = occupied['x']! + math.cos(angle) * minDistance;
+        finalY = occupied['y']! + math.sin(angle) * minDistance;
+      }
+    }
+    
+    // Registrar nueva posición
+    _occupiedPositions.add({'x': finalX, 'y': finalY, 'size': size});
+    
+    return {'x': finalX, 'y': finalY};
+  }
+  
+  // VERIFICAR COLISIONES SOLO EN WEB
+  Map<String, double> _ensureNoCollisionWeb(double x, double y, double size, int index) {
+    double adjustedX = x;
+    double adjustedY = y;
+    final minDistance = size * 1.4;
+    
+    // Verificar contra posiciones ya ocupadas
+    for (final occupied in _occupiedPositions) {
+      final distance = math.sqrt(
+        math.pow(adjustedX - occupied['x']!, 2) + 
+        math.pow(adjustedY - occupied['y']!, 2)
+      );
+      
+      if (distance < minDistance) {
+        // Mover ligeramente manteniendo el orden alfabético
+        adjustedX += (index % 2 == 0) ? 40 : -40;
+        adjustedY += (index % 3 == 0) ? 30 : -30;
+        
+        // RE-APLICAR LÍMITES DESPUÉS DEL AJUSTE
+        final screenWidth = 1200.0; // Estimado para web
+        final screenHeight = 800.0; // Estimado para web  
+        adjustedX = adjustedX.clamp(size * 0.5, screenWidth - size * 1.5);
+        adjustedY = adjustedY.clamp(200.0, screenHeight - size - 150.0);
+        
+        break; // Solo un ajuste para mantener orden
+      }
+    }
+    
+    // Registrar posición ocupada
+    _occupiedPositions.add({'x': adjustedX, 'y': adjustedY, 'size': minDistance});
+    
+    return {'x': adjustedX, 'y': adjustedY};
   }
   
   bool _isPositionFree(double x, double y, double size) {
@@ -862,8 +1014,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
+  // Método removido: _navigateToFirstPersonPark
+
   void _navigateToAvatarMode() {
     _showAvatarModeDialog();
+  }
+
+  void _navigateTo3DPark() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const LetterPark3DScreen(),
+      ),
+    );
   }
 
   void _showAvatarModeDialog() {
