@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../providers/letter_city_provider.dart';
@@ -1308,7 +1307,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         return Positioned(
           left: size.width * 0.5 - 50,
           top: 450,
-          child: Container(
+          child: SizedBox(
             width: 100,
             height: 80,
             child: Stack(
@@ -1418,11 +1417,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           builder: (context, child) {
             final sway = math.sin(_animatedElementsController.value * 2 * math.pi + i * 0.5) * 3;
             return Positioned(
-              left: size.width * (pos['x']! as double) - (pos['size']! as double) / 2,
-              top: (pos['y']! as double) + sway,
-              child: Container(
-                width: pos['size']! as double,
-                height: (pos['size']! as double) * 1.2,
+              left: size.width * (pos['x']!) - (pos['size']!) / 2,
+              top: (pos['y']!) + sway,
+              child: SizedBox(
+                width: pos['size']!,
+                height: (pos['size']!) * 1.2,
                 child: Stack(
                   alignment: Alignment.bottomCenter,
                   children: [
@@ -1430,8 +1429,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     Positioned(
                       bottom: 0,
                       child: Container(
-                        width: (pos['size']! as double) * 0.2,
-                        height: (pos['size']! as double) * 0.5,
+                        width: (pos['size']!) * 0.2,
+                        height: (pos['size']!) * 0.5,
                         decoration: BoxDecoration(
                           color: const Color(0xFF8B4513),
                           borderRadius: BorderRadius.circular(5),
@@ -1440,10 +1439,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                     // Copa del árbol con frutas
                     Positioned(
-                      bottom: (pos['size']! as double) * 0.3,
+                      bottom: (pos['size']!) * 0.3,
                       child: Container(
-                        width: pos['size']! as double,
-                        height: (pos['size']! as double) * 0.8,
+                        width: pos['size']!,
+                        height: (pos['size']!) * 0.8,
                         decoration: BoxDecoration(
                           gradient: RadialGradient(
                             colors: [
@@ -1466,10 +1465,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ...List.generate(4, (fruitIndex) {
                               final fruits = ['🍎', '🍊', '🍋', '🍒'];
                               final fruitAngles = [0.5, 1.2, 2.1, 3.4];
-                              final radius = (pos['size']! as double) * 0.3;
+                              final radius = (pos['size']!) * 0.3;
                               return Positioned(
-                                left: (pos['size']! as double) * 0.5 + math.cos(fruitAngles[fruitIndex]) * radius - 8,
-                                top: (pos['size']! as double) * 0.4 + math.sin(fruitAngles[fruitIndex]) * radius - 8,
+                                left: (pos['size']!) * 0.5 + math.cos(fruitAngles[fruitIndex]) * radius - 8,
+                                top: (pos['size']!) * 0.4 + math.sin(fruitAngles[fruitIndex]) * radius - 8,
                                 child: Text(
                                   fruits[fruitIndex % fruits.length],
                                   style: const TextStyle(fontSize: 16),

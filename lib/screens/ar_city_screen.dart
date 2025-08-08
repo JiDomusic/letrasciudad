@@ -64,7 +64,7 @@ class _ARCityScreenState extends State<ARCityScreen> {
   }
 
   // Variables para el juego de formación de palabras
-  List<String> _formedSyllables = [];
+  final List<String> _formedSyllables = [];
   String _currentWord = '';
   String? _wordImage;
   
