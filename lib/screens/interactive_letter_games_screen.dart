@@ -43,10 +43,15 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
 
   void _playWelcomeMessage() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    await _audioService.speakText(
-      '¡Hola! Bienvenido a la casa de la letra ${widget.letter.character}. '
-      '¡Aquí tengo juegos súper divertidos para ti!'
+    // El niño puede interrumpir tocando la pantalla
+    _audioService.speakText(
+      '¡Bienvenido a la casa de la letra ${widget.letter.character}!'
     );
+  }
+
+  void _skipNarration() {
+    // Permite al niño saltar la narración
+    _audioService.stop();
   }
 
   @override
@@ -59,28 +64,32 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF87CEEB),
-              Color(0xFFB0E2FF),
-              Color(0xFF98FB98),
-            ],
+    return GestureDetector(
+      // PERMITIR AL NIÑO INTERRUMPIR INMEDIATAMENTE LA NARRACIÓN
+      onTap: _skipNarration,
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF87CEEB),
+                Color(0xFFB0E2FF),
+                Color(0xFF98FB98),
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
+          child: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
               Expanded(
                 child: _buildGameContent(),
               ),
               _buildGameSelector(),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -385,6 +394,27 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       ),
     );
   }
+  
+  // FUNCIÓN PARA VERIFICAR SI UNA PALABRA REALMENTE EMPIEZA CON LA LETRA DADA
+  bool _verifyWordStartsWithLetter(String word, String letter) {
+    if (word.isEmpty || letter.isEmpty) return false;
+    
+    final wordLower = word.toLowerCase();
+    final letterLower = letter.toLowerCase();
+    
+    // Casos especiales del español argentino
+    switch (letterLower) {
+      case 'h':
+        // H es muda pero se cuenta
+        return wordLower.startsWith('h');
+      case 'ñ':
+        return wordLower.startsWith('ñ');
+      case 'qu':
+        return wordLower.startsWith('qu');
+      default:
+        return wordLower.startsWith(letterLower);
+    }
+  }
 
   Widget _buildSelectableObject(Map<String, dynamic> obj, bool isWeb) {
     final isCorrect = obj['correct'] as bool;
@@ -455,8 +485,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     final wordName = obj['name'] as String;
     final isCorrect = obj['correct'] as bool;
     
-    if (isCorrect) {
-      // FEEDBACK POSITIVO INMEDIATO
+    // VERIFICACIÓN REAL: ¿La palabra realmente empieza con la letra correcta?
+    final actuallyCorrect = _verifyWordStartsWithLetter(wordName, widget.letter.character);
+    
+    if (isCorrect && actuallyCorrect) {
+      // FEEDBACK POSITIVO SOLO SI ES REALMENTE CORRECTO
       _audioService.speakText('¡Excelente! ${obj['name']}');
       _showSuccessMessage(obj['name'] as String);
       _showCelebrationStars();
@@ -801,7 +834,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '🟫', 'name': 'Alfombra', 'correct': true},
         {'emoji': '🛏️', 'name': 'Almohada', 'correct': true},
         {'emoji': '✈️', 'name': 'Avión', 'correct': true},
-        {'emoji': '🍎', 'name': 'Manzana', 'correct': true},
+        {'emoji': '🧄', 'name': 'Ajo', 'correct': true},
         {'emoji': '🧮', 'name': 'Ábaco', 'correct': true},
         {'emoji': '🏠', 'name': 'Armario', 'correct': true},
         {'emoji': '🐛', 'name': 'Abeja', 'correct': true},
@@ -825,11 +858,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '👢', 'name': 'Bota', 'correct': true},
         {'emoji': '🌈', 'name': 'Bandera', 'correct': true},
         {'emoji': '🧺', 'name': 'Balde', 'correct': true},
-        {'emoji': '🎺', 'name': 'Trompeta', 'correct': true},
+        {'emoji': '🎺', 'name': 'Bocina', 'correct': true},
       ],
       'C': [
         {'emoji': '🚗', 'name': 'Carro', 'correct': true},
-        {'emoji': '🎂', 'name': 'Pastel', 'correct': true},
+        {'emoji': '🎂', 'name': 'Cumpleaños', 'correct': true},
         {'emoji': '🏠', 'name': 'Casa', 'correct': true},
         {'emoji': '🛏️', 'name': 'Cama', 'correct': true},
         {'emoji': '🦓', 'name': 'Cebra', 'correct': true},
@@ -842,7 +875,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '🧿', 'name': 'Cuchillo', 'correct': true},
       ],
       'D': [
-        {'emoji': '🐕', 'name': 'Perro', 'correct': true},
+        {'emoji': '🐕', 'name': 'Dálmata', 'correct': true},
         {'emoji': '🦷', 'name': 'Diente', 'correct': true},
         {'emoji': '💎', 'name': 'Diamante', 'correct': true},
         {'emoji': '🎯', 'name': 'Diana', 'correct': true},
@@ -887,43 +920,42 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '🐱', 'name': 'Gato', 'correct': true},
         {'emoji': '🎈', 'name': 'Globo', 'correct': true},
         {'emoji': '🧤', 'name': 'Guante', 'correct': true},
-        {'emoji': '🦒', 'name': 'Jirafa', 'correct': true},
+        {'emoji': '🦒', 'name': 'Gacela', 'correct': true},
         {'emoji': '🎸', 'name': 'Guitarra', 'correct': true},
-        {'emoji': '🍇', 'name': 'Uva', 'correct': true},
-        {'emoji': '🐸', 'name': 'Rana', 'correct': true},
+        {'emoji': '🍇', 'name': 'Grosella', 'correct': true},
+        {'emoji': '🐸', 'name': 'Grillo', 'correct': true},
         {'emoji': '👓', 'name': 'Gafas', 'correct': true},
         {'emoji': '🍪', 'name': 'Galleta', 'correct': true},
         {'emoji': '🐓', 'name': 'Gallo', 'correct': true},
-        {'emoji': '🌍', 'name': 'Globo', 'correct': true},
+        {'emoji': '🌍', 'name': 'Geografía', 'correct': true},
         {'emoji': '🥅', 'name': 'Goma', 'correct': true},
       ],
       'H': [
         {'emoji': '🐜', 'name': 'Hormiga', 'correct': true},
-        {'emoji': '🏠', 'name': 'Casa', 'correct': true},
+        {'emoji': '🏠', 'name': 'Hogar', 'correct': true},
         {'emoji': '🌿', 'name': 'Hoja', 'correct': true},
-        {'emoji': '🍯', 'name': 'Miel', 'correct': true},
-        {'emoji': '🔨', 'name': 'Martillo', 'correct': true},
-        {'emoji': '🦔', 'name': 'Erizo', 'correct': true},
+        {'emoji': '🍯', 'name': 'Hongo', 'correct': true},
+        {'emoji': '🔨', 'name': 'Herramienta', 'correct': true},
+        {'emoji': '🦔', 'name': 'Hámster', 'correct': true},
         {'emoji': '🧊', 'name': 'Hielo', 'correct': true},
-        {'emoji': '🌻', 'name': 'Girasol', 'correct': true},
+        {'emoji': '🌻', 'name': 'Harina', 'correct': true},
         {'emoji': '🏥', 'name': 'Hospital', 'correct': true},
         {'emoji': '🦅', 'name': 'Halcón', 'correct': true},
         {'emoji': '🥚', 'name': 'Huevo', 'correct': true},
         {'emoji': '🌿', 'name': 'Hierba', 'correct': true},
+        {'emoji': '🍦', 'name': 'Helado', 'correct': true},
       ],
       'I': [
         {'emoji': '🏝️', 'name': 'Isla', 'correct': true},
         {'emoji': '🦎', 'name': 'Iguana', 'correct': true},
-        {'emoji': '🧊', 'name': 'Hielo', 'correct': true},
-        {'emoji': '🌈', 'name': 'Iris', 'correct': true},
-        {'emoji': '🏛️', 'name': 'Iglesia', 'correct': true},
-        {'emoji': '🔴', 'name': 'Círculo', 'correct': true},
-        {'emoji': '🏠', 'name': 'Edificio', 'correct': true},
+        {'emoji': '⛪', 'name': 'Iglesia', 'correct': true},
         {'emoji': '🧲', 'name': 'Imán', 'correct': true},
-        {'emoji': '📰', 'name': 'Información', 'correct': true},
-        {'emoji': '🔮', 'name': 'Incienso', 'correct': true},
-        {'emoji': '🦆', 'name': 'Ibis', 'correct': true},
-        {'emoji': '🏐', 'name': 'Isla', 'correct': true},
+        {'emoji': '🍦', 'name': 'Helado', 'correct': false},
+        {'emoji': '🌈', 'name': 'Iris', 'correct': true},
+        {'emoji': '🐜', 'name': 'Hormiga', 'correct': false},
+        {'emoji': '👁️', 'name': 'Ojo', 'correct': false},
+        {'emoji': '🐻', 'name': 'Oso', 'correct': false},
+        {'emoji': '🌞', 'name': 'Sol', 'correct': false},
       ],
       'J': [
         {'emoji': '🦒', 'name': 'Jirafa', 'correct': true},
@@ -942,16 +974,14 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       'K': [
         {'emoji': '🥝', 'name': 'Kiwi', 'correct': true},
         {'emoji': '🥋', 'name': 'Karate', 'correct': true},
-        {'emoji': '🪁', 'name': 'Cometa', 'correct': true},
-        {'emoji': '🧄', 'name': 'Ajo', 'correct': true},
-        {'emoji': '🍄', 'name': 'Hongo', 'correct': true},
-        {'emoji': '🔢', 'name': 'Kilómetro', 'correct': true},
-        {'emoji': '⚖️', 'name': 'Kilogramo', 'correct': true},
-        {'emoji': '🏛️', 'name': 'Templo', 'correct': true},
-        {'emoji': '🏺', 'name': 'Cerámica', 'correct': true},
-        {'emoji': '🥜', 'name': 'Ketchup', 'correct': true},
+        {'emoji': '🐨', 'name': 'Koala', 'correct': true},
+        {'emoji': '🔢', 'name': 'Kilo', 'correct': true},
         {'emoji': '🪁', 'name': 'Kayak', 'correct': true},
-        {'emoji': '🥝', 'name': 'Koala', 'correct': true},
+        {'emoji': '🏪', 'name': 'Kiosco', 'correct': true},
+        {'emoji': '🧄', 'name': 'Karmen', 'correct': false},
+        {'emoji': '🐧', 'name': 'Lobo', 'correct': false},
+        {'emoji': '🦔', 'name': 'Erizo', 'correct': false},
+        {'emoji': '🚗', 'name': 'Auto', 'correct': false},
       ],
       'L': [
         {'emoji': '🦁', 'name': 'León', 'correct': true},
@@ -962,24 +992,24 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '🪔', 'name': 'Lámpara', 'correct': true},
         {'emoji': '🐺', 'name': 'Lobo', 'correct': true},
         {'emoji': '🌊', 'name': 'Lago', 'correct': true},
-        {'emoji': '🍃', 'name': 'Hoja', 'correct': true},
         {'emoji': '🦎', 'name': 'Lagarto', 'correct': true},
-        {'emoji': '🥀', 'name': 'Leche', 'correct': true},
-        {'emoji': '👞', 'name': 'Lentes', 'correct': true},
+        {'emoji': '🥛', 'name': 'Leche', 'correct': true},
+        {'emoji': '🤓', 'name': 'Lentes', 'correct': true},
+        {'emoji': '✏️', 'name': 'Lápiz', 'correct': true},
       ],
       'M': [
         {'emoji': '🐵', 'name': 'Mono', 'correct': true},
         {'emoji': '🍎', 'name': 'Manzana', 'correct': true},
-        {'emoji': '🌙', 'name': 'Luna', 'correct': true},
+        {'emoji': '👨‍⚕️', 'name': 'Médico', 'correct': true},
         {'emoji': '🏔️', 'name': 'Montaña', 'correct': true},
         {'emoji': '🎵', 'name': 'Música', 'correct': true},
         {'emoji': '🦋', 'name': 'Mariposa', 'correct': true},
         {'emoji': '🍯', 'name': 'Miel', 'correct': true},
-        {'emoji': '🪞', 'name': 'Espejo', 'correct': true},
-        {'emoji': '🏠', 'name': 'Casa', 'correct': true},
-        {'emoji': '🐭', 'name': 'Ratón', 'correct': true},
         {'emoji': '🥭', 'name': 'Mango', 'correct': true},
-        {'emoji': '🏠', 'name': 'Mesa', 'correct': true},
+        {'emoji': '🪑', 'name': 'Mesa', 'correct': true},
+        {'emoji': '🐭', 'name': 'Ratón', 'correct': false},
+        {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+        {'emoji': '🪞', 'name': 'Espejo', 'correct': false},
       ],
       'N': [
         {'emoji': '☁️', 'name': 'Nube', 'correct': true},
@@ -999,29 +1029,29 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '🐻', 'name': 'Oso', 'correct': true},
         {'emoji': '👁️', 'name': 'Ojo', 'correct': true},
         {'emoji': '🌊', 'name': 'Ola', 'correct': true},
-        {'emoji': '🥚', 'name': 'Huevo', 'correct': true},
-        {'emoji': '🦴', 'name': 'Hueso', 'correct': true},
         {'emoji': '👂', 'name': 'Oreja', 'correct': true},
         {'emoji': '🐑', 'name': 'Oveja', 'correct': true},
         {'emoji': '🌊', 'name': 'Océano', 'correct': true},
-        {'emoji': '🦉', 'name': 'Búho', 'correct': true},
-        {'emoji': '🐙', 'name': 'Orca', 'correct': true},
+        {'emoji': '🐋', 'name': 'Orca', 'correct': true},
         {'emoji': '🌅', 'name': 'Oriente', 'correct': true},
-        {'emoji': '🔮', 'name': 'Oro', 'correct': true},
+        {'emoji': '🪙', 'name': 'Oro', 'correct': true},
+        {'emoji': '🥚', 'name': 'Huevo', 'correct': false},
+        {'emoji': '🦴', 'name': 'Hueso', 'correct': false},
+        {'emoji': '🦉', 'name': 'Búho', 'correct': false},
       ],
       'P': [
         {'emoji': '🐧', 'name': 'Pingüino', 'correct': true},
         {'emoji': '🍕', 'name': 'Pizza', 'correct': true},
-        {'emoji': '🌳', 'name': 'Pino', 'correct': true},
+        {'emoji': '🌲', 'name': 'Pino', 'correct': true},
         {'emoji': '🎂', 'name': 'Pastel', 'correct': true},
         {'emoji': '🦆', 'name': 'Pato', 'correct': true},
         {'emoji': '☂️', 'name': 'Paraguas', 'correct': true},
-        {'emoji': '🍑', 'name': 'Durazno', 'correct': true},
         {'emoji': '🧩', 'name': 'Puzzle', 'correct': true},
         {'emoji': '🚪', 'name': 'Puerta', 'correct': true},
         {'emoji': '🍍', 'name': 'Piña', 'correct': true},
-        {'emoji': '🦅', 'name': 'Paloma', 'correct': true},
-        {'emoji': '🍆', 'name': 'Pepino', 'correct': true},
+        {'emoji': '🕊️', 'name': 'Paloma', 'correct': true},
+        {'emoji': '🥒', 'name': 'Pepino', 'correct': true},
+        {'emoji': '🍑', 'name': 'Durazno', 'correct': false},
       ],
       'Q': [
         {'emoji': '🧀', 'name': 'Queso', 'correct': true},
@@ -1030,12 +1060,12 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '❓', 'name': 'Qué', 'correct': true},
         {'emoji': '💕', 'name': 'Querer', 'correct': true},
         {'emoji': '🗣️', 'name': 'Queja', 'correct': true},
-        {'emoji': '🏠', 'name': 'Hogar', 'correct': true},
         {'emoji': '🧬', 'name': 'Química', 'correct': true},
-        {'emoji': '🏃‍♂️', 'name': 'Correr', 'correct': true},
         {'emoji': '💕', 'name': 'Querido', 'correct': true},
         {'emoji': '🔥', 'name': 'Quemadura', 'correct': true},
         {'emoji': '🌲', 'name': 'Quebracho', 'correct': true},
+        {'emoji': '🏠', 'name': 'Hogar', 'correct': false},
+        {'emoji': '🏃‍♂️', 'name': 'Correr', 'correct': false},
       ],
       'R': [
         {'emoji': '🌹', 'name': 'Rosa', 'correct': true},
@@ -1044,26 +1074,26 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '🎁', 'name': 'Regalo', 'correct': true},
         {'emoji': '🐸', 'name': 'Rana', 'correct': true},
         {'emoji': '📻', 'name': 'Radio', 'correct': true},
-        {'emoji': '🚀', 'name': 'Cohete', 'correct': true},
-        {'emoji': '💍', 'name': 'Anillo', 'correct': true},
-        {'emoji': '🌈', 'name': 'Arcoíris', 'correct': true},
-        {'emoji': '🦀', 'name': 'Rinoceronte', 'correct': true},
+        {'emoji': '🦏', 'name': 'Rinoceronte', 'correct': true},
         {'emoji': '🌊', 'name': 'Río', 'correct': true},
-        {'emoji': '🚀', 'name': 'Robot', 'correct': true},
+        {'emoji': '🤖', 'name': 'Robot', 'correct': true},
+        {'emoji': '🚀', 'name': 'Cohete', 'correct': false},
+        {'emoji': '💍', 'name': 'Anillo', 'correct': false},
+        {'emoji': '🌈', 'name': 'Arcoíris', 'correct': false},
       ],
       'S': [
         {'emoji': '☀️', 'name': 'Sol', 'correct': true},
         {'emoji': '🐍', 'name': 'Serpiente', 'correct': true},
-        {'emoji': '👟', 'name': 'Zapato', 'correct': true},
         {'emoji': '💺', 'name': 'Silla', 'correct': true},
-        {'emoji': '🍓', 'name': 'Fresa', 'correct': true},
-        {'emoji': '🦈', 'name': 'Tiburón', 'correct': true},
-        {'emoji': '🔔', 'name': 'Campana', 'correct': true},
         {'emoji': '💤', 'name': 'Sueño', 'correct': true},
         {'emoji': '🧂', 'name': 'Sal', 'correct': true},
         {'emoji': '🌙', 'name': 'Sombra', 'correct': true},
         {'emoji': '🍉', 'name': 'Sandía', 'correct': true},
-        {'emoji': '🐢', 'name': 'Sapo', 'correct': true},
+        {'emoji': '🐸', 'name': 'Sapo', 'correct': true},
+        {'emoji': '🦈', 'name': 'Tiburón', 'correct': false},
+        {'emoji': '👟', 'name': 'Zapato', 'correct': false},
+        {'emoji': '🍓', 'name': 'Fresa', 'correct': false},
+        {'emoji': '🔔', 'name': 'Campana', 'correct': false},
       ],
       'T': [
         {'emoji': '🐅', 'name': 'Tigre', 'correct': true},
@@ -1082,16 +1112,16 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       'U': [
         {'emoji': '🍇', 'name': 'Uva', 'correct': true},
         {'emoji': '🦄', 'name': 'Unicornio', 'correct': true},
-        {'emoji': '☂️', 'name': 'Paraguas', 'correct': true},
+        {'emoji': '☂️', 'name': 'Paraguas', 'correct': false},
         {'emoji': '1️⃣', 'name': 'Uno', 'correct': true},
         {'emoji': '💅', 'name': 'Uña', 'correct': true},
-        {'emoji': '🏛️', 'name': 'Universidad', 'correct': true},
-        {'emoji': '🔊', 'name': 'Sonido', 'correct': true},
+        {'emoji': '🏛️', 'name': 'Universidad', 'correct': false},
+        {'emoji': '🔊', 'name': 'Sonido', 'correct': false},
         {'emoji': '⭐', 'name': 'Único', 'correct': true},
-        {'emoji': '🔧', 'name': 'Útil', 'correct': true},
-        {'emoji': '🌈', 'name': 'Unión', 'correct': true},
-        {'emoji': '🦪', 'name': 'Uniforme', 'correct': true},
-        {'emoji': '🌍', 'name': 'Universo', 'correct': true},
+        {'emoji': '🔧', 'name': 'Útil', 'correct': false},
+        {'emoji': '🌈', 'name': 'Arcoíris', 'correct': false},
+        {'emoji': '🦪', 'name': 'Uniforme', 'correct': false},
+        {'emoji': '🌍', 'name': 'Universo', 'correct': false},
       ],
       'V': [
         {'emoji': '🐄', 'name': 'Vaca', 'correct': true},
@@ -1100,82 +1130,82 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '🪟', 'name': 'Ventana', 'correct': true},
         {'emoji': '🏐', 'name': 'Voleibol', 'correct': true},
         {'emoji': '🍷', 'name': 'Vino', 'correct': true},
-        {'emoji': '🦊', 'name': 'Zorro', 'correct': true},
         {'emoji': '👗', 'name': 'Vestido', 'correct': true},
         {'emoji': '🎻', 'name': 'Violín', 'correct': true},
         {'emoji': '🍃', 'name': 'Verde', 'correct': true},
         {'emoji': '🐍', 'name': 'Víbora', 'correct': true},
         {'emoji': '🌆', 'name': 'Valle', 'correct': true},
+        {'emoji': '🦊', 'name': 'Zorro', 'correct': false},
       ],
       'W': [
-        {'emoji': '🥪', 'name': 'Sándwich', 'correct': true},
+        {'emoji': '🥪', 'name': 'Wafle', 'correct': true},
         {'emoji': '🌐', 'name': 'Web', 'correct': true},
-        {'emoji': '🏆', 'name': 'Ganar', 'correct': true},
-        {'emoji': '⌚', 'name': 'Reloj', 'correct': true},
-        {'emoji': '🐺', 'name': 'Lobo', 'correct': true},
-        {'emoji': '🍉', 'name': 'Sandía', 'correct': true},
-        {'emoji': '🪟', 'name': 'Ventana', 'correct': true},
-        {'emoji': '🌊', 'name': 'Agua', 'correct': true},
-        {'emoji': '🏃‍♂️', 'name': 'Caminar', 'correct': true},
-        {'emoji': '🥃', 'name': 'Waffle', 'correct': true},
-        {'emoji': '🥽', 'name': 'Whisky', 'correct': true},
-        {'emoji': '🏆', 'name': 'Winner', 'correct': true},
+        {'emoji': '📶', 'name': 'WiFi', 'correct': true},
+        {'emoji': '🥃', 'name': 'Whisky', 'correct': true},
+        {'emoji': '🪄', 'name': 'Wok', 'correct': true},
+        {'emoji': '🦅', 'name': 'Walabi', 'correct': true},
+        {'emoji': '⌚', 'name': 'Watch', 'correct': false},
+        {'emoji': '💻', 'name': 'Windows', 'correct': false},
+        {'emoji': '🌍', 'name': 'World', 'correct': false},
+        {'emoji': '🎮', 'name': 'Wii', 'correct': false},
+        {'emoji': '🔧', 'name': 'Workshop', 'correct': false},
+        {'emoji': '🏆', 'name': 'Winner', 'correct': false},
       ],
       'X': [
-        {'emoji': '🎷', 'name': 'Saxofón', 'correct': true},
         {'emoji': '❌', 'name': 'Equis', 'correct': true},
-        {'emoji': '🗂️', 'name': 'Expediente', 'correct': true},
-        {'emoji': '🧪', 'name': 'Experimento', 'correct': true},
-        {'emoji': '🦴', 'name': 'Hueso', 'correct': true},
-        {'emoji': '🎭', 'name': 'Teatro', 'correct': true},
-        {'emoji': '📱', 'name': 'Teléfono', 'correct': true},
-        {'emoji': '🔍', 'name': 'Explorar', 'correct': true},
-        {'emoji': '🏛️', 'name': 'Templo', 'correct': true},
-        {'emoji': '📊', 'name': 'Examen', 'correct': true},
-        {'emoji': '🚀', 'name': 'Exito', 'correct': true},
-        {'emoji': '🖥️', 'name': 'Xerox', 'correct': true},
+        {'emoji': '❌', 'name': 'Xi', 'correct': true},
+        {'emoji': '🎷', 'name': 'Saxofón', 'correct': false},
+        {'emoji': '🗂️', 'name': 'Expediente', 'correct': false},
+        {'emoji': '🧪', 'name': 'Experimento', 'correct': false},
+        {'emoji': '🦴', 'name': 'Hueso', 'correct': false},
+        {'emoji': '🎭', 'name': 'Teatro', 'correct': false},
+        {'emoji': '📱', 'name': 'Teléfono', 'correct': false},
+        {'emoji': '🔍', 'name': 'Explorar', 'correct': false},
+        {'emoji': '🏛️', 'name': 'Templo', 'correct': false},
+        {'emoji': '📊', 'name': 'Examen', 'correct': false},
+        {'emoji': '🖥️', 'name': 'Xerox', 'correct': false},
       ],
       'Y': [
         {'emoji': '🛥️', 'name': 'Yate', 'correct': true},
         {'emoji': '🧘', 'name': 'Yoga', 'correct': true},
         {'emoji': '🥄', 'name': 'Yema', 'correct': true},
         {'emoji': '🩹', 'name': 'Yeso', 'correct': true},
-        {'emoji': '🌱', 'name': 'Hierba', 'correct': true},
-        {'emoji': '💍', 'name': 'Joya', 'correct': true},
-        {'emoji': '🧊', 'name': 'Hielo', 'correct': true},
-        {'emoji': '💛', 'name': 'Amarillo', 'correct': true},
-        {'emoji': '👶', 'name': 'Bebé', 'correct': true},
+        {'emoji': '🌱', 'name': 'Hierba', 'correct': false},
+        {'emoji': '💍', 'name': 'Joya', 'correct': false},
+        {'emoji': '🧊', 'name': 'Hielo', 'correct': false},
+        {'emoji': '💛', 'name': 'Amarillo', 'correct': false},
+        {'emoji': '👶', 'name': 'Bebé', 'correct': false},
         {'emoji': '🤗', 'name': 'Yudo', 'correct': true},
         {'emoji': '🍃', 'name': 'Yuyos', 'correct': true},
         {'emoji': '🔥', 'name': 'Yesca', 'correct': true},
       ],
       'Z': [
-        {'emoji': '🦓', 'name': 'Cebra', 'correct': true},
         {'emoji': '👟', 'name': 'Zapato', 'correct': true},
         {'emoji': '🥕', 'name': 'Zanahoria', 'correct': true},
         {'emoji': '🦊', 'name': 'Zorro', 'correct': true},
-        {'emoji': '🏰', 'name': 'Castillo', 'correct': true},
-        {'emoji': '📏', 'name': 'Regla', 'correct': true},
-        {'emoji': '⚡', 'name': 'Rayo', 'correct': true},
-        {'emoji': '🧭', 'name': 'Brújula', 'correct': true},
-        {'emoji': '🎯', 'name': 'Diana', 'correct': true},
         {'emoji': '🦆', 'name': 'Zambullida', 'correct': true},
         {'emoji': '🌈', 'name': 'Zona', 'correct': true},
-        {'emoji': '🐟', 'name': 'Zip', 'correct': true},
+        {'emoji': '🧿', 'name': 'Zombi', 'correct': true},
+        {'emoji': '🦓', 'name': 'Cebra', 'correct': false},
+        {'emoji': '🏰', 'name': 'Castillo', 'correct': false},
+        {'emoji': '📏', 'name': 'Regla', 'correct': false},
+        {'emoji': '⚡', 'name': 'Rayo', 'correct': false},
+        {'emoji': '🧭', 'name': 'Brújula', 'correct': false},
+        {'emoji': '🎯', 'name': 'Diana', 'correct': false},
       ],
       'Ñ': [
         {'emoji': '🦆', 'name': 'Ñandú', 'correct': true},
         {'emoji': '🍝', 'name': 'Ñoquis', 'correct': true},
-        {'emoji': '👶', 'name': 'Niño', 'correct': true},
-        {'emoji': '🕷️', 'name': 'Araña', 'correct': true},
-        {'emoji': '👧', 'name': 'Niña', 'correct': true},
-        {'emoji': '🌰', 'name': 'Castaña', 'correct': true},
-        {'emoji': '🎵', 'name': 'Canción', 'correct': true},
-        {'emoji': '🏔️', 'name': 'Montaña', 'correct': true},
-        {'emoji': '🛁', 'name': 'Baño', 'correct': true},
-        {'emoji': '🏡', 'name': 'Cabaña', 'correct': true},
+        {'emoji': '🥱', 'name': 'Ñoñería', 'correct': true},
+        {'emoji': '👃', 'name': 'Ñata', 'correct': true},
+        {'emoji': '🐄', 'name': 'Ñu', 'correct': true},
+        {'emoji': '🤏', 'name': 'Ñoño', 'correct': true},
+        {'emoji': '👶', 'name': 'Ñene', 'correct': true},
+        {'emoji': '👧', 'name': 'Ñena', 'correct': true},
         {'emoji': '🦆', 'name': 'Ñato', 'correct': true},
-        {'emoji': '🎂', 'name': 'Cumpleaños', 'correct': true},
+        {'emoji': '🌿', 'name': 'Ñandubay', 'correct': true},
+        {'emoji': '🧸', 'name': 'Ñoñez', 'correct': true},
+        {'emoji': '🔄', 'name': 'Ñapa', 'correct': true},
       ],
     };
     
@@ -1710,70 +1740,633 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
 
   // FUNCIÓN PRINCIPAL DE VALIDACIÓN POR LETRA
   bool _validateSpecificLetterShape(List<Offset> stroke, String letter, double canvasWidth, double canvasHeight) {
-    // Normalizar el trazo a coordenadas 0-1 para facilitar la validación
-    final normalizedStroke = _normalizeStroke(stroke, canvasWidth, canvasHeight);
+    // SISTEMA SIMPLE: Si el trazo tiene buen tamaño y no es garabato, es válido
+    if (stroke.length < 5) return false;
     
-    switch (letter) {
+    // Verificar que cubra área mínima
+    if (!_hasReasonableCoverage(stroke, canvasWidth, canvasHeight)) return false;
+    
+    // Verificar que no sea garabato excesivo
+    if (_isExcessiveScribbling(stroke)) return false;
+    
+    // VALIDACIÓN ESPECÍFICA SIMPLE POR LETRA
+    switch (letter.toUpperCase()) {
       case 'A':
-        return _validateLetterA(normalizedStroke);
+        return _validateSimpleA(stroke, canvasWidth, canvasHeight);
       case 'B':
-        return _validateLetterB(normalizedStroke);
+        return _validateSimpleB(stroke, canvasWidth, canvasHeight);
       case 'C':
-        return _validateLetterC(normalizedStroke);
+        return _validateSimpleC(stroke, canvasWidth, canvasHeight);
       case 'D':
-        return _validateLetterD(normalizedStroke);
+        return _validateSimpleD(stroke, canvasWidth, canvasHeight);
       case 'E':
-        return _validateLetterE(normalizedStroke);
+        return _validateSimpleE(stroke, canvasWidth, canvasHeight);
       case 'F':
-        return _validateLetterF(normalizedStroke);
+        return _validateSimpleF(stroke, canvasWidth, canvasHeight);
       case 'G':
-        return _validateLetterG(normalizedStroke);
+        return _validateSimpleG(stroke, canvasWidth, canvasHeight);
       case 'H':
-        return _validateLetterH(normalizedStroke);
+        return _validateSimpleH(stroke, canvasWidth, canvasHeight);
       case 'I':
-        return _validateLetterI(normalizedStroke);
+        return _validateSimpleI(stroke, canvasWidth, canvasHeight);
       case 'J':
-        return _validateLetterJ(normalizedStroke);
+        return _validateSimpleJ(stroke, canvasWidth, canvasHeight);
       case 'K':
-        return _validateLetterK(normalizedStroke);
+        return _validateSimpleK(stroke, canvasWidth, canvasHeight);
       case 'L':
-        return _validateLetterL(normalizedStroke);
+        return _validateSimpleL(stroke, canvasWidth, canvasHeight);
       case 'M':
-        return _validateLetterM(normalizedStroke);
+        return _validateSimpleM(stroke, canvasWidth, canvasHeight);
       case 'N':
-        return _validateLetterN(normalizedStroke);
+        return _validateSimpleN(stroke, canvasWidth, canvasHeight);
       case 'Ñ':
-        return _validateLetterEnye(normalizedStroke);
+        return _validateSimpleN(stroke, canvasWidth, canvasHeight); // Igual que N
       case 'O':
-        return _validateLetterO(normalizedStroke);
+        return _validateSimpleO(stroke, canvasWidth, canvasHeight);
       case 'P':
-        return _validateLetterP(normalizedStroke);
+        return _validateSimpleP(stroke, canvasWidth, canvasHeight);
       case 'Q':
-        return _validateLetterQ(normalizedStroke);
+        return _validateSimpleQ(stroke, canvasWidth, canvasHeight);
       case 'R':
-        return _validateLetterR(normalizedStroke);
+        return _validateSimpleR(stroke, canvasWidth, canvasHeight);
       case 'S':
-        return _validateLetterS(normalizedStroke);
+        return _validateSimpleS(stroke, canvasWidth, canvasHeight);
       case 'T':
-        return _validateLetterT(normalizedStroke);
+        return _validateSimpleT(stroke, canvasWidth, canvasHeight);
       case 'U':
-        return _validateLetterU(normalizedStroke);
+        return _validateSimpleU(stroke, canvasWidth, canvasHeight);
       case 'V':
-        return _validateLetterV(normalizedStroke);
+        return _validateSimpleV(stroke, canvasWidth, canvasHeight);
       case 'W':
-        return _validateLetterW(normalizedStroke);
+        return _validateSimpleW(stroke, canvasWidth, canvasHeight);
       case 'X':
-        return _validateLetterX(normalizedStroke);
+        return _validateSimpleX(stroke, canvasWidth, canvasHeight);
       case 'Y':
-        return _validateLetterY(normalizedStroke);
+        return _validateSimpleY(stroke, canvasWidth, canvasHeight);
       case 'Z':
-        return _validateLetterZ(normalizedStroke);
-      // Para letras no implementadas, usar validación básica
+        return _validateSimpleZ(stroke, canvasWidth, canvasHeight);
       default:
-        return _validateBasicLetterShape(normalizedStroke);
+        return true; // Aceptar cualquier trazo decente por defecto
     }
   }
   
+  // FUNCIONES SIMPLES DE VALIDACIÓN PARA LAS 27 LETRAS
+  
+  bool _validateSimpleA(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // A: Debe coincidir con la demostración - línea diagonal izquierda, derecha, o barra horizontal
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // Normalizar posiciones
+    final startX = start.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endX = end.dx / canvasWidth;
+    final endY = end.dy / canvasHeight;
+    
+    // TRAZO 1: Línea diagonal izquierda (centro-arriba hacia izquierda-abajo)
+    final isLeftDiagonal = (startY < 0.4 && endY > 0.6) && (startX > 0.4 && endX < 0.4);
+    
+    // TRAZO 2: Línea diagonal derecha (centro-arriba hacia derecha-abajo)  
+    final isRightDiagonal = (startY < 0.4 && endY > 0.6) && (startX < 0.6 && endX > 0.6);
+    
+    // TRAZO 3: Barra horizontal del medio
+    final isHorizontalBar = (startY > 0.4 && startY < 0.7) && (endY > 0.4 && endY < 0.7) && 
+                            (endX - startX).abs() > 0.2;
+    
+    return isLeftDiagonal || isRightDiagonal || isHorizontalBar;
+  }
+  
+  bool _validateSimpleB(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // B: Línea vertical izquierda o curvas semicirculares derecha
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Línea vertical izquierda
+    final isVerticalLine = (startX < 0.4 && endX < 0.4) && (endY - startY).abs() > 0.3;
+    
+    // Curva superior o inferior
+    final isCurve = (startX < 0.5 && endX > 0.5) || _hasSignificantCurvature(stroke);
+    
+    return isVerticalLine || isCurve;
+  }
+  
+  bool _validateSimpleC(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // C: Debe ser una curva abierta (como un círculo incompleto)
+    if (stroke.length < 5) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // Verificar que NO sea un círculo cerrado (start y end diferentes)
+    final distance = math.sqrt(math.pow(end.dx - start.dx, 2) + math.pow(end.dy - start.dy, 2));
+    final isOpen = distance > canvasWidth * 0.1; // 10% del ancho
+    
+    // Debe tener algo de curvatura
+    double totalCurvature = 0;
+    for (int i = 1; i < stroke.length - 1; i++) {
+      final prev = stroke[i-1];
+      final curr = stroke[i];
+      final next = stroke[i+1];
+      
+      final angle1 = math.atan2(curr.dy - prev.dy, curr.dx - prev.dx);
+      final angle2 = math.atan2(next.dy - curr.dy, next.dx - curr.dx);
+      totalCurvature += (angle2 - angle1).abs();
+    }
+    
+    return isOpen && totalCurvature > 1.5; // Curva abierta
+  }
+  
+  bool _validateSimpleD(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // D: Línea vertical o curva semicircular
+    return _hasReasonableCoverage(stroke, canvasWidth, canvasHeight);
+  }
+  
+  bool _validateSimpleE(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // E: Línea vertical izquierda o líneas horizontales
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Línea vertical izquierda
+    final isVerticalLine = (startX < 0.4 && endX < 0.4) && (endY - startY).abs() > 0.3;
+    
+    // Líneas horizontales (arriba, medio, abajo)
+    final isHorizontalLine = (startY - endY).abs() < 0.2 && (endX - startX).abs() > 0.2;
+    
+    return isVerticalLine || isHorizontalLine;
+  }
+  
+  bool _validateSimpleF(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // F: Línea vertical izquierda o líneas horizontales (similar a E pero sin línea de abajo)
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Línea vertical izquierda
+    final isVerticalLine = (startX < 0.4 && endX < 0.4) && (endY - startY).abs() > 0.3;
+    
+    // Líneas horizontales (arriba, medio - NO abajo para F)
+    final isHorizontalLine = (startY - endY).abs() < 0.2 && (endX - startX).abs() > 0.2;
+    
+    return isVerticalLine || isHorizontalLine;
+  }
+  
+  bool _validateSimpleG(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // G: Curva como C pero con línea horizontal en el medio derecho
+    if (stroke.length < 5) return false;
+    
+    // Similar a C (curva abierta) o línea horizontal en la derecha
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Línea horizontal en la derecha (parte distintiva de G)
+    final isRightHorizontal = (startX > 0.5 && endX > 0.5) && (startY - endY).abs() < 0.2;
+    
+    // O curva general
+    final isCurve = _hasSignificantCurvature(stroke);
+    
+    return isRightHorizontal || isCurve;
+  }
+  
+  bool _validateSimpleH(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // H: Dos líneas verticales o línea horizontal del medio
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Línea vertical izquierda o derecha
+    final isLeftVertical = (startX < 0.4 && endX < 0.4) && (endY - startY).abs() > 0.3;
+    final isRightVertical = (startX > 0.6 && endX > 0.6) && (endY - startY).abs() > 0.3;
+    
+    // Línea horizontal del medio
+    final isHorizontalMiddle = (startY > 0.4 && startY < 0.6) && (endY > 0.4 && endY < 0.6) && (endX - startX).abs() > 0.2;
+    
+    return isLeftVertical || isRightVertical || isHorizontalMiddle;
+  }
+  
+  bool _validateSimpleI(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // I: Debe ser una línea vertical o un punto
+    if (stroke.length < 2) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // Línea vertical: X no cambia mucho, Y sí
+    final horizontalChange = (end.dx - start.dx).abs();
+    final verticalChange = (end.dy - start.dy).abs();
+    
+    // Es vertical si el cambio vertical es mayor al horizontal
+    return verticalChange > horizontalChange || stroke.length < 5; // Permitir puntos pequeños
+  }
+  
+  bool _validateSimpleJ(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // J: Línea vertical hacia abajo con curva hacia la izquierda al final
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Línea vertical hacia abajo
+    final isVerticalDown = (endY > startY + 0.3) && (startX - endX).abs() < 0.3;
+    
+    // Curva hacia la izquierda (final de J)
+    final isCurveLeft = (endX < startX - 0.1) && _hasSignificantCurvature(stroke);
+    
+    return isVerticalDown || isCurveLeft;
+  }
+  
+  bool _validateSimpleK(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // K: Línea vertical izquierda o líneas diagonales desde el centro
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Línea vertical izquierda
+    final isVerticalLeft = (startX < 0.4 && endX < 0.4) && (endY - startY).abs() > 0.3;
+    
+    // Línea diagonal superior (centro hacia arriba-derecha)
+    final isUpperDiagonal = (startY > endY) && (endX > startX + 0.2);
+    
+    // Línea diagonal inferior (centro hacia abajo-derecha)
+    final isLowerDiagonal = (startY < endY) && (endX > startX + 0.2);
+    
+    return isVerticalLeft || isUpperDiagonal || isLowerDiagonal;
+  }
+  
+  bool _validateSimpleL(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // L: Debe ser Línea vertical hacia abajo O horizontal hacia derecha
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    final horizontalChange = (end.dx - start.dx).abs();
+    final verticalChange = (end.dy - start.dy).abs();
+    
+    // Es vertical (parte principal de L) o horizontal (parte de abajo)
+    return verticalChange > horizontalChange * 0.5 || horizontalChange > verticalChange * 0.5;
+  }
+  
+  bool _validateSimpleM(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // M: Líneas verticales (izq/der) o líneas en pico (centro)
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Líneas verticales izquierda o derecha
+    final isLeftVertical = (startX < 0.3 && endX < 0.3) && (endY - startY).abs() > 0.3;
+    final isRightVertical = (startX > 0.7 && endX > 0.7) && (endY - startY).abs() > 0.3;
+    
+    // Líneas del pico (van hacia el centro)
+    final isLeftPeak = (startY > 0.6) && (endY < 0.4) && (endX > startX + 0.1);
+    final isRightPeak = (startY > 0.6) && (endY < 0.4) && (endX < startX - 0.1);
+    
+    return isLeftVertical || isRightVertical || isLeftPeak || isRightPeak;
+  }
+  
+  bool _validateSimpleN(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // N: Líneas verticales (izq/der) o diagonal del medio
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Líneas verticales izquierda o derecha
+    final isLeftVertical = (startX < 0.4 && endX < 0.4) && (endY - startY).abs() > 0.3;
+    final isRightVertical = (startX > 0.6 && endX > 0.6) && (endY - startY).abs() > 0.3;
+    
+    // Diagonal del medio (de izquierda-abajo a derecha-arriba)
+    final isMiddleDiagonal = (startX < endX - 0.2) && (startY > endY + 0.2);
+    
+    return isLeftVertical || isRightVertical || isMiddleDiagonal;
+  }
+  
+  bool _validateSimpleO(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // O: Debe ser una curva que forme un círculo o óvalo
+    if (stroke.length < 8) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // Verificar que sea curvo (no una línea recta)
+    double totalCurvature = 0;
+    for (int i = 1; i < stroke.length - 1; i++) {
+      final prev = stroke[i-1];
+      final curr = stroke[i];
+      final next = stroke[i+1];
+      
+      // Calcular ángulo de curvatura
+      final angle1 = math.atan2(curr.dy - prev.dy, curr.dx - prev.dx);
+      final angle2 = math.atan2(next.dy - curr.dy, next.dx - curr.dx);
+      totalCurvature += (angle2 - angle1).abs();
+    }
+    
+    // Debe tener curvatura significativa para ser O
+    return totalCurvature > 3.0; // Aproximadamente un círculo
+  }
+  
+  bool _validateSimpleP(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // P: Línea vertical izquierda o curva superior derecha
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Línea vertical izquierda
+    final isVerticalLeft = (startX < 0.4 && endX < 0.4) && (endY - startY).abs() > 0.3;
+    
+    // Curva superior derecha (parte distintiva de P)
+    final isUpperCurve = (startY < 0.6) && (endX > startX + 0.1) && _hasSignificantCurvature(stroke);
+    
+    // Línea horizontal superior
+    final isTopHorizontal = (startY < 0.4) && (startY - endY).abs() < 0.2 && (endX - startX).abs() > 0.2;
+    
+    // Línea horizontal media
+    final isMiddleHorizontal = (startY > 0.4 && startY < 0.6) && (startY - endY).abs() < 0.2 && (endX - startX).abs() > 0.2;
+    
+    return isVerticalLeft || isUpperCurve || isTopHorizontal || isMiddleHorizontal;
+  }
+  
+  bool _validateSimpleQ(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // Q: Círculo como O + línea diagonal en la parte inferior derecha
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Círculo (curvatura significativa)
+    final isCircle = _hasSignificantCurvature(stroke) && stroke.length > 8;
+    
+    // Línea diagonal en la parte inferior derecha (cola de Q)
+    final isTail = (startX > 0.4 && startY > 0.4) && (endX > startX + 0.1) && (endY > startY + 0.1);
+    
+    return isCircle || isTail;
+  }
+  
+  bool _validateSimpleR(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // R: Similar a P pero con línea diagonal inferior derecha
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Línea vertical izquierda
+    final isVerticalLeft = (startX < 0.4 && endX < 0.4) && (endY - startY).abs() > 0.3;
+    
+    // Curva superior derecha (como P)
+    final isUpperCurve = (startY < 0.6) && (endX > startX + 0.1) && _hasSignificantCurvature(stroke);
+    
+    // Línea diagonal inferior (distintiva de R)
+    final isLowerDiagonal = (startY > 0.4) && (endY > startY + 0.1) && (endX > startX + 0.2);
+    
+    return isVerticalLeft || isUpperCurve || isLowerDiagonal;
+  }
+  
+  bool _validateSimpleS(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // S: Curva en forma de S (cambio de dirección)
+    if (stroke.length < 8) return false;
+    
+    // Verificar que tenga curvatura significativa y cambios de dirección
+    bool hasDirectionChange = false;
+    
+    for (int i = 2; i < stroke.length - 2; i++) {
+      final prev = stroke[i-2];
+      final curr = stroke[i];
+      final next = stroke[i+2];
+      
+      final slope1 = (curr.dy - prev.dy) / (curr.dx - prev.dx + 0.001);
+      final slope2 = (next.dy - curr.dy) / (next.dx - curr.dx + 0.001);
+      
+      // Detectar cambio significativo en la pendiente (forma de S)
+      if ((slope1 > 0 && slope2 < 0) || (slope1 < 0 && slope2 > 0)) {
+        hasDirectionChange = true;
+        break;
+      }
+    }
+    
+    return hasDirectionChange && _hasSignificantCurvature(stroke);
+  }
+  
+  bool _validateSimpleT(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // T: Línea horizontal superior o línea vertical del centro
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Línea horizontal superior
+    final isTopHorizontal = (startY < 0.4) && (startY - endY).abs() < 0.2 && (endX - startX).abs() > 0.3;
+    
+    // Línea vertical del centro
+    final isCenterVertical = (startX > 0.4 && startX < 0.6) && (endX > 0.4 && endX < 0.6) && (endY - startY).abs() > 0.3;
+    
+    return isTopHorizontal || isCenterVertical;
+  }
+  
+  bool _validateSimpleU(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // U: Curva en forma de U (abajo curvado, arriba abierto)
+    if (stroke.length < 5) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Verificar que empiece y termine arriba (parte abierta de U)
+    final startsHigh = startY < 0.6;
+    final endsHigh = endY < 0.6;
+    
+    // Debe tener curvatura (la parte de abajo)
+    final hasCurve = _hasSignificantCurvature(stroke);
+    
+    return (startsHigh || endsHigh) && hasCurve;
+  }
+  
+  bool _validateSimpleV(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // V: Líneas diagonales que se juntan abajo
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Línea diagonal izquierda (arriba-izq a abajo-centro)
+    final isLeftDiagonal = (startY < endY + 0.2) && (startX < 0.4) && (endX > 0.4);
+    
+    // Línea diagonal derecha (arriba-der a abajo-centro)
+    final isRightDiagonal = (startY < endY + 0.2) && (startX > 0.6) && (endX < 0.6);
+    
+    return isLeftDiagonal || isRightDiagonal;
+  }
+  
+  bool _validateSimpleW(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // W: Líneas en forma de W (como doble V)
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Cualquier línea diagonal (W tiene muchas diagonales)
+    final isDiagonal = (endX - startX).abs() > 0.1 && (endY - startY).abs() > 0.1;
+    
+    return isDiagonal;
+  }
+  
+  bool _validateSimpleX(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // X: Líneas diagonales cruzadas
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Diagonal de izquierda-arriba a derecha-abajo
+    final isMainDiagonal = (startX < 0.4 && startY < 0.4) && (endX > 0.6 && endY > 0.6);
+    
+    // Diagonal de derecha-arriba a izquierda-abajo
+    final isCounterDiagonal = (startX > 0.6 && startY < 0.4) && (endX < 0.4 && endY > 0.6);
+    
+    // Cualquier diagonal significativa
+    final isDiagonal = (endX - startX).abs() > 0.3 && (endY - startY).abs() > 0.3;
+    
+    return isMainDiagonal || isCounterDiagonal || isDiagonal;
+  }
+  
+  bool _validateSimpleY(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // Y: Líneas diagonales que se juntan en el centro, luego vertical
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Línea diagonal izquierda (arriba-izq hacia centro)
+    final isLeftDiagonal = (startX < 0.4 && startY < 0.4) && (endX > 0.4 && endY > 0.4);
+    
+    // Línea diagonal derecha (arriba-der hacia centro)
+    final isRightDiagonal = (startX > 0.6 && startY < 0.4) && (endX < 0.6 && endY > 0.4);
+    
+    // Línea vertical del centro hacia abajo
+    final isCenterVertical = (startX > 0.4 && startX < 0.6) && (endY > startY + 0.2);
+    
+    return isLeftDiagonal || isRightDiagonal || isCenterVertical;
+  }
+  
+  bool _validateSimpleZ(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // Z: Línea horizontal arriba, diagonal, horizontal abajo
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    final startX = start.dx / canvasWidth;
+    final endX = end.dx / canvasWidth;
+    final startY = start.dy / canvasHeight;
+    final endY = end.dy / canvasHeight;
+    
+    // Línea horizontal superior
+    final isTopHorizontal = (startY < 0.4) && (startY - endY).abs() < 0.2 && (endX - startX).abs() > 0.3;
+    
+    // Línea diagonal principal (izquierda-arriba a derecha-abajo)
+    final isMainDiagonal = (startX < endX - 0.2) && (startY < endY - 0.2);
+    
+    // Línea horizontal inferior
+    final isBottomHorizontal = (startY > 0.6) && (startY - endY).abs() < 0.2 && (endX - startX).abs() > 0.3;
+    
+    return isTopHorizontal || isMainDiagonal || isBottomHorizontal;
+  }
+
+  // Función auxiliar para detectar curvatura significativa
+  bool _hasSignificantCurvature(List<Offset> stroke) {
+    if (stroke.length < 5) return false;
+    
+    double totalCurvature = 0;
+    for (int i = 1; i < stroke.length - 1; i++) {
+      final prev = stroke[i-1];
+      final curr = stroke[i];
+      final next = stroke[i+1];
+      
+      final angle1 = math.atan2(curr.dy - prev.dy, curr.dx - prev.dx);
+      final angle2 = math.atan2(next.dy - curr.dy, next.dx - curr.dx);
+      totalCurvature += (angle2 - angle1).abs();
+    }
+    
+    return totalCurvature > 1.0; // Curvatura mínima requerida
+  }
+
   // Normalizar trazo a coordenadas 0-1
   List<Offset> _normalizeStroke(List<Offset> stroke, double canvasWidth, double canvasHeight) {
     if (stroke.isEmpty) return [];
@@ -2011,8 +2604,48 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   // VALIDACIONES ESPECÍFICAS PARA TODAS LAS LETRAS DEL ABECEDARIO ARGENTINO
   
   // LETRA D - Semicírculo con línea vertical izquierda
-  bool _validateLetterD(List<Offset> stroke) {
-    return _isVerticalStroke(stroke) || _isCurvedStroke(stroke);
+  // VALIDACIÓN ESPECÍFICA PARA LA LETRA D - Alfabeto Argentino
+  bool _validateLetterD(List<Offset> normalizedStroke) {
+    if (normalizedStroke.length < 5) return false;
+    
+    // La D tiene: línea vertical izquierda + semicírculo derecho
+    return _isLeftVerticalOfD(normalizedStroke) || 
+           _isRightCurveOfD(normalizedStroke) ||
+           _isCompleteDStroke(normalizedStroke);
+  }
+  
+  // Validar línea vertical izquierda de la D
+  bool _isLeftVerticalOfD(List<Offset> stroke) {
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // Debe estar en el lado izquierdo y ser vertical
+    return start.dx < 0.3 && end.dx < 0.3 && _isVerticalStroke(stroke);
+  }
+  
+  // Validar semicírculo derecho de la D
+  bool _isRightCurveOfD(List<Offset> stroke) {
+    final avgX = stroke.map((p) => p.dx).reduce((a, b) => a + b) / stroke.length;
+    
+    // Debe estar en la parte derecha y ser curvo
+    return avgX > 0.4 && _isCurvedStroke(stroke) && _isLeftToRightCurve(stroke);
+  }
+  
+  // Validar trazo completo de D
+  bool _isCompleteDStroke(List<Offset> stroke) {
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // La D completa empieza y termina en el lado izquierdo
+    return start.dx < 0.4 && end.dx < 0.4 && _isCurvedStroke(stroke);
+  }
+  
+  // Verificar si es una curva que va de izquierda a derecha
+  bool _isLeftToRightCurve(List<Offset> stroke) {
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    return start.dx < end.dx; // Termina más a la derecha que donde empieza
   }
   
   // LETRA E - Línea vertical izquierda y líneas horizontales (arriba, medio, abajo)
@@ -2102,9 +2735,33 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     return avgY > 0.4 && avgY < 0.6 && _isHorizontalStroke(stroke);
   }
   
-  // LETRA G - Similar a C pero con línea horizontal en el medio derecho
-  bool _validateLetterG(List<Offset> stroke) {
-    return _isOpenCircularStroke(stroke) || _isHorizontalStroke(stroke);
+  // VALIDACIÓN ESPECÍFICA PARA LA LETRA G - Alfabeto Argentino
+  bool _validateLetterG(List<Offset> normalizedStroke) {
+    if (normalizedStroke.length < 5) return false;
+    
+    // La G es como una C pero con barra horizontal interior
+    return _isOpenCircularStroke(normalizedStroke) ||
+           _isHorizontalBarOfG(normalizedStroke) ||
+           _isCompleteGStroke(normalizedStroke);
+  }
+  
+  // Validar barra horizontal interior de la G
+  bool _isHorizontalBarOfG(List<Offset> stroke) {
+    final avgY = stroke.map((p) => p.dy).reduce((a, b) => a + b) / stroke.length;
+    final avgX = stroke.map((p) => p.dx).reduce((a, b) => a + b) / stroke.length;
+    
+    // Debe estar en el lado derecho, en el medio verticalmente, y ser horizontal
+    return avgX > 0.5 && avgY > 0.4 && avgY < 0.6 && _isHorizontalStroke(stroke);
+  }
+  
+  // Validar trazo completo de G
+  bool _isCompleteGStroke(List<Offset> stroke) {
+    // Una G completa es como una C que termina con una línea horizontal hacia adentro
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // Debe ser principalmente circular pero terminar hacia la izquierda
+    return _isCurvedStroke(stroke) && start.dx > end.dx && _isOpenCircularStroke(stroke);
   }
   
   // LETRA H - Dos líneas verticales y una horizontal en el medio
@@ -2125,16 +2782,14 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     return _isVerticalStroke(stroke) || _isHorizontalStroke(stroke);
   }
   
-  // LETRA I - Línea vertical central y líneas horizontales arriba/abajo
+  // LETRA I - Simplificada: línea vertical y punto (como alfabeto argentino)
   bool _validateLetterI(List<Offset> stroke) {
-    // Validar línea vertical central
+    // En el alfabeto argentino, la I es solo una línea vertical y un punto
+    // Validar línea vertical (la parte principal)
     if (_isVerticalStroke(stroke)) return true;
     
-    // Validar línea horizontal superior
-    if (_isTopHorizontalOfI(stroke)) return true;
-    
-    // Validar línea horizontal inferior
-    if (_isBottomHorizontalOfI(stroke)) return true;
+    // Validar punto (trazo muy pequeño)
+    if (_isSmallDot(stroke)) return true;
     
     return false;
   }
@@ -2168,9 +2823,61 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     return (startsHigh && endsLow) || curvesLeft || _isCurvedStroke(stroke);
   }
   
-  // LETRA K - Línea vertical o diagonales que se encuentran
-  bool _validateLetterK(List<Offset> stroke) {
-    return _isVerticalStroke(stroke) || _isDiagonalStroke(stroke);
+  // VALIDACIÓN ESPECÍFICA PARA LA LETRA K - Alfabeto Argentino
+  bool _validateLetterK(List<Offset> normalizedStroke) {
+    if (normalizedStroke.length < 5) return false;
+    
+    // La K tiene: línea vertical izquierda + diagonal superior + diagonal inferior
+    return _isLeftVerticalOfK(normalizedStroke) ||
+           _isUpperDiagonalOfK(normalizedStroke) ||
+           _isLowerDiagonalOfK(normalizedStroke) ||
+           _isCompleteKStroke(normalizedStroke);
+  }
+  
+  // Validar línea vertical izquierda de la K
+  bool _isLeftVerticalOfK(List<Offset> stroke) {
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // Debe estar en el lado izquierdo y ser vertical
+    return start.dx < 0.4 && end.dx < 0.4 && _isVerticalStroke(stroke);
+  }
+  
+  // Validar diagonal superior de la K (desde centro-izquierda hacia arriba-derecha)
+  bool _isUpperDiagonalOfK(List<Offset> stroke) {
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // Va desde el centro-izquierdo hacia arriba-derecha
+    return start.dx < 0.6 && start.dy > 0.4 &&
+           end.dx > start.dx && end.dy < start.dy &&
+           _isDiagonalStroke(stroke);
+  }
+  
+  // Validar diagonal inferior de la K (desde centro-izquierda hacia abajo-derecha)
+  bool _isLowerDiagonalOfK(List<Offset> stroke) {
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // Va desde el centro-izquierdo hacia abajo-derecha
+    return start.dx < 0.6 && start.dy < 0.6 &&
+           end.dx > start.dx && end.dy > start.dy &&
+           _isDiagonalStroke(stroke);
+  }
+  
+  // Validar trazo completo de K
+  bool _isCompleteKStroke(List<Offset> stroke) {
+    // Una K completa tiene un punto de intersección en el medio-izquierda
+    bool hasMiddlePoint = false;
+    for (int i = 0; i < stroke.length; i++) {
+      final point = stroke[i];
+      if (point.dx < 0.6 && point.dy > 0.3 && point.dy < 0.7) {
+        hasMiddlePoint = true;
+        break;
+      }
+    }
+    
+    return hasMiddlePoint && _isDiagonalStroke(stroke);
   }
   
   // LETRA L - Línea vertical o línea horizontal inferior
@@ -2187,14 +2894,106 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     return isBottomHorizontal;
   }
   
-  // LETRA M - Dos líneas verticales o diagonales que forman picos
-  bool _validateLetterM(List<Offset> stroke) {
-    return _isVerticalStroke(stroke) || _isDiagonalStroke(stroke) || _isVShapeStroke(stroke);
+  // VALIDACIÓN ESPECÍFICA PARA LA LETRA M - Alfabeto Argentino
+  bool _validateLetterM(List<Offset> normalizedStroke) {
+    if (normalizedStroke.length < 5) return false;
+    
+    // La M tiene: vertical izquierda + diagonal hacia centro + diagonal hacia derecha + vertical derecha
+    return _isLeftVerticalOfM(normalizedStroke) ||
+           _isRightVerticalOfM(normalizedStroke) ||
+           _isLeftDiagonalOfM(normalizedStroke) ||
+           _isRightDiagonalOfM(normalizedStroke) ||
+           _isCompleteMStroke(normalizedStroke);
   }
   
-  // LETRA N - Línea vertical o diagonal
-  bool _validateLetterN(List<Offset> stroke) {
-    return _isVerticalStroke(stroke) || _isDiagonalStroke(stroke);
+  // Validar vertical izquierda de la M
+  bool _isLeftVerticalOfM(List<Offset> stroke) {
+    final avgX = stroke.map((p) => p.dx).reduce((a, b) => a + b) / stroke.length;
+    return avgX < 0.3 && _isVerticalStroke(stroke);
+  }
+  
+  // Validar vertical derecha de la M
+  bool _isRightVerticalOfM(List<Offset> stroke) {
+    final avgX = stroke.map((p) => p.dx).reduce((a, b) => a + b) / stroke.length;
+    return avgX > 0.7 && _isVerticalStroke(stroke);
+  }
+  
+  // Validar diagonal izquierda de la M (de arriba-izquierda hacia centro-abajo)
+  bool _isLeftDiagonalOfM(List<Offset> stroke) {
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    return start.dx < 0.4 && start.dy < 0.4 &&
+           end.dx > 0.4 && end.dx < 0.6 && end.dy > 0.6 &&
+           _isDiagonalStroke(stroke);
+  }
+  
+  // Validar diagonal derecha de la M (de centro-abajo hacia arriba-derecha)
+  bool _isRightDiagonalOfM(List<Offset> stroke) {
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    return start.dx > 0.4 && start.dx < 0.6 && start.dy > 0.6 &&
+           end.dx > 0.6 && end.dy < 0.4 &&
+           _isDiagonalStroke(stroke);
+  }
+  
+  // Validar trazo completo de M
+  bool _isCompleteMStroke(List<Offset> stroke) {
+    // La M tiene dos picos - buscar el punto más bajo en el centro
+    double minY = 1.0;
+    int peakIndex = 0;
+    
+    for (int i = 0; i < stroke.length; i++) {
+      if (stroke[i].dy > minY && stroke[i].dx > 0.3 && stroke[i].dx < 0.7) {
+        minY = stroke[i].dy;
+        peakIndex = i;
+      }
+    }
+    
+    return minY > 0.5 && _isDiagonalStroke(stroke); // Tiene valle en el centro
+  }
+  
+  // VALIDACIÓN ESPECÍFICA PARA LA LETRA N - Alfabeto Argentino  
+  bool _validateLetterN(List<Offset> normalizedStroke) {
+    if (normalizedStroke.length < 5) return false;
+    
+    // La N tiene: vertical izquierda + diagonal + vertical derecha
+    return _isLeftVerticalOfN(normalizedStroke) ||
+           _isRightVerticalOfN(normalizedStroke) ||
+           _isDiagonalOfN(normalizedStroke) ||
+           _isCompleteNStroke(normalizedStroke);
+  }
+  
+  // Validar vertical izquierda de la N
+  bool _isLeftVerticalOfN(List<Offset> stroke) {
+    final avgX = stroke.map((p) => p.dx).reduce((a, b) => a + b) / stroke.length;
+    return avgX < 0.3 && _isVerticalStroke(stroke);
+  }
+  
+  // Validar vertical derecha de la N
+  bool _isRightVerticalOfN(List<Offset> stroke) {
+    final avgX = stroke.map((p) => p.dx).reduce((a, b) => a + b) / stroke.length;
+    return avgX > 0.7 && _isVerticalStroke(stroke);
+  }
+  
+  // Validar diagonal de la N (de abajo-izquierda a arriba-derecha)
+  bool _isDiagonalOfN(List<Offset> stroke) {
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    return start.dx < 0.4 && start.dy > 0.6 &&
+           end.dx > 0.6 && end.dy < 0.4 &&
+           _isDiagonalStroke(stroke);
+  }
+  
+  // Validar trazo completo de N
+  bool _isCompleteNStroke(List<Offset> stroke) {
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // La N va de abajo-izquierda a arriba-derecha principalmente
+    return start.dx < end.dx && start.dy > end.dy && _isDiagonalStroke(stroke);
   }
   
   // LETRA Ñ - Como N pero con tilde encima
@@ -2219,19 +3018,124 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     return avgY < 0.2 && stroke.length < 15 && _isCurvedStroke(stroke);
   }
   
-  // LETRA P - Línea vertical o curva superior
-  bool _validateLetterP(List<Offset> stroke) {
-    return _isVerticalStroke(stroke) || _isCurvedStroke(stroke) || _isHorizontalStroke(stroke);
+  // VALIDACIÓN ESPECÍFICA PARA LA LETRA P - Alfabeto Argentino
+  bool _validateLetterP(List<Offset> normalizedStroke) {
+    if (normalizedStroke.length < 5) return false;
+    
+    // La P tiene: línea vertical izquierda + semicírculo superior
+    return _isLeftVerticalOfP(normalizedStroke) ||
+           _isUpperCurveOfP(normalizedStroke) ||
+           _isCompletePStroke(normalizedStroke);
   }
   
-  // LETRA Q - Similar a O pero con cola
-  bool _validateLetterQ(List<Offset> stroke) {
-    return _isCircularStroke(stroke) || _isDiagonalStroke(stroke);
+  // Validar línea vertical izquierda de la P
+  bool _isLeftVerticalOfP(List<Offset> stroke) {
+    final avgX = stroke.map((p) => p.dx).reduce((a, b) => a + b) / stroke.length;
+    return avgX < 0.3 && _isVerticalStroke(stroke);
   }
   
-  // LETRA R - Similar a P pero con diagonal adicional
-  bool _validateLetterR(List<Offset> stroke) {
-    return _isVerticalStroke(stroke) || _isCurvedStroke(stroke) || _isDiagonalStroke(stroke);
+  // Validar semicírculo superior de la P
+  bool _isUpperCurveOfP(List<Offset> stroke) {
+    final avgY = stroke.map((p) => p.dy).reduce((a, b) => a + b) / stroke.length;
+    final avgX = stroke.map((p) => p.dx).reduce((a, b) => a + b) / stroke.length;
+    
+    // Debe estar en la parte superior derecha y ser curvo
+    return avgY < 0.5 && avgX > 0.3 && _isCurvedStroke(stroke);
+  }
+  
+  // Validar trazo completo de P
+  bool _isCompletePStroke(List<Offset> stroke) {
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // La P empieza vertical y se curva en la parte superior
+    return start.dx < 0.4 && _isCurvedStroke(stroke) && _hasUpperCurve(stroke);
+  }
+  
+  // Verificar si tiene curva en la parte superior
+  bool _hasUpperCurve(List<Offset> stroke) {
+    int upperPoints = 0;
+    for (final point in stroke) {
+      if (point.dy < 0.5) upperPoints++;
+    }
+    return upperPoints > stroke.length * 0.3; // Al menos 30% en la parte superior
+  }
+  
+  // VALIDACIÓN ESPECÍFICA PARA LA LETRA Q - Alfabeto Argentino
+  bool _validateLetterQ(List<Offset> normalizedStroke) {
+    if (normalizedStroke.length < 5) return false;
+    
+    // La Q es un círculo + cola diagonal
+    return _isCircularStroke(normalizedStroke) ||
+           _isDiagonalTailOfQ(normalizedStroke) ||
+           _isCompleteQStroke(normalizedStroke);
+  }
+  
+  // Validar cola diagonal de la Q
+  bool _isDiagonalTailOfQ(List<Offset> stroke) {
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // La cola va desde dentro del círculo hacia abajo-derecha
+    return start.dx > 0.4 && start.dx < 0.6 && start.dy > 0.4 && start.dy < 0.6 &&
+           end.dx > 0.6 && end.dy > 0.6 &&
+           _isDiagonalStroke(stroke);
+  }
+  
+  // Validar trazo completo de Q
+  bool _isCompleteQStroke(List<Offset> stroke) {
+    // Una Q completa es principalmente circular con extensión diagonal
+    return _isCircularStroke(stroke) && _hasBottomRightExtension(stroke);
+  }
+  
+  // Verificar si tiene extensión hacia abajo-derecha
+  bool _hasBottomRightExtension(List<Offset> stroke) {
+    final maxX = stroke.map((p) => p.dx).reduce((a, b) => a > b ? a : b);
+    final maxY = stroke.map((p) => p.dy).reduce((a, b) => a > b ? a : b);
+    
+    return maxX > 0.7 && maxY > 0.7; // Se extiende hacia abajo-derecha
+  }
+  
+  // VALIDACIÓN ESPECÍFICA PARA LA LETRA R - Alfabeto Argentino
+  bool _validateLetterR(List<Offset> normalizedStroke) {
+    if (normalizedStroke.length < 5) return false;
+    
+    // La R es como P + diagonal inferior adicional
+    return _isLeftVerticalOfR(normalizedStroke) ||
+           _isUpperCurveOfR(normalizedStroke) ||
+           _isLowerDiagonalOfR(normalizedStroke) ||
+           _isCompleteRStroke(normalizedStroke);
+  }
+  
+  // Validar línea vertical izquierda de la R (igual que P)
+  bool _isLeftVerticalOfR(List<Offset> stroke) {
+    final avgX = stroke.map((p) => p.dx).reduce((a, b) => a + b) / stroke.length;
+    return avgX < 0.3 && _isVerticalStroke(stroke);
+  }
+  
+  // Validar semicírculo superior de la R (igual que P)
+  bool _isUpperCurveOfR(List<Offset> stroke) {
+    final avgY = stroke.map((p) => p.dy).reduce((a, b) => a + b) / stroke.length;
+    final avgX = stroke.map((p) => p.dx).reduce((a, b) => a + b) / stroke.length;
+    
+    return avgY < 0.5 && avgX > 0.3 && _isCurvedStroke(stroke);
+  }
+  
+  // Validar diagonal inferior de la R
+  bool _isLowerDiagonalOfR(List<Offset> stroke) {
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // Va desde el centro hacia abajo-derecha
+    return start.dx < 0.6 && start.dy < 0.6 &&
+           end.dx > 0.6 && end.dy > 0.6 &&
+           _isDiagonalStroke(stroke);
+  }
+  
+  // Validar trazo completo de R
+  bool _isCompleteRStroke(List<Offset> stroke) {
+    // La R tiene curva superior y extensión diagonal inferior
+    return _isCurvedStroke(stroke) && _hasUpperCurve(stroke) && _hasBottomRightExtension(stroke);
   }
   
   // LETRA S - Curva en forma de S
@@ -3074,6 +3978,30 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     return deltaX > 0.3 && deltaY < 0.2;
   }
   
+  // Detectar trazo vertical del lado izquierdo (para la letra B)
+  bool _isLeftVerticalStroke(List<Offset> stroke) {
+    if (stroke.length < 3) return false;
+    
+    // Calcular el promedio de X para ver si está en el lado izquierdo
+    final avgX = stroke.map((p) => p.dx).reduce((a, b) => a + b) / stroke.length;
+    
+    // Debe estar en la mitad izquierda (X < 0.5) y ser vertical
+    return avgX < 0.5 && _isVerticalStroke(stroke);
+  }
+  
+  // Detectar trazo pequeño como un punto (para la letra I)
+  bool _isSmallDot(List<Offset> stroke) {
+    if (stroke.length < 2 || stroke.length > 8) return false;
+    
+    // Calcular el área cubierta por el trazo
+    final bounds = _getStrokeBounds(stroke);
+    final width = bounds.width;
+    final height = bounds.height;
+    
+    // Es un punto si es muy pequeño
+    return width < 0.1 && height < 0.1;
+  }
+  
   // Detectar trazo en forma de V o pico
   bool _isVShapeStroke(List<Offset> stroke) {
     if (stroke.length < 10) return false;
@@ -3112,16 +4040,84 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   bool _validateLetterC(List<Offset> normalizedStroke) {
     if (normalizedStroke.length < 8) return false;
     
-    // La C es como un círculo abierto
-    return _isOpenCircularStroke(normalizedStroke);
+    // La C se traza de arriba hacia abajo como un círculo abierto en sentido horario
+    return _isOpenCircularStroke(normalizedStroke) && _isClockwiseStroke(normalizedStroke);
   }
   
-  // VALIDACIÓN PARA LA LETRA B
-  bool _validateLetterB(List<Offset> normalizedStroke) {
-    if (normalizedStroke.length < 8) return false;
+  // Verificar si el trazo va en sentido horario (de arriba hacia abajo)
+  bool _isClockwiseStroke(List<Offset> stroke) {
+    if (stroke.length < 3) return true; // Demasiado corto para determinar dirección
     
-    // La B puede ser una línea vertical o una curva
-    return _isVerticalStroke(normalizedStroke) || _isCurvedStroke(normalizedStroke);
+    double totalAngleChange = 0;
+    for (int i = 1; i < stroke.length - 1; i++) {
+      final prev = stroke[i - 1];
+      final curr = stroke[i];
+      final next = stroke[i + 1];
+      
+      // Calcular vectores
+      final v1 = Offset(curr.dx - prev.dx, curr.dy - prev.dy);
+      final v2 = Offset(next.dx - curr.dx, next.dy - curr.dy);
+      
+      // Producto cruzado para determinar dirección
+      final crossProduct = v1.dx * v2.dy - v1.dy * v2.dx;
+      totalAngleChange += crossProduct;
+    }
+    
+    // Si es positivo, generalmente indica sentido horario
+    return totalAngleChange > 0 || _startsFromTop(stroke);
+  }
+  
+  // Verificar si el trazo empieza desde arriba
+  bool _startsFromTop(List<Offset> stroke) {
+    if (stroke.isEmpty) return false;
+    return stroke.first.dy < 0.4; // Empieza en el tercio superior
+  }
+  
+  // VALIDACIÓN ESPECÍFICA PARA LA LETRA B - Alfabeto Argentino
+  bool _validateLetterB(List<Offset> normalizedStroke) {
+    if (normalizedStroke.length < 5) return false;
+    
+    // La B tiene: línea vertical izquierda + dos semicírculos (superior e inferior)
+    // Aceptamos cualquiera de estos componentes por separado
+    return _isLeftVerticalOfB(normalizedStroke) || 
+           _isUpperCurveOfB(normalizedStroke) ||
+           _isLowerCurveOfB(normalizedStroke) ||
+           _isCompleteBStroke(normalizedStroke);
+  }
+  
+  // Validar línea vertical izquierda de la B
+  bool _isLeftVerticalOfB(List<Offset> stroke) {
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // Debe estar en el lado izquierdo y ser vertical
+    return start.dx < 0.3 && end.dx < 0.3 && _isVerticalStroke(stroke);
+  }
+  
+  // Validar semicírculo superior de la B
+  bool _isUpperCurveOfB(List<Offset> stroke) {
+    final avgY = stroke.map((p) => p.dy).reduce((a, b) => a + b) / stroke.length;
+    final avgX = stroke.map((p) => p.dx).reduce((a, b) => a + b) / stroke.length;
+    
+    // Debe estar en la parte superior derecha y ser curvo
+    return avgY < 0.5 && avgX > 0.3 && _isCurvedStroke(stroke);
+  }
+  
+  // Validar semicírculo inferior de la B
+  bool _isLowerCurveOfB(List<Offset> stroke) {
+    final avgY = stroke.map((p) => p.dy).reduce((a, b) => a + b) / stroke.length;
+    final avgX = stroke.map((p) => p.dx).reduce((a, b) => a + b) / stroke.length;
+    
+    // Debe estar en la parte inferior derecha y ser curvo
+    return avgY > 0.5 && avgX > 0.3 && _isCurvedStroke(stroke);
+  }
+  
+  // Validar trazo completo de B
+  bool _isCompleteBStroke(List<Offset> stroke) {
+    // La B completa tiene una línea vertical seguida de curvas
+    return (_isVerticalStroke(stroke.sublist(0, stroke.length ~/ 3)) &&
+            _isCurvedStroke(stroke.sublist(stroke.length ~/ 3))) ||
+           (_isLeftVerticalStroke(stroke) && _isCurvedStroke(stroke));
   }
   
   // VALIDACIÓN BÁSICA PARA LETRAS NO ESPECÍFICAS

@@ -92,15 +92,19 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF6366F1),
-              Color(0xFF8B5CF6),
-              Color(0xFFEC4899),
+              Color(0xFF74ACDF), // Celeste argentino
+              Color(0xFFFFDD44), // Amarillo sol
+              Color(0xFF4CAF50), // Verde pampa
             ],
           ),
         ),
-        child: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
+          children: [
+            // PAISAJE PAMPEANO DE FONDO
+            _buildPampaBackground(),
+            SafeArea(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FadeTransition(
                 opacity: _fadeAnimation,
@@ -116,7 +120,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
                   child: const Icon(
-                    Icons.location_city,
+                    Icons.park,
                     size: 80,
                     color: Colors.white,
                   ),
@@ -142,7 +146,7 @@ class _SplashScreenState extends State<SplashScreen>
                     animatedTexts: [
                       TypewriterAnimatedText(
                         'Parque de Letras',
-                        speed: const Duration(milliseconds: 150),
+                        speed: const Duration(milliseconds: 120),
                       ),
                     ],
                     isRepeatingAnimation: false,
@@ -153,7 +157,7 @@ class _SplashScreenState extends State<SplashScreen>
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: const Text(
-                  'Realidad Aumentada',
+                  '¡A aprender che!',
                   style: TextStyle(
                     fontSize: 18,
                     color: Colors.white70,
@@ -172,9 +176,9 @@ class _SplashScreenState extends State<SplashScreen>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildFeatureIcon(Icons.volume_up, 'Audio'),
-                          _buildFeatureIcon(Icons.camera_alt, 'Cámara AR'),
-                          _buildFeatureIcon(Icons.games, 'Juegos'),
+                          _buildFeatureIcon(Icons.music_note, 'Canciones'),
+                          _buildFeatureIcon(Icons.stars, 'Mate y letras'),
+                          _buildFeatureIcon(Icons.emoji_emotions, '¡Che, qué bueno!'),
                         ],
                       ),
                       const SizedBox(height: 40),
@@ -184,7 +188,7 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                       const SizedBox(height: 20),
                       const Text(
-                        'Preparando el parque mágico...',
+                        'Preparando tu aventura argentina...',
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 16,
@@ -193,6 +197,86 @@ class _SplashScreenState extends State<SplashScreen>
                     ],
                   ),
                 ),
+              ),
+            ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPampaBackground() {
+    return Positioned.fill(
+      child: CustomPaint(
+        painter: PampaPainter(),
+        child: Container(
+          child: Stack(
+            children: [
+              // Árboles
+              const Positioned(
+                left: 50,
+                bottom: 180,
+                child: Text('🌳', style: TextStyle(fontSize: 60)),
+              ),
+              const Positioned(
+                right: 80,
+                bottom: 200,
+                child: Text('🌳', style: TextStyle(fontSize: 45)),
+              ),
+              const Positioned(
+                left: 150,
+                bottom: 160,
+                child: Text('🌲', style: TextStyle(fontSize: 40)),
+              ),
+              // Vacas
+              const Positioned(
+                right: 120,
+                bottom: 120,
+                child: Text('🐄', style: TextStyle(fontSize: 35)),
+              ),
+              const Positioned(
+                left: 200,
+                bottom: 100,
+                child: Text('🐄', style: TextStyle(fontSize: 30)),
+              ),
+              // Gallinas y pollitos
+              const Positioned(
+                left: 80,
+                bottom: 90,
+                child: Text('🐔', style: TextStyle(fontSize: 25)),
+              ),
+              const Positioned(
+                left: 110,
+                bottom: 85,
+                child: Text('🐤', style: TextStyle(fontSize: 20)),
+              ),
+              const Positioned(
+                left: 130,
+                bottom: 88,
+                child: Text('🐤', style: TextStyle(fontSize: 18)),
+              ),
+              const Positioned(
+                right: 60,
+                bottom: 95,
+                child: Text('🐓', style: TextStyle(fontSize: 28)),
+              ),
+              // Yuyos y pasto
+              const Positioned(
+                left: 20,
+                bottom: 60,
+                child: Text('🌾', style: TextStyle(fontSize: 30)),
+              ),
+              const Positioned(
+                right: 40,
+                bottom: 65,
+                child: Text('🌾', style: TextStyle(fontSize: 25)),
+              ),
+              const Positioned(
+                left: 250,
+                bottom: 70,
+                child: Text('🌿', style: TextStyle(fontSize: 22)),
               ),
             ],
           ),
@@ -233,4 +317,108 @@ class _SplashScreenState extends State<SplashScreen>
       ],
     );
   }
+}
+
+class PampaPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint();
+    
+    // Cielo gradiente
+    paint.shader = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.center,
+      colors: [
+        Color(0xFF87CEEB), // Celeste cielo
+        Color(0xFFE0F6FF), // Celeste muy claro
+      ],
+    ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.5));
+    
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height * 0.5),
+      paint,
+    );
+    
+    // HORIZONTE CON ÁRBOLES
+    _paintTreeHorizon(canvas, size);
+    
+    // Pasto pampeano
+    paint.shader = LinearGradient(
+      begin: Alignment.center,
+      end: Alignment.bottomCenter,
+      colors: [
+        Color(0xFF98FB98), // Verde claro
+        Color(0xFF228B22), // Verde más oscuro
+        Color(0xFF006400), // Verde muy oscuro
+      ],
+    ).createShader(Rect.fromLTWH(0, size.height * 0.6, size.width, size.height * 0.4));
+    
+    canvas.drawRect(
+      Rect.fromLTWH(0, size.height * 0.6, size.width, size.height * 0.4),
+      paint,
+    );
+    
+    // Líneas de pasto
+    paint.shader = null;
+    paint.color = Color(0xFF90EE90);
+    paint.strokeWidth = 2;
+    
+    for (int i = 0; i < 20; i++) {
+      double x = (size.width / 20) * i;
+      canvas.drawLine(
+        Offset(x, size.height * 0.8),
+        Offset(x, size.height),
+        paint,
+      );
+    }
+  }
+  
+  void _paintTreeHorizon(Canvas canvas, Size size) {
+    final treePaint = Paint()
+      ..color = Color(0xFF228B22) // Verde oscuro para árboles
+      ..style = PaintingStyle.fill;
+    
+    final horizonY = size.height * 0.5; // Línea del horizonte
+    
+    // Dibujar muchos árboles en el horizonte
+    for (int i = 0; i < 15; i++) {
+      final x = (size.width / 14) * i;
+      final treeHeight = 40.0 + (i % 3) * 20; // Árboles de diferentes alturas
+      final treeWidth = 25.0 + (i % 2) * 15;
+      
+      // Tronco del árbol
+      final trunkPaint = Paint()..color = Color(0xFF8B4513); // Marrón
+      canvas.drawRect(
+        Rect.fromLTWH(x - 3, horizonY - 15, 6, 15),
+        trunkPaint,
+      );
+      
+      // Copa del árbol (forma ovalada)
+      canvas.drawOval(
+        Rect.fromLTWH(
+          x - treeWidth / 2, 
+          horizonY - treeHeight, 
+          treeWidth, 
+          treeHeight * 0.8
+        ),
+        treePaint,
+      );
+      
+      // Segundo nivel de copa (más pequeño)
+      if (i % 3 == 0) {
+        canvas.drawOval(
+          Rect.fromLTWH(
+            x - treeWidth / 3, 
+            horizonY - treeHeight * 0.7, 
+            treeWidth * 0.6, 
+            treeHeight * 0.5
+          ),
+          treePaint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
