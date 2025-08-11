@@ -533,7 +533,7 @@ class LettersData {
       name: 'doble ve',
       phoneme: 'weh',
       syllables: ['wa', 'we', 'wi', 'wo', 'wu'],
-      exampleWords: ['wafle', 'whisky', 'wifi', 'web'],
+      exampleWords: ['walkman', 'waterpolo', 'wifi', 'web'],
       imagePath: 'assets/letters/w_house.png',
       audioPath: 'assets/audio/letters/w.mp3',
       primaryColor: Colors.indigo,

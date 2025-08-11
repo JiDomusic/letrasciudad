@@ -933,7 +933,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '🐜', 'name': 'Hormiga', 'correct': true},
         {'emoji': '🏠', 'name': 'Hogar', 'correct': true},
         {'emoji': '🌿', 'name': 'Hoja', 'correct': true},
-        {'emoji': '🍯', 'name': 'Hongo', 'correct': true},
+        {'emoji': '🍄', 'name': 'Hongo', 'correct': true},
         {'emoji': '🔨', 'name': 'Herramienta', 'correct': true},
         {'emoji': '🦔', 'name': 'Hámster', 'correct': true},
         {'emoji': '🧊', 'name': 'Hielo', 'correct': true},
@@ -1317,6 +1317,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     overlay.insert(overlayEntry);
   }
 
+  // ignore: unused_element
   void _showSuccessMessage(String wordName) {
     // Crear overlay para el mensaje de éxito
     final overlay = Overlay.of(context);
@@ -1411,6 +1412,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
           child: LayoutBuilder(
             builder: (context, constraints) {
               final isPhone = MediaQuery.of(context).size.shortestSide < 600;
+              // ignore: unused_local_variable
               final fontSize = isPhone 
                   ? math.min(constraints.maxWidth * 0.7, constraints.maxHeight * 0.7)
                   : 280.0;
@@ -1690,29 +1692,26 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
 
   bool _validateStroke(List<Offset> stroke, double canvasWidth, double canvasHeight) {
-    // VALIDACIÓN ESPECÍFICA POR LETRA
-    if (stroke.length < 5) return false; // Mínimo 5 puntos para evitar clicks accidentales
+    // VALIDACIÓN MUY ESTRICTA: Los niños DEBEN trazar sobre la letra
+    if (stroke.length < 8) return false; // Mínimo 8 puntos para trazos controlados
     
-    // Primero verificar que no sea un garabato excesivo
-    if (_isExcessiveScribbling(stroke)) {
+    // 1. Verificar que NO sea un garabato libre
+    if (_isRandomScribbling(stroke)) {
       return false;
     }
     
-    // Calcular longitud total del trazo
-    double totalLength = 0;
-    for (int i = 1; i < stroke.length; i++) {
-      totalLength += (stroke[i] - stroke[i-1]).distance;
+    // 2. VALIDACIÓN ESTRICTA: El trazo debe seguir la forma de la letra
+    if (!_isTracingOverLetter(stroke, canvasWidth, canvasHeight)) {
+      return false;
     }
     
-    // Longitud mínima básica
-    final minLength = math.min(canvasWidth, canvasHeight) * 0.08;
-    if (totalLength < minLength) return false;
+    // 3. Verificar que el trazo tenga una dirección coherente
+    if (!_hasControlledDirection(stroke)) {
+      return false;
+    }
     
-    // Verificar cobertura mínima
-    if (!_hasReasonableCoverage(stroke, canvasWidth, canvasHeight)) return false;
-    
-    // VALIDACIÓN ESPECÍFICA POR LETRA - ESTO ES LO IMPORTANTE
-    return _validateSpecificLetterShape(stroke, widget.letter.toUpperCase(), canvasWidth, canvasHeight);
+    // 4. VALIDACIÓN ESPECÍFICA POR LETRA - MUY ESTRICTA
+    return _validateExactLetterTracing(stroke, widget.letter.toUpperCase(), canvasWidth, canvasHeight);
   }
   
   // Nueva función para validar cobertura mínima del área
@@ -1737,6 +1736,212 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     return widthCoverage > 0.05 || heightCoverage > 0.05;
   }
   
+  // NUEVA FUNCIÓN: Detectar si es un garabato aleatorio (no siguiendo la letra)
+  bool _isRandomScribbling(List<Offset> stroke) {
+    if (stroke.length < 3) return true;
+    
+    // Contar cambios bruscos de dirección (indica garabato)
+    int directionChanges = 0;
+    for (int i = 2; i < stroke.length; i++) {
+      final prev = stroke[i-2];
+      final curr = stroke[i-1];
+      final next = stroke[i];
+      
+      // Calcular ángulos
+      final angle1 = math.atan2(curr.dy - prev.dy, curr.dx - prev.dx);
+      final angle2 = math.atan2(next.dy - curr.dy, next.dx - curr.dx);
+      final angleDiff = (angle2 - angle1).abs();
+      
+      // Si hay cambio brusco de dirección (>90 grados)
+      if (angleDiff > math.pi / 2 && angleDiff < 3 * math.pi / 2) {
+        directionChanges++;
+      }
+    }
+    
+    // Más de 8 cambios bruscos = garabato aleatorio
+    return directionChanges > 8;
+  }
+
+  // NUEVA FUNCIÓN: Verificar que el trazo está sobre la letra template
+  bool _isTracingOverLetter(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // Definir el área donde debe estar la letra (centro del canvas)
+    final letterCenterX = canvasWidth * 0.5;
+    final letterCenterY = canvasHeight * 0.5;
+    final letterWidth = canvasWidth * 0.6; // 60% del canvas
+    final letterHeight = canvasHeight * 0.7; // 70% del canvas
+    
+    // Contar puntos del trazo que están dentro del área de la letra
+    int pointsOnLetter = 0;
+    for (final point in stroke) {
+      final distanceFromCenterX = (point.dx - letterCenterX).abs();
+      final distanceFromCenterY = (point.dy - letterCenterY).abs();
+      
+      // Si está dentro del área de la letra
+      if (distanceFromCenterX < letterWidth / 2 && distanceFromCenterY < letterHeight / 2) {
+        pointsOnLetter++;
+      }
+    }
+    
+    // Al menos 70% de los puntos deben estar sobre la letra
+    return (pointsOnLetter / stroke.length) >= 0.7;
+  }
+
+  // NUEVA FUNCIÓN: Verificar que el trazo tiene dirección controlada
+  bool _hasControlledDirection(List<Offset> stroke) {
+    if (stroke.length < 3) return false;
+    
+    // Calcular varianza de la velocidad (trazos controlados tienen velocidad más uniforme)
+    List<double> distances = [];
+    for (int i = 1; i < stroke.length; i++) {
+      distances.add((stroke[i] - stroke[i-1]).distance);
+    }
+    
+    if (distances.isEmpty) return false;
+    
+    final avgDistance = distances.reduce((a, b) => a + b) / distances.length;
+    double variance = 0;
+    for (final distance in distances) {
+      variance += math.pow(distance - avgDistance, 2);
+    }
+    variance /= distances.length;
+    
+    // Varianza muy alta indica movimientos erráticos
+    return variance < 400; // Ajustar este valor según sea necesario
+  }
+
+  // NUEVA FUNCIÓN: Validación exacta del trazado por letra
+  bool _validateExactLetterTracing(List<Offset> stroke, String letter, double canvasWidth, double canvasHeight) {
+    switch (letter) {
+      case 'A':
+        return _validateLetterATracing(stroke, canvasWidth, canvasHeight);
+      case 'B':
+        return _validateLetterBTracing(stroke, canvasWidth, canvasHeight);
+      case 'C':
+        return _validateLetterCTracing(stroke, canvasWidth, canvasHeight);
+      case 'D':
+        return _validateLetterDTracing(stroke, canvasWidth, canvasHeight);
+      case 'E':
+        return _validateLetterETracing(stroke, canvasWidth, canvasHeight);
+      // Agregar más letras según sea necesario
+      default:
+        return _validateGenericLetterTracing(stroke, canvasWidth, canvasHeight);
+    }
+  }
+
+  // Validación específica para letra A (líneas diagonales + horizontal)
+  bool _validateLetterATracing(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // La letra A consiste en dos líneas diagonales que se encuentran arriba
+    // y una línea horizontal en el medio
+    
+    final centerX = canvasWidth * 0.5;
+    final topY = canvasHeight * 0.2; // Parte superior
+    final bottomY = canvasHeight * 0.8; // Parte inferior
+    final midY = canvasHeight * 0.55; // Línea horizontal del medio
+    
+    // Verificar si el trazo va de abajo hacia arriba (lado izquierdo de A)
+    if (_isLeftDiagonalOfA(stroke, centerX, topY, bottomY)) return true;
+    
+    // Verificar si el trazo va de arriba hacia abajo (lado derecho de A)  
+    if (_isRightDiagonalOfA(stroke, centerX, topY, bottomY)) return true;
+    
+    // Verificar si es la línea horizontal del medio
+    if (_isHorizontalBarOfA(stroke, centerX, midY, canvasWidth)) return true;
+    
+    return false;
+  }
+
+  bool _isLeftDiagonalOfA(List<Offset> stroke, double centerX, double topY, double bottomY) {
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // Debe empezar cerca de la parte inferior izquierda
+    final startsBottom = start.dy > bottomY - 50;
+    final startsLeft = start.dx < centerX - 20;
+    
+    // Debe terminar cerca de la parte superior central
+    final endsTop = end.dy < topY + 50;
+    final endsCenter = (end.dx - centerX).abs() < 30;
+    
+    // Debe tener pendiente negativa (subir hacia la derecha)
+    final hasCorrectSlope = end.dy < start.dy && end.dx > start.dx;
+    
+    return startsBottom && startsLeft && endsTop && endsCenter && hasCorrectSlope;
+  }
+
+  bool _isRightDiagonalOfA(List<Offset> stroke, double centerX, double topY, double bottomY) {
+    if (stroke.length < 3) return false;
+    
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // Puede empezar desde arriba o desde abajo
+    final startsTop = start.dy < topY + 50 && (start.dx - centerX).abs() < 30;
+    final endsBottomRight = end.dy > bottomY - 50 && end.dx > centerX + 20;
+    
+    final startsBottomRight = start.dy > bottomY - 50 && start.dx > centerX + 20;
+    final endsTop = end.dy < topY + 50 && (end.dx - centerX).abs() < 30;
+    
+    return (startsTop && endsBottomRight) || (startsBottomRight && endsTop);
+  }
+
+  bool _isHorizontalBarOfA(List<Offset> stroke, double centerX, double midY, double canvasWidth) {
+    if (stroke.length < 3) return false;
+    
+    // Verificar que el trazo es principalmente horizontal
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // Debe estar en el medio verticalmente
+    final isAtMiddleHeight = (start.dy - midY).abs() < 40 && (end.dy - midY).abs() < 40;
+    
+    // Debe cruzar de un lado al otro horizontalmente
+    final coversHorizontalDistance = (start.dx - end.dx).abs() > canvasWidth * 0.3;
+    
+    // No debe subir o bajar mucho
+    final staysHorizontal = (start.dy - end.dy).abs() < 30;
+    
+    return isAtMiddleHeight && coversHorizontalDistance && staysHorizontal;
+  }
+
+  // Función genérica para otras letras
+  bool _validateGenericLetterTracing(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // Validación básica: el trazo debe estar en el área central y tener longitud razonable
+    return _isTracingOverLetter(stroke, canvasWidth, canvasHeight) && 
+           _hasControlledDirection(stroke);
+  }
+
+  // Validación para letra B (líneas verticales + curvas)
+  bool _validateLetterBTracing(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // Simplificado: verificar que está trazando en el área correcta
+    return _isTracingOverLetter(stroke, canvasWidth, canvasHeight);
+  }
+
+  // Validación para letra C (curva abierta hacia la derecha)
+  bool _validateLetterCTracing(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    // Verificar que es una curva que abre hacia la derecha
+    final start = stroke.first;
+    final end = stroke.last;
+    
+    // C debe empezar y terminar del lado derecho, curvándose hacia la izquierda
+    final startsRight = start.dx > canvasWidth * 0.6;
+    final endsRight = end.dx > canvasWidth * 0.6;
+    final hasLeftCurve = stroke.any((point) => point.dx < canvasWidth * 0.3);
+    
+    return startsRight && endsRight && hasLeftCurve && _isTracingOverLetter(stroke, canvasWidth, canvasHeight);
+  }
+
+  // Validación para letra D (línea vertical + curva)
+  bool _validateLetterDTracing(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    return _isTracingOverLetter(stroke, canvasWidth, canvasHeight);
+  }
+
+  // Validación para letra E (líneas horizontales y verticales)
+  bool _validateLetterETracing(List<Offset> stroke, double canvasWidth, double canvasHeight) {
+    return _isTracingOverLetter(stroke, canvasWidth, canvasHeight);
+  }
+
   // Función mejorada para detectar garabatos excesivos
   bool _isExcessiveScribbling(List<Offset> stroke) {
     if (stroke.length < 8) return false; // Reducido de 10 a 8
@@ -1869,7 +2074,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // A: Debe coincidir con la demostración - línea diagonal izquierda, derecha, o barra horizontal
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Normalizar posiciones
@@ -1895,7 +2102,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // B: Línea vertical izquierda o curvas semicirculares derecha
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -1915,7 +2124,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // C: Debe ser una curva abierta (como un círculo incompleto)
     if (stroke.length < 5) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Verificar que NO sea un círculo cerrado (start y end diferentes)
@@ -1946,7 +2157,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // E: Línea vertical izquierda o líneas horizontales
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -1966,7 +2179,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // F: Línea vertical izquierda o líneas horizontales (similar a E pero sin línea de abajo)
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -1987,7 +2202,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     if (stroke.length < 5) return false;
     
     // Similar a C (curva abierta) o línea horizontal en la derecha
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -2007,7 +2224,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // H: Dos líneas verticales o línea horizontal del medio
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -2028,7 +2247,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // I: Debe ser una línea vertical o un punto
     if (stroke.length < 2) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Línea vertical: X no cambia mucho, Y sí
@@ -2043,7 +2264,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // J: Línea vertical hacia abajo con curva hacia la izquierda al final
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -2063,7 +2286,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // K: Línea vertical izquierda o líneas diagonales desde el centro
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -2086,7 +2311,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // L: Debe ser Línea vertical hacia abajo O horizontal hacia derecha
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     final horizontalChange = (end.dx - start.dx).abs();
@@ -2100,7 +2327,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // M: Líneas verticales (izq/der) o líneas en pico (centro)
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -2122,7 +2351,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // N: Líneas verticales (izq/der) o diagonal del medio
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -2143,7 +2374,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // O: Debe ser una curva que forme un círculo o óvalo
     if (stroke.length < 8) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Verificar que sea curvo (no una línea recta)
@@ -2167,7 +2400,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // P: Línea vertical izquierda o curva superior derecha
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -2193,7 +2428,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // Q: Círculo como O + línea diagonal en la parte inferior derecha
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -2213,7 +2450,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // R: Similar a P pero con línea diagonal inferior derecha
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -2261,7 +2500,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // T: Línea horizontal superior o línea vertical del centro
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -2281,7 +2522,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // U: Curva en forma de U (abajo curvado, arriba abierto)
     if (stroke.length < 5) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startY = start.dy / canvasHeight;
     final endY = end.dy / canvasHeight;
@@ -2300,7 +2543,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // V: Líneas diagonales que se juntan abajo
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -2320,7 +2565,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // W: Líneas en forma de W (como doble V)
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -2337,7 +2584,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // X: Líneas diagonales cruzadas
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -2360,7 +2609,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // Y: Líneas diagonales que se juntan en el centro, luego vertical
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -2383,7 +2634,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // Z: Línea horizontal arriba, diagonal, horizontal abajo
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
@@ -2421,6 +2674,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
 
   // Normalizar trazo a coordenadas 0-1
+  // ignore: unused_element
   List<Offset> _normalizeStroke(List<Offset> stroke, double canvasWidth, double canvasHeight) {
     if (stroke.isEmpty) return [];
     
@@ -2434,6 +2688,8 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // VALIDACIÓN ESTRICTA Y ESPECÍFICA PARA LA LETRA A
+  // ignore: unused_element
+  // ignore: unused_element
   bool _validateLetterA(List<Offset> normalizedStroke) {
     if (normalizedStroke.length < 8) return false;
     
@@ -2442,21 +2698,27 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     // 2. O una línea horizontal que conecta las diagonales en el medio
     // 3. La forma general debe parecer una "A" o parte de una "A"
     
+    // ignore: unused_local_variable
     final start = normalizedStroke.first;
+    // ignore: unused_local_variable
     final end = normalizedStroke.last;
     
+    // USAR VALIDACIÓN ESTRICTA NUEVA
+    final canvasWidth = 400.0;
+    final canvasHeight = 400.0;
+    
     // VALIDACIÓN 1: ¿Es la línea diagonal izquierda de la A?
-    if (_isLeftDiagonalOfA(normalizedStroke)) {
+    if (_isLeftDiagonalOfA(normalizedStroke, canvasWidth * 0.5, canvasHeight * 0.2, canvasHeight * 0.8)) {
       return true;
     }
     
     // VALIDACIÓN 2: ¿Es la línea diagonal derecha de la A?
-    if (_isRightDiagonalOfA(normalizedStroke)) {
+    if (_isRightDiagonalOfA(normalizedStroke, canvasWidth * 0.5, canvasHeight * 0.2, canvasHeight * 0.8)) {
       return true;
     }
     
     // VALIDACIÓN 3: ¿Es la barra horizontal de la A?
-    if (_isHorizontalBarOfA(normalizedStroke)) {
+    if (_isHorizontalBarOfA(normalizedStroke, canvasWidth * 0.5, canvasHeight * 0.55, canvasWidth)) {
       return true;
     }
     
@@ -2469,47 +2731,11 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     return false;
   }
   
-  // FUNCIONES ESPECÍFICAS PARA VALIDAR PARTES DE LA LETRA A
-  
-  // Validar si es la diagonal izquierda de la A (de abajo-izquierda hacia arriba-centro)
-  bool _isLeftDiagonalOfA(List<Offset> stroke) {
+  // ignore: unused_element
+  bool _isHorizontalBarOfAOld(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
-    final end = stroke.last;
-    
-    // Debe ir de abajo-izquierda hacia arriba-centro
-    bool startsBottomLeft = start.dy > 0.6 && start.dx < 0.4;  // Empieza abajo e izquierda
-    bool endsTopCenter = end.dy < 0.3 && end.dx > 0.3 && end.dx < 0.7;  // Termina arriba y centro
-    
-    // Verificar que la pendiente sea correcta (diagonal ascendente hacia la derecha)
-    bool correctSlope = (end.dx - start.dx) > 0.2 && (start.dy - end.dy) > 0.3;
-    
-    // Verificar que sea razonablemente recto (no muy zigzag)
-    bool isStraightish = _isReasonablyStraight(stroke);
-    
-    return startsBottomLeft && endsTopCenter && correctSlope && isStraightish;
-  }
-  
-  // Validar si es la diagonal derecha de la A (de arriba-centro hacia abajo-derecha)
-  bool _isRightDiagonalOfA(List<Offset> stroke) {
-    final start = stroke.first;
-    final end = stroke.last;
-    
-    // Debe ir de arriba-centro hacia abajo-derecha
-    bool startsTopCenter = start.dy < 0.3 && start.dx > 0.3 && start.dx < 0.7;  // Empieza arriba y centro
-    bool endsBottomRight = end.dy > 0.6 && end.dx > 0.6;  // Termina abajo y derecha
-    
-    // Verificar que la pendiente sea correcta (diagonal descendente hacia la derecha)
-    bool correctSlope = (end.dx - start.dx) > 0.2 && (end.dy - start.dy) > 0.3;
-    
-    // Verificar que sea razonablemente recto
-    bool isStraightish = _isReasonablyStraight(stroke);
-    
-    return startsTopCenter && endsBottomRight && correctSlope && isStraightish;
-  }
-  
-  // Validar si es la barra horizontal de la A (MÁS PERMISIVA)
-  bool _isHorizontalBarOfA(List<Offset> stroke) {
-    final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe estar en la zona media (donde va la barra de la A) - más permisiva
@@ -2562,7 +2788,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   bool _isLeftVerticalOfH(List<Offset> stroke) {
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe estar en la parte izquierda y ser vertical
@@ -2573,7 +2801,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   bool _isRightVerticalOfH(List<Offset> stroke) {
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe estar en la parte derecha y ser vertical
@@ -2584,7 +2814,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   bool _isHorizontalBarOfH(List<Offset> stroke) {
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe estar en el medio verticalmente y ser horizontal
@@ -2658,6 +2890,8 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   
   // LETRA D - Semicírculo con línea vertical izquierda
   // VALIDACIÓN ESPECÍFICA PARA LA LETRA D - Alfabeto Argentino
+  // ignore: unused_element
+  // ignore: unused_element
   bool _validateLetterD(List<Offset> normalizedStroke) {
     if (normalizedStroke.length < 5) return false;
     
@@ -2669,7 +2903,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   
   // Validar línea vertical izquierda de la D
   bool _isLeftVerticalOfD(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe estar en el lado izquierdo y ser vertical
@@ -2686,7 +2922,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   
   // Validar trazo completo de D
   bool _isCompleteDStroke(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // La D completa empieza y termina en el lado izquierdo
@@ -2695,13 +2933,17 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   
   // Verificar si es una curva que va de izquierda a derecha
   bool _isLeftToRightCurve(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     return start.dx < end.dx; // Termina más a la derecha que donde empieza
   }
   
   // LETRA E - Línea vertical izquierda y líneas horizontales (arriba, medio, abajo)
+  // ignore: unused_element
+  // ignore: unused_element
   bool _validateLetterE(List<Offset> stroke) {
     // Validar línea vertical izquierda
     if (_isLeftVerticalOfE(stroke)) return true;
@@ -2751,6 +2993,8 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // LETRA F - Línea vertical izquierda y líneas horizontales (arriba y medio solamente)
+  // ignore: unused_element
+  // ignore: unused_element
   bool _validateLetterF(List<Offset> stroke) {
     // Validar línea vertical izquierda
     if (_isLeftVerticalOfF(stroke)) return true;
@@ -2789,6 +3033,8 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // VALIDACIÓN ESPECÍFICA PARA LA LETRA G - Alfabeto Argentino
+  // ignore: unused_element
+  // ignore: unused_element
   bool _validateLetterG(List<Offset> normalizedStroke) {
     if (normalizedStroke.length < 5) return false;
     
@@ -2810,7 +3056,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   // Validar trazo completo de G
   bool _isCompleteGStroke(List<Offset> stroke) {
     // Una G completa es como una C que termina con una línea horizontal hacia adentro
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe ser principalmente circular pero terminar hacia la izquierda
@@ -2818,6 +3066,8 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // LETRA H - Dos líneas verticales y una horizontal en el medio
+  // ignore: unused_element
+  // ignore: unused_element
   bool _validateLetterH(List<Offset> stroke) {
     // Validar línea vertical izquierda
     if (_isLeftVerticalOfH(stroke)) return true;
@@ -2836,6 +3086,8 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // LETRA I - Simplificada: línea vertical y punto (como alfabeto argentino)
+  // ignore: unused_element
+  // ignore: unused_element
   bool _validateLetterI(List<Offset> stroke) {
     // En el alfabeto argentino, la I es solo una línea vertical y un punto
     // Validar línea vertical (la parte principal)
@@ -2848,6 +3100,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // Validar línea horizontal superior de la I
+  // ignore: unused_element
   bool _isTopHorizontalOfI(List<Offset> stroke) {
     if (stroke.length < 2) return false;
     
@@ -2864,8 +3117,11 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // LETRA J - Línea vertical curvada hacia la izquierda abajo
+  // ignore: unused_element
   bool _validateLetterJ(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe empezar arriba y curvarse hacia la izquierda
@@ -2877,6 +3133,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // VALIDACIÓN ESPECÍFICA PARA LA LETRA K - Alfabeto Argentino
+  // ignore: unused_element
   bool _validateLetterK(List<Offset> normalizedStroke) {
     if (normalizedStroke.length < 5) return false;
     
@@ -2889,7 +3146,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   
   // Validar línea vertical izquierda de la K
   bool _isLeftVerticalOfK(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe estar en el lado izquierdo y ser vertical
@@ -2898,7 +3157,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   
   // Validar diagonal superior de la K (desde centro-izquierda hacia arriba-derecha)
   bool _isUpperDiagonalOfK(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Va desde el centro-izquierdo hacia arriba-derecha
@@ -2909,7 +3170,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   
   // Validar diagonal inferior de la K (desde centro-izquierda hacia abajo-derecha)
   bool _isLowerDiagonalOfK(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Va desde el centro-izquierdo hacia abajo-derecha
@@ -2934,8 +3197,11 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // LETRA L - Línea vertical o línea horizontal inferior
+  // ignore: unused_element
   bool _validateLetterL(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Línea vertical (de arriba hacia abajo)
@@ -2948,6 +3214,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // VALIDACIÓN ESPECÍFICA PARA LA LETRA M - Alfabeto Argentino
+  // ignore: unused_element
   bool _validateLetterM(List<Offset> normalizedStroke) {
     if (normalizedStroke.length < 5) return false;
     
@@ -2973,7 +3240,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   
   // Validar diagonal izquierda de la M (de arriba-izquierda hacia centro-abajo)
   bool _isLeftDiagonalOfM(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     return start.dx < 0.4 && start.dy < 0.4 &&
@@ -2983,7 +3252,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   
   // Validar diagonal derecha de la M (de centro-abajo hacia arriba-derecha)
   bool _isRightDiagonalOfM(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     return start.dx > 0.4 && start.dx < 0.6 && start.dy > 0.6 &&
@@ -3008,6 +3279,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // VALIDACIÓN ESPECÍFICA PARA LA LETRA N - Alfabeto Argentino  
+  // ignore: unused_element
   bool _validateLetterN(List<Offset> normalizedStroke) {
     if (normalizedStroke.length < 5) return false;
     
@@ -3032,7 +3304,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   
   // Validar diagonal de la N (de abajo-izquierda a arriba-derecha)
   bool _isDiagonalOfN(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     return start.dx < 0.4 && start.dy > 0.6 &&
@@ -3042,7 +3316,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   
   // Validar trazo completo de N
   bool _isCompleteNStroke(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // La N va de abajo-izquierda a arriba-derecha principalmente
@@ -3050,6 +3326,8 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // LETRA N_TILDE - Como N pero con tilde encima
+  // ignore: unused_element
+  // ignore: unused_element
   bool _validateLetterEnye(List<Offset> stroke) {
     // Validar cualquier componente de la N
     if (_validateLetterN(stroke)) return true;
@@ -3072,6 +3350,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // VALIDACIÓN ESPECÍFICA PARA LA LETRA P - Alfabeto Argentino
+  // ignore: unused_element
   bool _validateLetterP(List<Offset> normalizedStroke) {
     if (normalizedStroke.length < 5) return false;
     
@@ -3098,7 +3377,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   
   // Validar trazo completo de P
   bool _isCompletePStroke(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // La P empieza vertical y se curva en la parte superior
@@ -3115,6 +3396,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // VALIDACIÓN ESPECÍFICA PARA LA LETRA Q - Alfabeto Argentino
+  // ignore: unused_element
   bool _validateLetterQ(List<Offset> normalizedStroke) {
     if (normalizedStroke.length < 5) return false;
     
@@ -3126,7 +3408,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   
   // Validar cola diagonal de la Q
   bool _isDiagonalTailOfQ(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // La cola va desde dentro del círculo hacia abajo-derecha
@@ -3150,6 +3434,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // VALIDACIÓN ESPECÍFICA PARA LA LETRA R - Alfabeto Argentino
+  // ignore: unused_element
   bool _validateLetterR(List<Offset> normalizedStroke) {
     if (normalizedStroke.length < 5) return false;
     
@@ -3176,7 +3461,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   
   // Validar diagonal inferior de la R
   bool _isLowerDiagonalOfR(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Va desde el centro hacia abajo-derecha
@@ -3192,6 +3479,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // LETRA S - Curva en forma de S
+  // ignore: unused_element
   bool _validateLetterS(List<Offset> stroke) {
     if (stroke.length < 10) return false;
     
@@ -3200,6 +3488,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // LETRA T - Línea vertical central y línea horizontal superior
+  // ignore: unused_element
   bool _validateLetterT(List<Offset> stroke) {
     // Validar línea vertical central
     if (_isCentralVerticalOfT(stroke)) return true;
@@ -3249,8 +3538,11 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // LETRA U - Curva tipo U
+  // ignore: unused_element
   bool _validateLetterU(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe empezar y terminar arriba, con curva abajo
@@ -3264,6 +3556,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // LETRA V - Dos líneas diagonales que se juntan abajo
+  // ignore: unused_element
   bool _validateLetterV(List<Offset> stroke) {
     // Validar diagonal izquierda de la V
     if (_isLeftDiagonalOfV(stroke)) return true;
@@ -3282,7 +3575,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   bool _isLeftDiagonalOfV(List<Offset> stroke) {
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe ir de arriba-izquierda hacia abajo-centro
@@ -3294,7 +3589,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   bool _isRightDiagonalOfV(List<Offset> stroke) {
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe ir de arriba-derecha hacia abajo-centro
@@ -3322,6 +3619,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // LETRA W - Cuatro líneas diagonales que forman dos picos
+  // ignore: unused_element
   bool _validateLetterW(List<Offset> stroke) {
     // Validar cualquier diagonal de la W
     if (_isDiagonalOfW(stroke)) return true;
@@ -3365,6 +3663,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // LETRA X - Dos diagonales que se cruzan en el centro
+  // ignore: unused_element
   bool _validateLetterX(List<Offset> stroke) {
     // Validar diagonal principal (arriba-izquierda a abajo-derecha)
     if (_isMainDiagonalOfX(stroke)) return true;
@@ -3383,7 +3682,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   bool _isMainDiagonalOfX(List<Offset> stroke) {
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe ir de arriba-izquierda a abajo-derecha
@@ -3395,7 +3696,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   bool _isSecondaryDiagonalOfX(List<Offset> stroke) {
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe ir de arriba-derecha a abajo-izquierda
@@ -3425,6 +3728,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // LETRA Y - Dos diagonales que se juntan en el centro y línea vertical hacia abajo
+  // ignore: unused_element
   bool _validateLetterY(List<Offset> stroke) {
     // Validar diagonal izquierda de la Y
     if (_isLeftDiagonalOfY(stroke)) return true;
@@ -3446,7 +3750,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   bool _isLeftDiagonalOfY(List<Offset> stroke) {
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe ir de arriba-izquierda hacia centro
@@ -3458,7 +3764,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   bool _isRightDiagonalOfY(List<Offset> stroke) {
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe ir de arriba-derecha hacia centro
@@ -3470,7 +3778,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   bool _isVerticalBottomOfY(List<Offset> stroke) {
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe ir del centro hacia abajo
@@ -3495,6 +3805,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // LETRA Z - Línea horizontal arriba, diagonal medio, línea horizontal abajo
+  // ignore: unused_element
   bool _validateLetterZ(List<Offset> stroke) {
     // Validar línea horizontal superior
     if (_isTopHorizontalOfZ(stroke)) return true;
@@ -3523,7 +3834,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   bool _isDiagonalMiddleOfZ(List<Offset> stroke) {
     if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe ir de arriba-derecha a abajo-izquierda (diagonal \ )
@@ -4005,7 +4318,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   bool _isDiagonalStroke(List<Offset> stroke) {
     if (stroke.length < 5) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Cambio significativo en X y Y
@@ -4020,7 +4335,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   bool _isHorizontalStroke(List<Offset> stroke) {
     if (stroke.length < 5) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Cambio mínimo en Y, cambio significativo en X
@@ -4074,7 +4391,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     final isMiddlePeak = minYIndex > stroke.length * 0.2 && minYIndex < stroke.length * 0.8;
     
     // Los extremos deben estar más abajo que el pico
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final peakIsBetween = start.dy > minY && end.dy > minY;
     
@@ -4082,6 +4401,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // VALIDACIÓN PARA LA LETRA O
+  // ignore: unused_element
   bool _validateLetterO(List<Offset> normalizedStroke) {
     if (normalizedStroke.length < 10) return false;
     
@@ -4090,6 +4410,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // VALIDACIÓN PARA LA LETRA C
+  // ignore: unused_element
   bool _validateLetterC(List<Offset> normalizedStroke) {
     if (normalizedStroke.length < 8) return false;
     
@@ -4127,6 +4448,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   // VALIDACIÓN ESPECÍFICA PARA LA LETRA B - Alfabeto Argentino
+  // ignore: unused_element
   bool _validateLetterB(List<Offset> normalizedStroke) {
     if (normalizedStroke.length < 5) return false;
     
@@ -4140,7 +4462,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   
   // Validar línea vertical izquierda de la B
   bool _isLeftVerticalOfB(List<Offset> stroke) {
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // Debe estar en el lado izquierdo y ser vertical
@@ -4178,7 +4502,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     if (normalizedStroke.length < 5) return false;
     
     // Validación permisiva: cualquier trazo intencional es válido
+    // ignore: unused_local_variable
     final start = normalizedStroke.first;
+    // ignore: unused_local_variable
     final end = normalizedStroke.last;
     
     // Debe tener algún movimiento significativo
@@ -4194,7 +4520,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     if (stroke.length < 12) return false;
     
     // Verificar que el trazo vuelva cerca del punto inicial
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final distance = (end - start).distance;
     
@@ -4224,7 +4552,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     if (stroke.length < 8) return false;
     
     // Similar a circular pero no necesita cerrarse
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     // NO debe terminar cerca del inicio (C abierta)
@@ -4238,7 +4568,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   bool _isVerticalStroke(List<Offset> stroke) {
     if (stroke.length < 5) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     
     final deltaX = (end.dx - start.dx).abs();

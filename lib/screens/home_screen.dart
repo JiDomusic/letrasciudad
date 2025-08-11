@@ -4,8 +4,8 @@ import 'dart:math' as math;
 import '../providers/letter_city_provider.dart';
 import '../services/audio_service.dart';
 // import 'letter_details_screen.dart'; // No se usa actualmente
-import 'interactive_letter_games_screen.dart';
 import 'letter_park_3d_screen.dart';
+import 'house_preview_screen.dart';
 // import 'first_person_park_screen.dart'; // Removido
 import '../widgets/progress_header.dart';
 import '../widgets/reference_style_house.dart';
@@ -229,8 +229,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           builder: (context, child) {
             final size = MediaQuery.of(context).size;
             // CONFIGURACIÓN RESPONSIVA MEJORADA
-            final screenHeight = MediaQuery.of(context).size.height;
-            final screenWidth = MediaQuery.of(context).size.width;
+            final screenWidth = size.width;
             final isMobile = screenWidth < 600;
             final isTablet = screenWidth >= 600 && screenWidth < 900;
             
@@ -403,7 +402,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
     
     final screenWidth = size.width;
-    final screenHeight = size.height;
     final isMobile = screenWidth < 600;
     
     if (isMobile) {
@@ -422,9 +420,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     
     // ESPACIADO RESPONSIVO MEJORADO
     final headerSpace = screenHeight < 600 ? 80.0 : 120.0;
+    // ignore: unused_local_variable
     final bottomSpace = screenHeight < 600 ? 60.0 : 80.0;
     final sideSpace = math.max(screenWidth * 0.05, 15.0); // Mínimo 5% de la pantalla o 15px
-    final availableHeight = screenHeight - headerSpace - bottomSpace;
     final availableWidth = screenWidth - (sideSpace * 2);
     
     // CASAS POR FILA RESPONSIVAS
@@ -434,7 +432,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final maxHouseSize = (availableWidth / housesPerRow) - 15; // Restar espaciado
     final idealHouseSize = screenWidth < 400 ? 45.0 : (screenWidth < 500 ? 50.0 : 55.0);
     final houseSize = math.min(idealHouseSize, maxHouseSize).clamp(35.0, 70.0);
-    final totalRows = (totalLetters / housesPerRow).ceil();
     final row = (index / housesPerRow).floor();
     final col = index % housesPerRow;
     
@@ -454,10 +451,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final organicY = ((letterSeed * 59) % 100) / 100 * 8 - 4; // ±4px máximo
     
     // Sin variaciones adicionales para móvil - mantener orden
-    final majorVariationX = 0.0;
-    final majorVariationY = 0.0;
-    final microVariationX = 0.0;
-    final microVariationY = 0.0;
     
     // POSICIÓN FINAL: CENTRADA Y ORDENADA PARA MÓVIL
     final naturalX = baseX + organicX;
@@ -524,13 +517,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final organicX = ((letterSeed * 73 + index * 41) % 1000) / 1000 * (zoneWidth * 0.8);
     final organicY = ((letterSeed * 89 + index * 67) % 1000) / 1000 * (zoneHeight * 0.8);
     
-    // Variaciones adicionales para efecto natural
+    // POSICIÓN FINAL: ORGÁNICA PERO MANTENIENDO FLUJO ALFABÉTICO
     final majorVariationX = ((index * 137 + 43) % 80) - 40; // ±40px
     final majorVariationY = ((index * 181 + 71) % 60) - 30; // ±30px
     final microVariationX = ((index * 211 + 91) % 30) - 15; // ±15px
     final microVariationY = ((index * 241 + 113) % 20) - 10; // ±10px
     
-    // POSICIÓN FINAL: ORGÁNICA PERO MANTENIENDO FLUJO ALFABÉTICO
     final naturalX = baseX + organicX + majorVariationX + microVariationX;
     final naturalY = baseY + organicY + majorVariationY + microVariationY;
     
@@ -583,78 +575,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return {'x': finalX, 'y': finalY};
   }
   
-  // VERIFICAR COLISIONES SOLO EN WEB
-  Map<String, double> _ensureNoCollisionWeb(double x, double y, double size, int index) {
-    double adjustedX = x;
-    double adjustedY = y;
-    final minDistance = size * 1.4;
-    
-    // Verificar contra posiciones ya ocupadas
-    for (final occupied in _occupiedPositions) {
-      final distance = math.sqrt(
-        math.pow(adjustedX - occupied['x']!, 2) + 
-        math.pow(adjustedY - occupied['y']!, 2)
-      );
-      
-      if (distance < minDistance) {
-        // Mover ligeramente manteniendo el orden alfabético
-        adjustedX += (index % 2 == 0) ? 40 : -40;
-        adjustedY += (index % 3 == 0) ? 30 : -30;
-        
-        // RE-APLICAR LÍMITES DESPUÉS DEL AJUSTE
-        final screenWidth = 1200.0; // Estimado para web
-        final screenHeight = 800.0; // Estimado para web  
-        adjustedX = adjustedX.clamp(size * 0.5, screenWidth - size * 1.5);
-        adjustedY = adjustedY.clamp(200.0, screenHeight - size - 150.0);
-        
-        break; // Solo un ajuste para mantener orden
-      }
-    }
-    
-    // Registrar posición ocupada
-    _occupiedPositions.add({'x': adjustedX, 'y': adjustedY, 'size': minDistance});
-    
-    return {'x': adjustedX, 'y': adjustedY};
-  }
   
-  bool _isPositionFree(double x, double y, double size) {
-    // VERIFICACIÓN DE COLISIONES PARA DISEÑO NATURAL DE COLINAS
-    
-    const padding = 75.0; // Padding generoso para separación natural
-    
-    for (final occupied in _occupiedPositions) {
-      final occupiedX = occupied['x']!;
-      final occupiedY = occupied['y']!;
-      final occupiedSize = occupied['size']!;
-      
-      // Verificación de distancia euclidiana
-      final distance = math.sqrt(
-        math.pow(x - occupiedX, 2) + math.pow(y - occupiedY, 2)
-      );
-      final minDistance = (size + occupiedSize) / 2 + padding;
-      
-      if (distance < minDistance) {
-        return false; // Muy cerca
-      }
-      
-      // Verificación adicional rectangular para mayor seguridad
-      final rect1 = Rect.fromCenter(
-        center: Offset(x, y), 
-        width: size + padding, 
-        height: size + padding
-      );
-      final rect2 = Rect.fromCenter(
-        center: Offset(occupiedX, occupiedY), 
-        width: occupiedSize + padding, 
-        height: occupiedSize + padding
-      );
-      
-      if (rect1.overlaps(rect2)) {
-        return false; // Superposición rectangular
-      }
-    }
-    return true; // Posición completamente libre
-  }
 
   Widget _buildAnimatedSun() {
     return AnimatedBuilder(
@@ -1033,81 +954,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
 
 
-  Widget _buildWalkingCat(double offset, double baseY, Color color, String emoji) {
-    return AnimatedBuilder(
-      animation: _animatedElementsController,
-      builder: (context, child) {
-        final progress = (_animatedElementsController.value + offset) % 1.0;
-        final x = progress * (MediaQuery.of(context).size.width - 60);
-        final bounce = math.sin(progress * 20) * 2;
 
-        return Positioned(
-          left: x,
-          top: baseY + bounce,
-          child: Transform.scale(
-            scaleX: progress > 0.5 ? -1 : 1,
-            child: Container(
-              width: 40,
-              height: 30,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: Colors.white, width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 3,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Text(emoji, style: const TextStyle(fontSize: 20)),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildWalkingDog(double offset, double baseY, Color color, String emoji) {
-    return AnimatedBuilder(
-      animation: _animatedElementsController,
-      builder: (context, child) {
-        final progress = (_animatedElementsController.value + offset) % 1.0;
-        final x = progress * (MediaQuery.of(context).size.width - 60);
-        final bounce = math.sin(progress * 25) * 3;
-
-        return Positioned(
-          left: x,
-          top: baseY + bounce,
-          child: Transform.scale(
-            scaleX: progress > 0.5 ? -1 : 1,
-            child: Container(
-              width: 45,
-              height: 35,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.white, width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 3,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Text(emoji, style: const TextStyle(fontSize: 22)),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   void _onLetterTap(String character) async {
     final provider = context.read<LetterCityProvider>();
@@ -1128,7 +975,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => InteractiveLetterGamesScreen(letter: letter),
+          builder: (context) => HousePreviewScreen(letterData: letter),
         ),
       );
     }
@@ -1262,47 +1109,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  void _showSettingsDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Configuración'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text('Cambiar nombre'),
-              onTap: () => _showNameDialog(),
-            ),
-            ListTile(
-              leading: const Icon(Icons.volume_up),
-              title: const Text('Configurar audio'),
-              onTap: () => _showAudioSettings(),
-            ),
-            ListTile(
-              leading: const Icon(Icons.refresh),
-              title: const Text('Reiniciar progreso'),
-              onTap: () => _showResetDialog(),
-            ),
-            ListTile(
-              leading: const Icon(Icons.star),
-              title: const Text('Modo Demo Activo'),
-              subtitle: const Text('Todas las letras están desbloqueadas'),
-              enabled: false,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cerrar'),
-          ),
-        ],
-      ),
-    );
-  }
 
+  // ignore: unused_element
   void _showNameDialog() {
     final controller = TextEditingController();
     final provider = context.read<LetterCityProvider>();
@@ -1338,6 +1146,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  // ignore: unused_element
   void _showAudioSettings() {
     Navigator.of(context).pop();
     showDialog(
@@ -1369,6 +1178,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  // ignore: unused_element
   void _showResetDialog() {
     showDialog(
       context: context,

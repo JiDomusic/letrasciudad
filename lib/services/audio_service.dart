@@ -19,22 +19,291 @@ class AudioService {
       debugPrint('🎤 Inicializando AudioService...');
       debugPrint('🌐 Plataforma: ${kIsWeb ? "Web" : "Móvil"}');
       
-      // Configuración básica universal
+      // Configurar callbacks para monitorear el estado
+      _flutterTts.setStartHandler(() {
+        debugPrint('🎤 TTS comenzó a hablar');
+      });
+      
+      _flutterTts.setCompletionHandler(() {
+        debugPrint('🎤 TTS terminó de hablar');
+      });
+      
+      _flutterTts.setErrorHandler((msg) {
+        debugPrint('❌ TTS Error: $msg');
+      });
+      
+      // Configuración específica por plataforma
+      if (kIsWeb) {
+        await _configureWebTTS();
+      } else {
+        await _configureMobileTTS();
+      }
+      
+      // Configuración universal con voz de niña
       await _flutterTts.setLanguage("es-ES");
-      await _flutterTts.setSpeechRate(0.8);
+      await _flutterTts.setSpeechRate(0.7); // Más lento para niños
       await _flutterTts.setVolume(1.0);
-      await _flutterTts.setPitch(1.3);
+      await _flutterTts.setPitch(1.5); // Pitch más alto para voz de niña
       
-      
-      // Probar hablar inmediatamente para verificar funcionamiento
-      debugPrint('🧪 Probando TTS con texto simple...');
-      await _flutterTts.speak("Test");
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Probar hablar para verificar funcionamiento
+      debugPrint('🧪 Probando TTS con voz de niña...');
+      await _flutterTts.speak("¡Hola! Soy tu amiga virtual");
+      await Future.delayed(const Duration(milliseconds: 2000));
       
       _isInitialized = true;
-      debugPrint('✅ AudioService inicializado correctamente');
+      debugPrint('✅ AudioService inicializado correctamente con voz de niña');
     } catch (e) {
-      debugPrint('Error initializing AudioService: $e');
+      debugPrint('❌ Error initializing AudioService: $e');
+      // Reintentar con configuración mínima
+      await _fallbackInitialization();
+    }
+  }
+
+  Future<void> _configureWebTTS() async {
+    try {
+      debugPrint('🌐 Configurando TTS para Web con voces específicas');
+      await _flutterTts.setLanguage("es-ES");
+      
+      // Lista de voces preferidas para niñas (ordenadas por preferencia)
+      final preferredVoices = [
+        // Voces de Google más naturales para niñas
+        'Google español (España) - Carmen (Femenina)',
+        'Google español (España) - Elena (Femenina)',
+        'Google español (España) - Sofia (Femenina)',
+        'Google español (México) - Angelica (Femenina)',
+        'Google español (Argentina) - Isabella (Femenina)',
+        
+        // Voces de Microsoft
+        'Microsoft Helena - Spanish (Spain)',
+        'Microsoft Sabina - Spanish (Mexico)',
+        'Microsoft Maria - Spanish (Spain)',
+        
+        // Voces nativas del navegador
+        'Mónica',
+        'Carmen',
+        'Elena',
+        'Sofia',
+        'Paulina',
+        'Marisol',
+        'Esperanza',
+        
+        // Voces genéricas pero femeninas
+        'Spanish (Spain) Female',
+        'Spanish Female',
+        'es-ES Female',
+        'es-MX Female'
+      ];
+      
+      // Obtener todas las voces disponibles
+      dynamic voices = await _flutterTts.getVoices;
+      debugPrint('🎤 Voces disponibles: ${voices?.length ?? 0}');
+      
+      if (voices is List) {
+        // Imprimir todas las voces para debugging
+        for (int i = 0; i < voices.length && i < 10; i++) {
+          final voice = voices[i];
+          if (voice is Map) {
+            debugPrint('📢 Voz $i: ${voice['name']} (${voice['locale']})');
+          }
+        }
+        
+        // Intentar configurar la mejor voz disponible
+        bool voiceSet = false;
+        
+        // Buscar voces preferidas en orden de preferencia
+        for (String preferredVoice in preferredVoices) {
+          for (dynamic voice in voices) {
+            if (voice is Map && voice['name'] != null) {
+              String voiceName = voice['name'].toString();
+              String locale = voice['locale']?.toString() ?? '';
+              
+              if (voiceName.toLowerCase().contains(preferredVoice.toLowerCase()) ||
+                  (locale.contains('es') && voiceName.toLowerCase().contains('female'))) {
+                debugPrint('✅ Configurando voz preferida: $voiceName');
+                await _flutterTts.setVoice(Map<String, String>.from(voice));
+                voiceSet = true;
+                break;
+              }
+            }
+          }
+          if (voiceSet) break;
+        }
+        
+        // Si no encontramos una voz específica, buscar cualquier voz femenina en español
+        if (!voiceSet) {
+          for (dynamic voice in voices) {
+            if (voice is Map && voice['locale'] != null) {
+              String locale = voice['locale'].toString().toLowerCase();
+              String voiceName = voice['name']?.toString().toLowerCase() ?? '';
+              
+              if ((locale.contains('es-es') || locale.contains('es_es') || 
+                   locale.contains('es-mx') || locale.contains('es_mx') ||
+                   locale.contains('spa')) &&
+                  !voiceName.contains('male') &&
+                  (voiceName.contains('female') || voiceName.contains('mujer') ||
+                   voiceName.contains('woman') || voiceName.isEmpty)) {
+                debugPrint('🎯 Configurando voz femenina alternativa: $voiceName');
+                await _flutterTts.setVoice(Map<String, String>.from(voice));
+                voiceSet = true;
+                break;
+              }
+            }
+          }
+        }
+        
+        if (!voiceSet) {
+          debugPrint('⚠️ No se encontró voz femenina específica, usando configuración por defecto');
+        }
+      }
+      
+      // Configuración adicional para web
+      await _flutterTts.awaitSpeakCompletion(true);
+      
+    } catch (e) {
+      debugPrint('⚠️ Error configurando voz para web: $e');
+    }
+  }
+
+  Future<void> _configureMobileTTS() async {
+    try {
+      debugPrint('📱 Configurando TTS para móvil con voces premium');
+      await _flutterTts.setLanguage("es-ES");
+      
+      // Lista de motores de TTS preferidos (ordenados por calidad)
+      final preferredEngines = [
+        "com.google.android.tts", // Google TTS (mejor calidad)
+        "com.samsung.android.tts", // Samsung TTS
+        "com.android.tts", // Android TTS por defecto
+      ];
+      
+      // Intentar configurar el mejor motor disponible
+      for (String engine in preferredEngines) {
+        try {
+          debugPrint('🔧 Intentando motor: $engine');
+          await _flutterTts.setEngine(engine);
+          break;
+        } catch (engineError) {
+          debugPrint('⚠️ Motor $engine no disponible: $engineError');
+          continue;
+        }
+      }
+      
+      // Lista de voces preferidas para móvil (niñas)
+      final mobilePreferredVoices = [
+        // Voces de Google para Android
+        'es-es-x-eea-network', // Voz neural de Google España
+        'es-es-x-eea-local',
+        'es-mx-x-eem-network', // Voz neural de Google México
+        'es-mx-x-eem-local',
+        'es-ar-x-ard-network', // Voz neural de Google Argentina
+        
+        // Voces tradicionales de alta calidad
+        'Google español (España)',
+        'Google español (México)',
+        'Google español (Argentina)',
+        
+        // Voces Samsung
+        'Samsung Carmen',
+        'Samsung Elena',
+        'Samsung Sofia',
+        
+        // Voces genéricas
+        'Spanish (Spain)',
+        'Spanish (Mexico)',
+        'Español (España)',
+        'Español (México)',
+      ];
+      
+      // Obtener voces disponibles
+      dynamic voices = await _flutterTts.getVoices;
+      debugPrint('📱 Voces móviles disponibles: ${voices?.length ?? 0}');
+      
+      if (voices is List) {
+        // Mostrar algunas voces para debugging
+        for (int i = 0; i < voices.length && i < 5; i++) {
+          final voice = voices[i];
+          if (voice is Map) {
+            debugPrint('📱 Voz móvil $i: ${voice['name']} (${voice['locale']})');
+          }
+        }
+        
+        bool mobileVoiceSet = false;
+        
+        // Buscar voces preferidas para móvil
+        for (String preferredVoice in mobilePreferredVoices) {
+          for (dynamic voice in voices) {
+            if (voice is Map && voice['name'] != null) {
+              String voiceName = voice['name'].toString();
+              String locale = voice['locale']?.toString() ?? '';
+              
+              if (voiceName.toLowerCase().contains(preferredVoice.toLowerCase())) {
+                debugPrint('✅ Configurando voz móvil preferida: $voiceName');
+                try {
+                  await _flutterTts.setVoice(Map<String, String>.from(voice));
+                  mobileVoiceSet = true;
+                  break;
+                } catch (voiceError) {
+                  debugPrint('⚠️ Error configurando voz $voiceName: $voiceError');
+                  continue;
+                }
+              }
+            }
+          }
+          if (mobileVoiceSet) break;
+        }
+        
+        // Búsqueda alternativa si no encontramos voces preferidas
+        if (!mobileVoiceSet) {
+          for (dynamic voice in voices) {
+            if (voice is Map && voice['locale'] != null) {
+              String locale = voice['locale'].toString().toLowerCase();
+              String voiceName = voice['name']?.toString().toLowerCase() ?? '';
+              
+              // Buscar cualquier voz femenina en español
+              if ((locale.startsWith('es') || locale.contains('spa')) &&
+                  !voiceName.contains('male') &&
+                  !voiceName.contains('hombre')) {
+                debugPrint('🎯 Configurando voz móvil alternativa: $voiceName');
+                try {
+                  await _flutterTts.setVoice(Map<String, String>.from(voice));
+                  mobileVoiceSet = true;
+                  break;
+                } catch (voiceError) {
+                  debugPrint('⚠️ Error con voz alternativa: $voiceError');
+                  continue;
+                }
+              }
+            }
+          }
+        }
+        
+        if (!mobileVoiceSet) {
+          debugPrint('⚠️ No se encontró voz femenina específica en móvil');
+        }
+        
+        // Configuraciones adicionales para móvil
+        await _flutterTts.awaitSpeakCompletion(true);
+        await _flutterTts.setSharedInstance(true);
+      }
+      
+    } catch (e) {
+      debugPrint('⚠️ Error configurando TTS para móvil: $e');
+    }
+  }
+
+  Future<void> _fallbackInitialization() async {
+    try {
+      debugPrint('🔄 Intentando inicialización de respaldo...');
+      await _flutterTts.setLanguage("es");
+      await _flutterTts.setSpeechRate(0.7);
+      await _flutterTts.setVolume(1.0);
+      await _flutterTts.setPitch(1.5);
+      
+      _isInitialized = true;
+      debugPrint('✅ AudioService inicializado con configuración de respaldo');
+    } catch (e) {
+      debugPrint('❌ Error en inicialización de respaldo: $e');
+      _isInitialized = false;
     }
   }
 
@@ -66,19 +335,45 @@ class AudioService {
         await initialize();
       }
       
-      // Configurar parámetros básicos
-      await _flutterTts.setLanguage("es-ES");
-      await _flutterTts.setSpeechRate(0.8);
-      await _flutterTts.setPitch(1.3);
-      await _flutterTts.setVolume(1.0);
+      // Asegurar configuración de voz de niña antes de cada habla
+      await _ensureChildVoiceSettings();
       
-      debugPrint('✅ Parámetros configurados, hablando...');
+      debugPrint('✅ Parámetros de voz de niña configurados, hablando...');
       await _flutterTts.speak(text);
-      debugPrint('✅ Comando speak enviado');
+      debugPrint('✅ Comando speak enviado con voz de niña');
       
     } catch (e) {
       debugPrint('❌ Error completo hablando: $e');
       debugPrint('❌ Stack trace: ${StackTrace.current}');
+      // Intentar reinicializar si hay error
+      if (!_isInitialized) {
+        await initialize();
+        // Reintentar una vez
+        try {
+          await _ensureChildVoiceSettings();
+          await _flutterTts.speak(text);
+        } catch (retryError) {
+          debugPrint('❌ Error en reintento: $retryError');
+        }
+      }
+    }
+  }
+
+  Future<void> _ensureChildVoiceSettings() async {
+    try {
+      // Configurar parámetros optimizados para voz de niña
+      await _flutterTts.setLanguage("es-ES");
+      await _flutterTts.setSpeechRate(0.7); // Más lento para que niños entiendan
+      await _flutterTts.setPitch(1.5); // Pitch alto para voz de niña
+      await _flutterTts.setVolume(1.0);
+      
+      // Actualizar variables internas
+      _speechRate = 0.7;
+      _speechPitch = 1.5;
+      _volume = 1.0;
+      
+    } catch (e) {
+      debugPrint('⚠️ Error configurando voz de niña: $e');
     }
   }
 

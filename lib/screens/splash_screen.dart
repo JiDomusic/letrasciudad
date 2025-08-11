@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../providers/letter_city_provider.dart';
 import 'home_screen.dart';
+import 'dart:math' as math;
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,6 +16,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
+  late AnimationController _animalAnimationController;
   late Animation<double> _fadeAnimation;
 
   @override
@@ -22,6 +24,10 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     _animationController = AnimationController(
       duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+    _animalAnimationController = AnimationController(
+      duration: const Duration(seconds: 25),  // Aumentado de 15 a 25 segundos
       vsync: this,
     );
     _fadeAnimation = Tween<double>(
@@ -33,6 +39,7 @@ class _SplashScreenState extends State<SplashScreen>
     ));
 
     _animationController.forward();
+    _animalAnimationController.repeat();
     _initializeApp();
   }
 
@@ -80,6 +87,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void dispose() {
     _animationController.dispose();
+    _animalAnimationController.dispose();
     super.dispose();
   }
 
@@ -231,141 +239,188 @@ class _SplashScreenState extends State<SplashScreen>
     return Positioned.fill(
       child: CustomPaint(
         painter: PampaPainter(),
-        child: Container(
-          child: Stack(
-            children: [
-              // Árboles
-              const Positioned(
-                left: 50,
-                bottom: 180,
-                child: Text('🌳', style: TextStyle(fontSize: 60)),
-              ),
-              const Positioned(
-                right: 80,
-                bottom: 200,
-                child: Text('🌳', style: TextStyle(fontSize: 45)),
-              ),
-              const Positioned(
-                left: 150,
-                bottom: 160,
-                child: Text('🌲', style: TextStyle(fontSize: 40)),
-              ),
-              // Vacas
-              const Positioned(
-                right: 120,
-                bottom: 120,
-                child: Text('🐄', style: TextStyle(fontSize: 35)),
-              ),
-              const Positioned(
-                left: 200,
-                bottom: 100,
-                child: Text('🐄', style: TextStyle(fontSize: 30)),
-              ),
-              // Gallinas y pollitos
-              const Positioned(
-                left: 80,
-                bottom: 90,
-                child: Text('🐔', style: TextStyle(fontSize: 25)),
-              ),
-              const Positioned(
-                left: 110,
-                bottom: 85,
-                child: Text('🐤', style: TextStyle(fontSize: 20)),
-              ),
-              const Positioned(
-                left: 130,
-                bottom: 88,
-                child: Text('🐤', style: TextStyle(fontSize: 18)),
-              ),
-              const Positioned(
-                right: 60,
-                bottom: 95,
-                child: Text('🐓', style: TextStyle(fontSize: 28)),
-              ),
-              // MÁS ANIMALES DE GRANJA
-              const Positioned(
-                left: 300,
-                bottom: 110,
-                child: Text('🐷', style: TextStyle(fontSize: 28)), // Cerdito
-              ),
-              const Positioned(
-                right: 150,
-                bottom: 130,
-                child: Text('🐑', style: TextStyle(fontSize: 32)), // Oveja
-              ),
-              const Positioned(
-                left: 40,
-                bottom: 110,
-                child: Text('🐐', style: TextStyle(fontSize: 26)), // Cabra
-              ),
-              // MÁS VACAS, GALLINAS Y CABALLOS
-              const Positioned(
-                left: 350,
-                bottom: 140,
-                child: Text('🐄', style: TextStyle(fontSize: 38)), // Vaca grande
-              ),
-              const Positioned(
-                right: 250,
-                bottom: 90,
-                child: Text('🐄', style: TextStyle(fontSize: 32)), // Otra vaca
-              ),
-              const Positioned(
-                left: 180,
-                bottom: 120,
-                child: Text('🐔', style: TextStyle(fontSize: 28)), // Más gallinas
-              ),
-              const Positioned(
-                right: 180,
-                bottom: 85,
-                child: Text('🐓', style: TextStyle(fontSize: 30)), // Más gallos
-              ),
-              const Positioned(
-                left: 260,
-                bottom: 95,
-                child: Text('🐔', style: TextStyle(fontSize: 26)), // Otra gallina
-              ),
-              // CABALLOS
-              const Positioned(
-                right: 90,
-                bottom: 140,
-                child: Text('🐎', style: TextStyle(fontSize: 35)), // Caballo
-              ),
-              const Positioned(
-                left: 320,
-                bottom: 160,
-                child: Text('🐴', style: TextStyle(fontSize: 33)), // Otro caballo
-              ),
-              // MÁS CERDITOS
-              const Positioned(
-                right: 200,
-                bottom: 110,
-                child: Text('🐷', style: TextStyle(fontSize: 30)), // Más cerditos
-              ),
-              const Positioned(
-                left: 150,
-                bottom: 135,
-                child: Text('🐷', style: TextStyle(fontSize: 25)), // Otro cerdito
-              ),
-              // Yuyos y pasto
-              const Positioned(
-                left: 20,
-                bottom: 60,
-                child: Text('🌾', style: TextStyle(fontSize: 30)),
-              ),
-              const Positioned(
-                right: 40,
-                bottom: 65,
-                child: Text('🌾', style: TextStyle(fontSize: 25)),
-              ),
-              const Positioned(
-                left: 250,
-                bottom: 70,
-                child: Text('🌿', style: TextStyle(fontSize: 22)),
-              ),
-            ],
-          ),
+        child: Stack(
+          children: [
+            // Árboles estáticos bien separados
+            const Positioned(
+              left: 30,
+              bottom: 200,
+              child: Text('🌳', style: TextStyle(fontSize: 50)),
+            ),
+            const Positioned(
+              right: 40,
+              bottom: 220,
+              child: Text('🌳', style: TextStyle(fontSize: 45)),
+            ),
+            const Positioned(
+              left: 300,
+              bottom: 180,
+              child: Text('🌲', style: TextStyle(fontSize: 40)),
+            ),
+            
+            // Animales animados bien separados por el campo
+            ..._buildAnimatedAnimals(),
+            
+            // Vegetación estática
+            const Positioned(
+              left: 15,
+              bottom: 60,
+              child: Text('🌾', style: TextStyle(fontSize: 28)),
+            ),
+            const Positioned(
+              right: 25,
+              bottom: 65,
+              child: Text('🌾', style: TextStyle(fontSize: 25)),
+            ),
+            const Positioned(
+              left: 180,
+              bottom: 50,
+              child: Text('🌿', style: TextStyle(fontSize: 22)),
+            ),
+            const Positioned(
+              right: 200,
+              bottom: 55,
+              child: Text('🌿', style: TextStyle(fontSize: 20)),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  List<Widget> _buildAnimatedAnimals() {
+    final animals = <Widget>[];
+    
+    // Vacas caminando por diferentes partes del campo
+    animals.add(_buildMovingAnimal('🐄', 0.15, 120, 35, 0.2));
+    animals.add(_buildMovingAnimal('🐄', 0.75, 110, 32, 0.35));
+    animals.add(_buildMovingAnimal('🐄', 0.45, 130, 38, 0.6));
+    
+    // Caballos quietos pastando
+    animals.add(_buildStaticAnimal('🐎', 0.25, 150, 35));
+    animals.add(_buildStaticAnimal('🐴', 0.75, 140, 33));
+    
+    // Chanchos caminando
+    animals.add(_buildMovingAnimal('🐷', 0.35, 100, 28, 0.4));
+    animals.add(_buildMovingAnimal('🐷', 0.65, 115, 30, 0.7));
+    
+    // Ovejas
+    animals.add(_buildBouncingAnimal('🐑', 0.55, 125, 32, 0.25));
+    animals.add(_buildBouncingAnimal('🐐', 0.1, 105, 26, 0.9));
+    
+    // Gallinas y gallos picoteando
+    animals.add(_buildPeckingAnimal('🐔', 0.2, 85, 25, 0.3));
+    animals.add(_buildPeckingAnimal('🐓', 0.8, 90, 28, 0.1));
+    animals.add(_buildPeckingAnimal('🐔', 0.5, 95, 26, 0.65));
+    animals.add(_buildPeckingAnimal('🐔', 0.9, 88, 24, 0.85));
+    
+    // Pollitos siguiendo
+    animals.add(_buildFollowingAnimal('🐤', 0.22, 80, 18, 0.32));
+    animals.add(_buildFollowingAnimal('🐤', 0.52, 88, 20, 0.67));
+    
+    return animals;
+  }
+  
+  // Animales estáticos (para caballos que no se mueven)
+  Widget _buildStaticAnimal(String emoji, double xFactor, double baseY, double fontSize) {
+    return AnimatedBuilder(
+      animation: _animalAnimationController,
+      builder: (context, child) {
+        final size = MediaQuery.of(context).size;
+        final x = size.width * xFactor;
+        // Solo un pequeño movimiento de respiración
+        final breathe = math.sin(_animalAnimationController.value * 1 * math.pi) * 1;
+        
+        return Positioned(
+          left: x,
+          bottom: baseY + breathe,
+          child: Text(
+            emoji,
+            style: TextStyle(fontSize: fontSize),
+          ),
+        );
+      },
+    );
+  }
+  
+  Widget _buildMovingAnimal(String emoji, double xFactor, double baseY, double fontSize, double offset) {
+    return AnimatedBuilder(
+      animation: _animalAnimationController,
+      builder: (context, child) {
+        final progress = (_animalAnimationController.value + offset) % 1.0;
+        final size = MediaQuery.of(context).size;
+        final x = progress * (size.width - 60) + 30;
+        final bounce = math.sin(progress * 8) * 1;
+        
+        return Positioned(
+          left: x,
+          bottom: baseY + bounce,
+          child: Text(
+            emoji,
+            style: TextStyle(fontSize: fontSize),
+          ),
+        );
+      },
+    );
+  }
+  
+  Widget _buildBouncingAnimal(String emoji, double xFactor, double baseY, double fontSize, double offset) {
+    return AnimatedBuilder(
+      animation: _animalAnimationController,
+      builder: (context, child) {
+        final bounce = math.sin((_animalAnimationController.value + offset) * 2 * math.pi) * 2;
+        final sway = math.cos((_animalAnimationController.value + offset) * 1.5 * math.pi) * 5;
+        final size = MediaQuery.of(context).size;
+        
+        return Positioned(
+          left: size.width * xFactor + sway,
+          bottom: baseY + bounce,
+          child: Text(
+            emoji,
+            style: TextStyle(fontSize: fontSize),
+          ),
+        );
+      },
+    );
+  }
+  
+  Widget _buildPeckingAnimal(String emoji, double xFactor, double baseY, double fontSize, double offset) {
+    return AnimatedBuilder(
+      animation: _animalAnimationController,
+      builder: (context, child) {
+        final peck = math.sin((_animalAnimationController.value + offset) * 4 * math.pi) * 2;
+        final waddle = math.sin((_animalAnimationController.value + offset) * 1 * math.pi) * 3;
+        final size = MediaQuery.of(context).size;
+        
+        return Positioned(
+          left: size.width * xFactor + waddle,
+          bottom: baseY + peck,
+          child: Text(
+            emoji,
+            style: TextStyle(fontSize: fontSize),
+          ),
+        );
+      },
+    );
+  }
+  
+  Widget _buildFollowingAnimal(String emoji, double xFactor, double baseY, double fontSize, double offset) {
+    return AnimatedBuilder(
+      animation: _animalAnimationController,
+      builder: (context, child) {
+        final follow = math.sin((_animalAnimationController.value + offset) * 2 * math.pi) * 3;
+        final hop = math.sin((_animalAnimationController.value + offset) * 6 * math.pi) * 1;
+        final size = MediaQuery.of(context).size;
+        
+        return Positioned(
+          left: size.width * xFactor + follow,
+          bottom: baseY + hop,
+          child: Text(
+            emoji,
+            style: TextStyle(fontSize: fontSize),
+          ),
+        );
+      },
     );
   }
 
