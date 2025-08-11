@@ -353,7 +353,7 @@ class LettersData {
       name: 'eñe',
       phoneme: 'nyeh',
       syllables: ['ña', 'ñe', 'ñi', 'ño', 'ñu'],
-      exampleWords: ['niña', 'ñandú', 'sueño', 'pequeño'],
+      exampleWords: ['ñoquis', 'sueño', 'pequeño', 'niño'],
       imagePath: 'assets/letters/nn_house.png',
       audioPath: 'assets/audio/letters/nn.mp3',
       primaryColor: Colors.deepPurple,

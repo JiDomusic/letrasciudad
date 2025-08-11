@@ -228,20 +228,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           animation: _gridAnimation,
           builder: (context, child) {
             final size = MediaQuery.of(context).size;
-            // ALTURA DINÁMICA PARA SCROLL EN ANDROID
+            // CONFIGURACIÓN RESPONSIVA MEJORADA
             final screenHeight = MediaQuery.of(context).size.height;
-            final isPhone = screenHeight < 800; // Detectar teléfonos
-            // ALTURA SIMPLE Y DIRECTA
-            final lettersPerRow = size.width < 500 ? 5 : 6;
-            final totalRows = (27 / lettersPerRow).ceil(); // 27 letras total incluyendo Ñ
-            final rowHeight = 180.0; 
-            final baseHeight = 150.0; // Espacio superior
-            final extraSpace = 300.0; // Espacio extra para scroll
+            final screenWidth = MediaQuery.of(context).size.width;
+            final isMobile = screenWidth < 600;
+            final isTablet = screenWidth >= 600 && screenWidth < 900;
+            
+            // PARÁMETROS RESPONSIVOS OPTIMIZADOS
+            final lettersPerRow = isMobile ? 3 : (isTablet ? 4 : 6);
+            final totalRows = (27 / lettersPerRow).ceil();
+            final rowHeight = isMobile ? 140.0 : 180.0;
+            final baseHeight = isMobile ? 100.0 : 150.0;
+            final extraSpace = isMobile ? 200.0 : 300.0;
             final contentHeight = baseHeight + (totalRows * rowHeight) + extraSpace;
             
+            // ALTURA DINÁMICA SEGÚN DISPOSITIVO
+            final baseMobileHouseSize = screenWidth < 400 ? 45.0 : 55.0;
+            final finalHeight = isMobile 
+                ? (totalRows * (baseMobileHouseSize + 30)) + baseHeight + extraSpace 
+                : contentHeight;
+            
             return SizedBox(
-              width: size.width, // Solo el ancho visible de la pantalla
-              height: contentHeight,
+              width: size.width,
+              height: finalHeight,
               child: Stack(
                 children: [
                   // COLINAS Y LOMAS DEL PARQUE
@@ -274,6 +283,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   
                   // Mariposas animadas
                   ..._buildAnimatedButterflies(),
+                  
+                  // Animales de granja en el parque
+                  ..._buildFarmAnimals(),
 
                   // Avatar del jugador caminando por el sendero del parque
                   AnimatedBuilder(
@@ -328,9 +340,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     // ANIMACIÓN EN CASCADA ALFABÉTICA MEJORADA
                     final alphabetDelay = index * 60; // Delay más rápido y fluido
 
+                    // VALIDACIÓN FINAL PARA EVITAR CASAS FUERA DEL CONTENEDOR
+                    final safeX = (position['x'] ?? 0.0).clamp(0.0, size.width - (position['size'] ?? 55.0));
+                    final safeY = (position['y'] ?? 0.0).clamp(0.0, double.infinity);
+                    
                     return Positioned(
-                      left: position['x'] ?? 0.0,
-                      top: position['y'] ?? 0.0,
+                      left: safeX,
+                      top: safeY,
                       child: Transform.scale(
                         scale: _gridAnimation.value * depthScale.clamp(0.92, 1.0), // Escala más consistente
                         child: AnimatedOpacity(
@@ -362,7 +378,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ),
                             child: ReferenceStyleHouse(
                               letter: letter.character,
-                              size: position['size'] ?? 75.0,
+                              size: position['size'] ?? (isMobile ? 55.0 : 75.0), // Tamaño consistente por dispositivo
                               onTap: () => _onLetterTap(letter.character),
                               isUnlocked: letter.isUnlocked,
                             ),
@@ -403,52 +419,58 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Map<String, double> _calculateMobilePosition(int index, int totalLetters, Size size) {
     final screenWidth = size.width;
     final screenHeight = size.height;
-    final houseSize = 55.0;
     
-    // USAR TODA LA PÁGINA MÓVIL
-    final headerSpace = 120.0;
-    final bottomSpace = 80.0;
-    final sideSpace = 20.0;
+    // ESPACIADO RESPONSIVO MEJORADO
+    final headerSpace = screenHeight < 600 ? 80.0 : 120.0;
+    final bottomSpace = screenHeight < 600 ? 60.0 : 80.0;
+    final sideSpace = math.max(screenWidth * 0.05, 15.0); // Mínimo 5% de la pantalla o 15px
     final availableHeight = screenHeight - headerSpace - bottomSpace;
     final availableWidth = screenWidth - (sideSpace * 2);
     
-    // FLUJO ALFABÉTICO MÓVIL: 3 CASAS POR FILA PERO ORGÁNICO
-    final housesPerRow = 3; // Ideal para móvil
+    // CASAS POR FILA RESPONSIVAS
+    final housesPerRow = screenWidth < 400 ? 2 : 3;
+    
+    // TAMAÑO ADAPTATIVO CON VERIFICACIÓN DE CONTENEDOR
+    final maxHouseSize = (availableWidth / housesPerRow) - 15; // Restar espaciado
+    final idealHouseSize = screenWidth < 400 ? 45.0 : (screenWidth < 500 ? 50.0 : 55.0);
+    final houseSize = math.min(idealHouseSize, maxHouseSize).clamp(35.0, 70.0);
     final totalRows = (totalLetters / housesPerRow).ceil();
     final row = (index / housesPerRow).floor();
     final col = index % housesPerRow;
     
-    // ZONA ALFABÉTICA BASE EN MÓVIL (flujo de lectura)
-    final baseX = sideSpace + (col * (availableWidth / housesPerRow));
-    final baseY = headerSpace + (row * (availableHeight / totalRows));
+    // DISTRIBUCIÓN PERFECTAMENTE CENTRADA PARA MÓVIL
+    final houseSpacing = math.max((availableWidth - (housesPerRow * houseSize)) / (housesPerRow + 1), 8.0);
+    final totalContentWidth = (housesPerRow * houseSize) + ((housesPerRow - 1) * houseSpacing);
+    final startX = (screenWidth - totalContentWidth) / 2;
     
-    // VARIACIONES ORGÁNICAS DENTRO DE CADA ZONA ALFABÉTICA MÓVIL
-    final letterSeed = index * 89 + 23; // Diferentes semillas para móvil
+    final baseX = startX + (col * (houseSize + houseSpacing));
+    final baseY = headerSpace + (row * (houseSize + 30)); // Espaciado vertical más generoso
     
-    // Tamaño de zona alfabética más pequeño en móvil
-    final zoneWidth = availableWidth / housesPerRow;
-    final zoneHeight = availableHeight / totalRows;
+    // VARIACIONES MÍNIMAS PARA MANTENER ORDEN EN MÓVIL
+    final letterSeed = index * 89 + 23;
     
-    // Variaciones orgánicas dentro de cada zona (más pequeñas para móvil)
-    final organicX = ((letterSeed * 67 + index * 37) % 1000) / 1000 * (zoneWidth * 0.6);
-    final organicY = ((letterSeed * 79 + index * 59) % 1000) / 1000 * (zoneHeight * 0.6);
+    // Variaciones muy pequeñas para efecto natural sin desorden
+    final organicX = ((letterSeed * 37) % 100) / 100 * 8 - 4; // ±4px máximo
+    final organicY = ((letterSeed * 59) % 100) / 100 * 8 - 4; // ±4px máximo
     
-    // Variaciones adicionales para efecto natural (adaptadas a móvil)
-    final majorVariationX = ((index * 131 + 41) % 40) - 20; // ±20px
-    final majorVariationY = ((index * 173 + 61) % 30) - 15; // ±15px
-    final microVariationX = ((index * 199 + 83) % 20) - 10; // ±10px
-    final microVariationY = ((index * 227 + 101) % 16) - 8; // ±8px
+    // Sin variaciones adicionales para móvil - mantener orden
+    final majorVariationX = 0.0;
+    final majorVariationY = 0.0;
+    final microVariationX = 0.0;
+    final microVariationY = 0.0;
     
-    // POSICIÓN FINAL: ORGÁNICA PERO CON FLUJO ALFABÉTICO MÓVIL
-    final naturalX = baseX + organicX + majorVariationX + microVariationX;
-    final naturalY = baseY + organicY + majorVariationY + microVariationY;
+    // POSICIÓN FINAL: CENTRADA Y ORDENADA PARA MÓVIL
+    final naturalX = baseX + organicX;
+    final naturalY = baseY + organicY;
     
-    // ASEGURAR QUE ESTÉN DENTRO DE LA PANTALLA
-    final finalX = naturalX.clamp(sideSpace, screenWidth - houseSize - sideSpace);
-    final finalY = naturalY.clamp(headerSpace, screenHeight - houseSize - bottomSpace);
+    // GARANTIZAR QUE LAS CASAS ESTÉN COMPLETAMENTE DENTRO DEL CONTENEDOR
+    final minX = sideSpace;
+    final maxX = screenWidth - houseSize - sideSpace;
+    final finalX = naturalX.clamp(minX, maxX);
+    final finalY = math.max(naturalY, headerSpace); // Asegurar que no estén muy arriba
     
-    // EVITAR COLISIONES MANTENIENDO ORDEN ALFABÉTICO
-    final position = _avoidCollisions(finalX, finalY, houseSize, index);
+    // SIN DETECCIÓN DE COLISIONES EN MÓVIL - USAR POSICIÓN CALCULADA
+    final position = {'x': finalX, 'y': finalY};
     
     // PROPIEDADES VISUALES ORGÁNICAS PARA MÓVIL
     final radiusGenerator = (letterSeed * 47 + index * 19) % 10000;
@@ -458,10 +480,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return {
       'x': position['x']!,
       'y': position['y']!,
-      'size': houseSize + ((index * 71) % 10) - 5, // Variaciones más pequeñas en móvil
+      'size': houseSize, // Tamaño consistente en móvil
       'walkProgress': walkSpeed,
       'elevation': elevation,
-      'zone': row.toDouble(), // Zona basada en fila alfabética
+      'zone': row.toDouble(),
       'progress': index / (totalLetters - 1),
     };
   }
@@ -908,6 +930,105 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
     
     return butterflies;
+  }
+
+  List<Widget> _buildFarmAnimals() {
+    final animals = <Widget>[];
+    final size = MediaQuery.of(context).size;
+    
+    // VACAS CAMINANDO POR EL PARQUE
+    animals.add(
+      AnimatedBuilder(
+        animation: _animatedElementsController,
+        builder: (context, child) {
+          final progress = (_animatedElementsController.value * 0.3) % 1.0;
+          final x = progress * (size.width - 80);
+          final bounce = math.sin(progress * 15) * 2;
+          
+          return Positioned(
+            left: x,
+            top: 400 + bounce,
+            child: Transform.scale(
+              scaleX: progress > 0.5 ? -1 : 1,
+              child: Container(
+                width: 60,
+                height: 45,
+                decoration: BoxDecoration(
+                  color: Colors.brown[100],
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.brown[400]!, width: 2),
+                ),
+                child: const Center(
+                  child: Text('🐄', style: TextStyle(fontSize: 32)),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    
+    // GALLINAS PICOTEANDO
+    for (int i = 0; i < 3; i++) {
+      animals.add(
+        AnimatedBuilder(
+          animation: _animatedElementsController,
+          builder: (context, child) {
+            final peck = math.sin((_animatedElementsController.value + i * 0.3) * 8 * math.pi) * 3;
+            final waddle = math.sin((_animatedElementsController.value + i * 0.2) * 3 * math.pi) * 10;
+            
+            return Positioned(
+              left: 100 + (i * 80) + waddle,
+              top: 600 + peck,
+              child: Container(
+                width: 35,
+                height: 35,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(color: Colors.orange[300]!, width: 1),
+                ),
+                child: const Center(
+                  child: Text('🐓', style: TextStyle(fontSize: 24)),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+    
+    // POLLITOS SIGUIENDO A LAS GALLINAS
+    for (int i = 0; i < 5; i++) {
+      animals.add(
+        AnimatedBuilder(
+          animation: _animatedElementsController,
+          builder: (context, child) {
+            final follow = math.sin((_animatedElementsController.value + i * 0.4) * 4 * math.pi) * 5;
+            final peep = math.sin((_animatedElementsController.value + i * 0.6) * 12 * math.pi) * 2;
+            
+            return Positioned(
+              left: 80 + (i * 40) + follow,
+              top: 640 + peep,
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: Colors.yellow[200],
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.orange[200]!, width: 1),
+                ),
+                child: const Center(
+                  child: Text('🐣', style: TextStyle(fontSize: 14)),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+    
+    return animals;
   }
 
 

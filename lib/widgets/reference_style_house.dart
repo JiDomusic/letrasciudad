@@ -17,15 +17,23 @@ class ReferenceStyleHouse extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    
+    // AJUSTAR PROPORCIÓN PARA MÓVIL
+    final houseWidth = size;
+    final houseHeight = isMobile ? size * 1.2 : size * 1.4; // Menos altura en móvil
+    
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
-        width: size,
-        height: size * 1.4,
+        width: houseWidth,
+        height: houseHeight,
         child: CustomPaint(
           painter: ReferenceHousePainter(
             letter: letter,
             isUnlocked: isUnlocked,
+            isMobile: isMobile,
           ),
         ),
       ),
@@ -36,10 +44,12 @@ class ReferenceStyleHouse extends StatelessWidget {
 class ReferenceHousePainter extends CustomPainter {
   final String letter;
   final bool isUnlocked;
+  final bool isMobile;
 
   ReferenceHousePainter({
     required this.letter,
     required this.isUnlocked,
+    this.isMobile = false,
   });
 
   Color _getWallColor(String letter) {
@@ -77,11 +87,11 @@ class ReferenceHousePainter extends CustomPainter {
     final centerX = size.width / 2;
     final baseY = size.height * 0.85;
     
-    // Dimensiones exactas como en la referencia
-    final houseWidth = size.width * 0.75;
-    final houseHeight = size.height * 0.45;
-    final roofHeight = size.height * 0.25;
-    final foundationHeight = size.height * 0.08;
+    // DIMENSIONES RESPONSIVAS PARA MÓVIL
+    final houseWidth = isMobile ? size.width * 0.85 : size.width * 0.75; // Más ancho en móvil
+    final houseHeight = isMobile ? size.height * 0.50 : size.height * 0.45;
+    final roofHeight = isMobile ? size.height * 0.22 : size.height * 0.25; // Techo más bajo en móvil
+    final foundationHeight = isMobile ? size.height * 0.10 : size.height * 0.08;
 
     // 1. BASE/FUNDACIÓN AZUL (como en la referencia)
     paint.color = const Color(0xFF2196F3); // Azul exacto de la referencia
@@ -96,7 +106,7 @@ class ReferenceHousePainter extends CustomPainter {
     canvas.drawRRect(foundation, paint);
     
     // Contorno blanco de la fundación
-    strokePaint.strokeWidth = 2;
+    strokePaint.strokeWidth = isMobile ? 1.5 : 2; // Contornos más finos en móvil
     canvas.drawRRect(foundation, strokePaint);
 
     // 2. PAREDES PRINCIPALES (amarillo/naranja alternado)
@@ -127,7 +137,7 @@ class ReferenceHousePainter extends CustomPainter {
     roofPath.close();
     
     canvas.drawPath(roofPath, paint);
-    strokePaint.strokeWidth = 2;
+    strokePaint.strokeWidth = isMobile ? 1.5 : 2;
     canvas.drawPath(roofPath, strokePaint);
 
     // 4. CHIMENEA PEQUEÑA (como en referencia)
@@ -223,7 +233,7 @@ class ReferenceHousePainter extends CustomPainter {
         text: letter.toUpperCase(),
         style: TextStyle(
           color: Colors.white,
-          fontSize: size.width * 0.35, // Letra MUY grande como en referencia
+          fontSize: isMobile ? size.width * 0.40 : size.width * 0.35, // Más grande en móvil para legibilidad
           fontWeight: FontWeight.w900,
           fontFamily: 'Arial', // Fuente clean como en referencia
           shadows: [
@@ -284,7 +294,7 @@ class ReferenceHousePainter extends CustomPainter {
       canvas.drawRRect(lockRect, paint);
       
       // Arco del candado
-      strokePaint.strokeWidth = 3;
+      strokePaint.strokeWidth = isMobile ? 2.5 : 3; // Candado más fino en móvil
       strokePaint.color = const Color(0xFFFFD700);
       canvas.drawArc(
         Rect.fromCenter(

@@ -37,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _initializeApp() async {
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 5));
     
     if (mounted) {
       await _requestPermissions();
@@ -120,7 +120,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
                   child: const Icon(
-                    Icons.park,
+                    Icons.home_outlined, // Icono de casa más claro y apropiado
                     size: 80,
                     color: Colors.white,
                   ),
@@ -136,9 +136,14 @@ class _SplashScreenState extends State<SplashScreen>
                     color: Colors.white,
                     shadows: [
                       Shadow(
-                        blurRadius: 10.0,
-                        color: Colors.black26,
-                        offset: Offset(2.0, 2.0),
+                        blurRadius: 15.0,
+                        color: Colors.black87,
+                        offset: Offset(3.0, 3.0),
+                      ),
+                      Shadow(
+                        blurRadius: 5.0,
+                        color: Colors.black54,
+                        offset: Offset(1.0, 1.0),
                       ),
                     ],
                   ),
@@ -160,9 +165,16 @@ class _SplashScreenState extends State<SplashScreen>
                   '¡A aprender che!',
                   style: TextStyle(
                     fontSize: 18,
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w300,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
                     letterSpacing: 2.0,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 8.0,
+                        color: Colors.black87,
+                        offset: Offset(2.0, 2.0),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -190,8 +202,16 @@ class _SplashScreenState extends State<SplashScreen>
                       const Text(
                         'Preparando tu aventura argentina...',
                         style: TextStyle(
-                          color: Colors.white70,
+                          color: Colors.white,
                           fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 6.0,
+                              color: Colors.black87,
+                              offset: Offset(1.5, 1.5),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -261,6 +281,70 @@ class _SplashScreenState extends State<SplashScreen>
                 right: 60,
                 bottom: 95,
                 child: Text('🐓', style: TextStyle(fontSize: 28)),
+              ),
+              // MÁS ANIMALES DE GRANJA
+              const Positioned(
+                left: 300,
+                bottom: 110,
+                child: Text('🐷', style: TextStyle(fontSize: 28)), // Cerdito
+              ),
+              const Positioned(
+                right: 150,
+                bottom: 130,
+                child: Text('🐑', style: TextStyle(fontSize: 32)), // Oveja
+              ),
+              const Positioned(
+                left: 40,
+                bottom: 110,
+                child: Text('🐐', style: TextStyle(fontSize: 26)), // Cabra
+              ),
+              // MÁS VACAS, GALLINAS Y CABALLOS
+              const Positioned(
+                left: 350,
+                bottom: 140,
+                child: Text('🐄', style: TextStyle(fontSize: 38)), // Vaca grande
+              ),
+              const Positioned(
+                right: 250,
+                bottom: 90,
+                child: Text('🐄', style: TextStyle(fontSize: 32)), // Otra vaca
+              ),
+              const Positioned(
+                left: 180,
+                bottom: 120,
+                child: Text('🐔', style: TextStyle(fontSize: 28)), // Más gallinas
+              ),
+              const Positioned(
+                right: 180,
+                bottom: 85,
+                child: Text('🐓', style: TextStyle(fontSize: 30)), // Más gallos
+              ),
+              const Positioned(
+                left: 260,
+                bottom: 95,
+                child: Text('🐔', style: TextStyle(fontSize: 26)), // Otra gallina
+              ),
+              // CABALLOS
+              const Positioned(
+                right: 90,
+                bottom: 140,
+                child: Text('🐎', style: TextStyle(fontSize: 35)), // Caballo
+              ),
+              const Positioned(
+                left: 320,
+                bottom: 160,
+                child: Text('🐴', style: TextStyle(fontSize: 33)), // Otro caballo
+              ),
+              // MÁS CERDITOS
+              const Positioned(
+                right: 200,
+                bottom: 110,
+                child: Text('🐷', style: TextStyle(fontSize: 30)), // Más cerditos
+              ),
+              const Positioned(
+                left: 150,
+                bottom: 135,
+                child: Text('🐷', style: TextStyle(fontSize: 25)), // Otro cerdito
               ),
               // Yuyos y pasto
               const Positioned(
@@ -358,19 +442,7 @@ class PampaPainter extends CustomPainter {
       paint,
     );
     
-    // Líneas de pasto
-    paint.shader = null;
-    paint.color = Color(0xFF90EE90);
-    paint.strokeWidth = 2;
-    
-    for (int i = 0; i < 20; i++) {
-      double x = (size.width / 20) * i;
-      canvas.drawLine(
-        Offset(x, size.height * 0.8),
-        Offset(x, size.height),
-        paint,
-      );
-    }
+    // Líneas de pasto eliminadas por solicitud del usuario
   }
   
   void _paintTreeHorizon(Canvas canvas, Size size) {

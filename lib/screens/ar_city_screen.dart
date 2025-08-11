@@ -319,7 +319,7 @@ class _ARCityScreenState extends State<ARCityScreen> {
       'luna': 'assets/images/words/luna.png',
       'flor': 'assets/images/words/flor.png',
       'agua': 'assets/images/words/agua.png',
-      'arbol': 'assets/images/words/arbol.png',
+      'árbol': 'assets/images/words/arbol.png',
     };
 
     final word = _currentWord.toLowerCase();

@@ -65,7 +65,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      // PERMITIR AL NIÑO INTERRUMPIR INMEDIATAMENTE LA NARRACIÓN
+      // PERMITIR AL NINO INTERRUMPIR INMEDIATAMENTE LA NARRACION
       onTap: _skipNarration,
       child: Scaffold(
         body: Container(
@@ -456,7 +456,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
               style: TextStyle(fontSize: isWeb ? 120 : 70), // 120 en web, 70 en móvil
             ),
             SizedBox(height: isWeb ? 16 : 12),
-            // QUITAR TEXTO PARA QUE EL NIÑO ADIVINE
+            // QUITAR TEXTO PARA QUE EL NINO ADIVINE
             // Solo mostrar texto después de seleccionar
             if (isSelected) ...[
               Text(
@@ -491,7 +491,6 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     if (isCorrect && actuallyCorrect) {
       // FEEDBACK POSITIVO SOLO SI ES REALMENTE CORRECTO
       _audioService.speakText('¡Excelente! ${obj['name']}');
-      _showSuccessMessage(obj['name'] as String);
       _showCelebrationStars();
       context.read<LetterCityProvider>().completeActivity('object_selection_${widget.letter.character}', 15);
       
@@ -1191,25 +1190,22 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '📏', 'name': 'Regla', 'correct': false},
         {'emoji': '⚡', 'name': 'Rayo', 'correct': false},
         {'emoji': '🧭', 'name': 'Brújula', 'correct': false},
-        {'emoji': '🎯', 'name': 'Diana', 'correct': false},
+        {'emoji': '🐸', 'name': 'Rana', 'correct': false},
       ],
-      'Ñ': [
-        {'emoji': '🦆', 'name': 'Ñandú', 'correct': true},
-        {'emoji': '🍝', 'name': 'Ñoquis', 'correct': true},
-        {'emoji': '🥱', 'name': 'Ñoñería', 'correct': true},
-        {'emoji': '👃', 'name': 'Ñata', 'correct': true},
-        {'emoji': '🐄', 'name': 'Ñu', 'correct': true},
-        {'emoji': '🤏', 'name': 'Ñoño', 'correct': true},
-        {'emoji': '👶', 'name': 'Ñene', 'correct': true},
-        {'emoji': '👧', 'name': 'Ñena', 'correct': true},
-        {'emoji': '🦆', 'name': 'Ñato', 'correct': true},
-        {'emoji': '🌿', 'name': 'Ñandubay', 'correct': true},
-        {'emoji': '🧸', 'name': 'Ñoñez', 'correct': true},
-        {'emoji': '🔄', 'name': 'Ñapa', 'correct': true},
+      'N_TILDE': [
+        {'emoji': '🥘', 'name': 'Ñoquis', 'correct': true},
+        {'emoji': '😴', 'name': 'Sueño', 'correct': true},
+        {'emoji': '👦', 'name': 'Niño', 'correct': true},
+        {'emoji': '🤏', 'name': 'Pequeño', 'correct': true},
+        {'emoji': '🍂', 'name': 'Otoño', 'correct': true},
+        {'emoji': '🐸', 'name': 'Rana', 'correct': false},
+        {'emoji': '🚗', 'name': 'Auto', 'correct': false},
       ],
     };
     
-    return objectsMap[letter.toUpperCase()] ?? [
+    // Mapear Ñ a la clave correcta
+    final key = letter.toUpperCase() == 'Ñ' ? 'N_TILDE' : letter.toUpperCase();
+    return objectsMap[key] ?? [
       {'emoji': '❓', 'name': 'Objeto', 'correct': true},
     ];
   }
@@ -1449,7 +1445,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
                       ),
                       child: Stack(
                         children: [
-                          // Letter background guide - TAMAÑO RESPONSIVE
+                          // Letter background guide - TAMANO RESPONSIVE
                           Center(
                             child: Text(
                               widget.letter,
@@ -1552,7 +1548,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
                               });
                             },
                             child: CustomPaint(
-                              painter: _TracingPainter(_strokes, _currentStroke, _invalidStrokes),
+                              painter: _TracingPainter(_strokes, _currentStroke, _invalidStrokes, widget.letter),
                               size: Size.infinite,
                             ),
                           ),
@@ -1567,73 +1563,130 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
         ),
         const SizedBox(height: 20),
         // Botones de control
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            // Botón demostración
-            ElevatedButton.icon(
-              onPressed: _startDemo,
-              icon: const Icon(Icons.play_arrow, size: 24),
-              label: const Text('Ver cómo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange[600], // Más prominente
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                elevation: 8, // Más sombra para destacar
-              ),
-            ),
-            // Botón limpiar
-            ElevatedButton.icon(
-              onPressed: () {
-                setState(() {
-                  _strokes.clear();
-                  _invalidStrokes.clear(); // Also clear invalid strokes
-                  _currentStroke.clear();
-                  _hasTraced = false;
-                  _validStrokes = 0; // Reset valid stroke count
-                });
-              },
-              icon: const Icon(Icons.clear, size: 24),
-              label: const Text('Limpiar', style: TextStyle(fontSize: 16)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey[600],
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              ),
-            ),
-            // Botón completar
-            ElevatedButton.icon(
-              onPressed: _isTracingValid() ? () {
-                // Celebración final
-                widget.onCelebrationStars();
-                widget.audioService.speakText('¡Perfecto! Has completado el trazado de la letra ${widget.letter}');
-                widget.onTracingComplete();
-                
-                // Limpiar después de completar
-                setState(() {
-                  _strokes.clear();
-                  _currentStroke.clear();
-                  _invalidStrokes.clear();
-                  _hasTraced = false;
-                  _validStrokes = 0;
-                });
-              } : null,
-              icon: const Icon(Icons.check_circle, size: 24),
-              label: Text(
-                _isTracingValid() ? '¡Terminé!' : _getHintText(),
-                style: const TextStyle(fontSize: 16),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _isTracingValid() ? Colors.green : Colors.grey,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              ),
-            ),
-          ],
+        // BOTONES RESPONSIVOS PARA MÓVIL Y WEB
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isPhone = constraints.maxWidth < 600;
+            final isSmallPhone = constraints.maxWidth < 400;
+            
+            // CONFIGURACIÓN RESPONSIVA
+            final buttonPadding = isSmallPhone 
+                ? const EdgeInsets.symmetric(horizontal: 8, vertical: 12)
+                : (isPhone 
+                    ? const EdgeInsets.symmetric(horizontal: 12, vertical: 14)
+                    : const EdgeInsets.symmetric(horizontal: 20, vertical: 16));
+            
+            final fontSize = isSmallPhone ? 12.0 : (isPhone ? 14.0 : 16.0);
+            final iconSize = isSmallPhone ? 18.0 : (isPhone ? 20.0 : 24.0);
+            
+            // LAYOUT ADAPTATIVO
+            if (isSmallPhone) {
+              // COLUMNA PARA PANTALLAS MUY PEQUENAS
+              return Column(
+                children: [
+                  _buildTracingButton('demo', buttonPadding, fontSize, iconSize),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTracingButton('clear', buttonPadding, fontSize, iconSize),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildTracingButton('complete', buttonPadding, fontSize, iconSize),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            } else {
+              // FILA PARA PANTALLAS NORMALES Y GRANDES
+              return Row(
+                children: [
+                  Expanded(
+                    child: _buildTracingButton('demo', buttonPadding, fontSize, iconSize),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildTracingButton('clear', buttonPadding, fontSize, iconSize),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildTracingButton('complete', buttonPadding, fontSize, iconSize),
+                  ),
+                ],
+              );
+            }
+          },
         ),
         const SizedBox(height: 10),
       ],
     );
+  }
+
+  // MÉTODO HELPER PARA CREAR BOTONES RESPONSIVOS
+  Widget _buildTracingButton(String type, EdgeInsets padding, double fontSize, double iconSize) {
+    switch (type) {
+      case 'demo':
+        return ElevatedButton.icon(
+          onPressed: _startDemo,
+          icon: Icon(Icons.play_arrow, size: iconSize),
+          label: Text('Ver cómo', style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.orange[600],
+            foregroundColor: Colors.white,
+            padding: padding,
+            elevation: 8,
+          ),
+        );
+      case 'clear':
+        return ElevatedButton.icon(
+          onPressed: () {
+            setState(() {
+              _strokes.clear();
+              _invalidStrokes.clear();
+              _currentStroke.clear();
+              _hasTraced = false;
+              _validStrokes = 0;
+            });
+          },
+          icon: Icon(Icons.clear, size: iconSize),
+          label: Text('Limpiar', style: TextStyle(fontSize: fontSize)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.grey[600],
+            foregroundColor: Colors.white,
+            padding: padding,
+          ),
+        );
+      case 'complete':
+        return ElevatedButton.icon(
+          onPressed: _isTracingValid() ? () {
+            widget.onCelebrationStars();
+            widget.audioService.speakText('¡Perfecto! Has completado el trazado de la letra ${widget.letter}');
+            widget.onTracingComplete();
+            setState(() {
+              _strokes.clear();
+              _currentStroke.clear();
+              _invalidStrokes.clear();
+              _hasTraced = false;
+              _validStrokes = 0;
+            });
+          } : null,
+          icon: Icon(Icons.check_circle, size: iconSize),
+          label: Text(
+            _isTracingValid() ? '¡Terminé!' : _getHintText(),
+            style: TextStyle(fontSize: fontSize),
+            overflow: TextOverflow.ellipsis,
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: _isTracingValid() ? Colors.green : Colors.grey,
+            foregroundColor: Colors.white,
+            padding: padding,
+          ),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
   bool _validateStroke(List<Offset> stroke, double canvasWidth, double canvasHeight) {
@@ -1779,7 +1832,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
         return _validateSimpleM(stroke, canvasWidth, canvasHeight);
       case 'N':
         return _validateSimpleN(stroke, canvasWidth, canvasHeight);
-      case 'Ñ':
+      case '\u00D1':
         return _validateSimpleN(stroke, canvasWidth, canvasHeight); // Igual que N
       case 'O':
         return _validateSimpleO(stroke, canvasWidth, canvasHeight);
@@ -2996,7 +3049,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     return start.dx < end.dx && start.dy > end.dy && _isDiagonalStroke(stroke);
   }
   
-  // LETRA Ñ - Como N pero con tilde encima
+  // LETRA N_TILDE - Como N pero con tilde encima
   bool _validateLetterEnye(List<Offset> stroke) {
     // Validar cualquier componente de la N
     if (_validateLetterN(stroke)) return true;
@@ -3007,7 +3060,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
     return false;
   }
   
-  // Validar la tilde de la Ñ
+  // Validar la tilde de la N_TILDE
   bool _isTildeOfEnye(List<Offset> stroke) {
     if (stroke.length < 3) return false;
     
@@ -3537,8 +3590,8 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
         return _getFeedbackForLetterM(attempts);
       case 'N':
         return _getFeedbackForLetterN(attempts);
-      case 'Ñ':
-        return _getFeedbackForLetterN(attempts); // Ñ usa mismo feedback que N
+      case '\u00D1':
+        return _getFeedbackForLetterN(attempts); // N_TILDE usa mismo feedback que N
       case 'O':
         return _getFeedbackForLetterO(attempts);
       case 'P':
@@ -4295,11 +4348,15 @@ class _TracingPainter extends CustomPainter {
   final List<List<Offset>> strokes;
   final List<Offset> currentStroke;
   final List<List<Offset>> invalidStrokes;
+  final String letter;
 
-  _TracingPainter(this.strokes, this.currentStroke, this.invalidStrokes);
+  _TracingPainter(this.strokes, this.currentStroke, this.invalidStrokes, this.letter);
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Dibujar contorno guía de la letra (estilo libro para colorear)
+    _drawLetterOutline(canvas, size);
+    
     final paint = Paint()
       ..color = Colors.blue[600]!
       ..strokeWidth = 8.0
@@ -4347,6 +4404,420 @@ class _TracingPainter extends CustomPainter {
       }
       canvas.drawPath(path, paint);
     }
+  }
+
+  // Método para dibujar el contorno guía de la letra
+  void _drawLetterOutline(Canvas canvas, Size size) {
+    final outlinePaint = Paint()
+      ..color = Colors.grey[300]!
+      ..strokeWidth = 3.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+
+    // Dibujar contorno según la letra
+    switch (letter.toUpperCase()) {
+      case 'A':
+        _drawOutlineA(canvas, size, outlinePaint);
+        break;
+      case 'B':
+        _drawOutlineB(canvas, size, outlinePaint);
+        break;
+      case 'C':
+        _drawOutlineC(canvas, size, outlinePaint);
+        break;
+      case 'D':
+        _drawOutlineD(canvas, size, outlinePaint);
+        break;
+      case 'E':
+        _drawOutlineE(canvas, size, outlinePaint);
+        break;
+      case 'F':
+        _drawOutlineF(canvas, size, outlinePaint);
+        break;
+      case 'G':
+        _drawOutlineG(canvas, size, outlinePaint);
+        break;
+      case 'H':
+        _drawOutlineH(canvas, size, outlinePaint);
+        break;
+      case 'I':
+        _drawOutlineI(canvas, size, outlinePaint);
+        break;
+      case 'J':
+        _drawOutlineJ(canvas, size, outlinePaint);
+        break;
+      case 'K':
+        _drawOutlineK(canvas, size, outlinePaint);
+        break;
+      case 'L':
+        _drawOutlineL(canvas, size, outlinePaint);
+        break;
+      case 'M':
+        _drawOutlineM(canvas, size, outlinePaint);
+        break;
+      case 'N':
+        _drawOutlineN(canvas, size, outlinePaint);
+        break;
+      case '\u00D1':
+        _drawOutlineN(canvas, size, outlinePaint);
+        break;
+      case 'O':
+        _drawOutlineO(canvas, size, outlinePaint);
+        break;
+      case 'P':
+        _drawOutlineP(canvas, size, outlinePaint);
+        break;
+      case 'Q':
+        _drawOutlineQ(canvas, size, outlinePaint);
+        break;
+      case 'R':
+        _drawOutlineR(canvas, size, outlinePaint);
+        break;
+      case 'S':
+        _drawOutlineS(canvas, size, outlinePaint);
+        break;
+      case 'T':
+        _drawOutlineT(canvas, size, outlinePaint);
+        break;
+      case 'U':
+        _drawOutlineU(canvas, size, outlinePaint);
+        break;
+      case 'V':
+        _drawOutlineV(canvas, size, outlinePaint);
+        break;
+      case 'W':
+        _drawOutlineW(canvas, size, outlinePaint);
+        break;
+      case 'X':
+        _drawOutlineX(canvas, size, outlinePaint);
+        break;
+      case 'Y':
+        _drawOutlineY(canvas, size, outlinePaint);
+        break;
+      case 'Z':
+        _drawOutlineZ(canvas, size, outlinePaint);
+        break;
+    }
+  }
+
+  // Contornos específicos para cada letra
+  void _drawOutlineA(Canvas canvas, Size size, Paint paint) {
+    final centerX = size.width / 2;
+    final topPoint = Offset(centerX, size.height * 0.2);
+    final leftPoint = Offset(centerX - size.width * 0.25, size.height * 0.8);
+    final rightPoint = Offset(centerX + size.width * 0.25, size.height * 0.8);
+    final midLeftPoint = Offset(centerX - size.width * 0.125, size.height * 0.55);
+    final midRightPoint = Offset(centerX + size.width * 0.125, size.height * 0.55);
+    
+    canvas.drawLine(leftPoint, topPoint, paint);
+    canvas.drawLine(topPoint, rightPoint, paint);
+    canvas.drawLine(midLeftPoint, midRightPoint, paint);
+  }
+
+  void _drawOutlineB(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.6;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    canvas.drawLine(Offset(leftX, topY), Offset(leftX, bottomY), paint);
+    canvas.drawLine(Offset(leftX, topY), Offset(rightX, topY), paint);
+    canvas.drawLine(Offset(leftX, midY), Offset(rightX, midY), paint);
+    canvas.drawLine(Offset(leftX, bottomY), Offset(rightX, bottomY), paint);
+    canvas.drawLine(Offset(rightX, topY), Offset(rightX, midY), paint);
+    canvas.drawLine(Offset(rightX, midY), Offset(rightX, bottomY), paint);
+  }
+
+  void _drawOutlineC(Canvas canvas, Size size, Paint paint) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width * 0.25;
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    final path = Path();
+    path.addArc(rect, 0.25 * 3.14159, 1.5 * 3.14159);
+    canvas.drawPath(path, paint);
+  }
+
+  void _drawOutlineD(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.3;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    
+    canvas.drawLine(Offset(leftX, topY), Offset(leftX, bottomY), paint);
+    
+    final path = Path()
+      ..moveTo(leftX, topY)
+      ..cubicTo(size.width * 0.6, topY, size.width * 0.6, bottomY, leftX, bottomY);
+    canvas.drawPath(path, paint);
+  }
+
+  void _drawOutlineE(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.6;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    canvas.drawLine(Offset(leftX, topY), Offset(leftX, bottomY), paint);
+    canvas.drawLine(Offset(leftX, topY), Offset(rightX, topY), paint);
+    canvas.drawLine(Offset(leftX, midY), Offset(rightX * 0.9, midY), paint);
+    canvas.drawLine(Offset(leftX, bottomY), Offset(rightX, bottomY), paint);
+  }
+
+  void _drawOutlineF(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.6;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    canvas.drawLine(Offset(leftX, topY), Offset(leftX, bottomY), paint);
+    canvas.drawLine(Offset(leftX, topY), Offset(rightX, topY), paint);
+    canvas.drawLine(Offset(leftX, midY), Offset(rightX * 0.9, midY), paint);
+  }
+
+  void _drawOutlineG(Canvas canvas, Size size, Paint paint) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width * 0.25;
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    final path = Path();
+    path.addArc(rect, 0.25 * 3.14159, 1.5 * 3.14159);
+    canvas.drawPath(path, paint);
+    
+    final rightX = center.dx + radius * 0.7;
+    final midRightX = center.dx + radius * 0.3;
+    canvas.drawLine(Offset(rightX, center.dy), Offset(midRightX, center.dy), paint);
+  }
+
+  void _drawOutlineH(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    canvas.drawLine(Offset(leftX, topY), Offset(leftX, bottomY), paint);
+    canvas.drawLine(Offset(rightX, topY), Offset(rightX, bottomY), paint);
+    canvas.drawLine(Offset(leftX, midY), Offset(rightX, midY), paint);
+  }
+
+  void _drawOutlineI(Canvas canvas, Size size, Paint paint) {
+    final centerX = size.width / 2;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final lineWidth = size.width * 0.2;
+    
+    canvas.drawLine(Offset(centerX - lineWidth / 2, topY), Offset(centerX + lineWidth / 2, topY), paint);
+    canvas.drawLine(Offset(centerX, topY), Offset(centerX, bottomY), paint);
+    canvas.drawLine(Offset(centerX - lineWidth / 2, bottomY), Offset(centerX + lineWidth / 2, bottomY), paint);
+  }
+
+  void _drawOutlineJ(Canvas canvas, Size size, Paint paint) {
+    final centerX = size.width / 2;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final leftX = size.width * 0.3;
+    
+    canvas.drawLine(Offset(centerX, topY), Offset(centerX, bottomY * 0.9), paint);
+    
+    final path = Path()
+      ..moveTo(centerX, bottomY * 0.9)
+      ..quadraticBezierTo(leftX, bottomY, leftX, bottomY * 0.8);
+    canvas.drawPath(path, paint);
+  }
+
+  void _drawOutlineK(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    canvas.drawLine(Offset(leftX, topY), Offset(leftX, bottomY), paint);
+    canvas.drawLine(Offset(leftX, midY), Offset(rightX, topY), paint);
+    canvas.drawLine(Offset(leftX, midY), Offset(rightX, bottomY), paint);
+  }
+
+  void _drawOutlineL(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    
+    canvas.drawLine(Offset(leftX, topY), Offset(leftX, bottomY), paint);
+    canvas.drawLine(Offset(leftX, bottomY), Offset(rightX, bottomY), paint);
+  }
+
+  void _drawOutlineM(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.25;
+    final rightX = size.width * 0.75;
+    final centerX = size.width / 2;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.6;
+    
+    canvas.drawLine(Offset(leftX, bottomY), Offset(leftX, topY), paint);
+    canvas.drawLine(Offset(leftX, topY), Offset(centerX, midY), paint);
+    canvas.drawLine(Offset(centerX, midY), Offset(rightX, topY), paint);
+    canvas.drawLine(Offset(rightX, topY), Offset(rightX, bottomY), paint);
+  }
+
+  void _drawOutlineN(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    
+    canvas.drawLine(Offset(leftX, bottomY), Offset(leftX, topY), paint);
+    canvas.drawLine(Offset(leftX, topY), Offset(rightX, bottomY), paint);
+    canvas.drawLine(Offset(rightX, bottomY), Offset(rightX, topY), paint);
+  }
+
+  void _drawOutlineO(Canvas canvas, Size size, Paint paint) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width * 0.25;
+    canvas.drawCircle(center, radius, paint);
+  }
+
+  void _drawOutlineP(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.6;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    canvas.drawLine(Offset(leftX, topY), Offset(leftX, bottomY), paint);
+    canvas.drawLine(Offset(leftX, topY), Offset(rightX, topY), paint);
+    canvas.drawLine(Offset(rightX, topY), Offset(rightX, midY), paint);
+    canvas.drawLine(Offset(rightX, midY), Offset(leftX, midY), paint);
+  }
+
+  void _drawOutlineQ(Canvas canvas, Size size, Paint paint) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width * 0.25;
+    canvas.drawCircle(center, radius, paint);
+    
+    final startX = center.dx + radius * 0.5;
+    final startY = center.dy + radius * 0.5;
+    final endX = center.dx + radius * 1.2;
+    final endY = center.dy + radius * 1.2;
+    canvas.drawLine(Offset(startX, startY), Offset(endX, endY), paint);
+  }
+
+  void _drawOutlineR(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.6;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    canvas.drawLine(Offset(leftX, topY), Offset(leftX, bottomY), paint);
+    canvas.drawLine(Offset(leftX, topY), Offset(rightX, topY), paint);
+    canvas.drawLine(Offset(rightX, topY), Offset(rightX, midY), paint);
+    canvas.drawLine(Offset(rightX, midY), Offset(leftX, midY), paint);
+    canvas.drawLine(Offset(leftX + (rightX - leftX) * 0.7, midY), Offset(rightX, bottomY), paint);
+  }
+
+  void _drawOutlineS(Canvas canvas, Size size, Paint paint) {
+    final centerX = size.width / 2;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height / 2;
+    final width = size.width * 0.25;
+    
+    final path = Path()
+      ..moveTo(centerX + width, topY + width * 0.5)
+      ..quadraticBezierTo(centerX - width, topY, centerX, midY)
+      ..quadraticBezierTo(centerX + width, bottomY, centerX - width, bottomY - width * 0.5);
+    canvas.drawPath(path, paint);
+  }
+
+  void _drawOutlineT(Canvas canvas, Size size, Paint paint) {
+    final centerX = size.width / 2;
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    
+    canvas.drawLine(Offset(leftX, topY), Offset(rightX, topY), paint);
+    canvas.drawLine(Offset(centerX, topY), Offset(centerX, bottomY), paint);
+  }
+
+  void _drawOutlineU(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final centerX = size.width / 2;
+    
+    final path = Path()
+      ..moveTo(leftX, topY)
+      ..lineTo(leftX, bottomY * 0.7)
+      ..quadraticBezierTo(centerX, bottomY, rightX, bottomY * 0.7)
+      ..lineTo(rightX, topY);
+    canvas.drawPath(path, paint);
+  }
+
+  void _drawOutlineV(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final centerX = size.width / 2;
+    
+    canvas.drawLine(Offset(leftX, topY), Offset(centerX, bottomY), paint);
+    canvas.drawLine(Offset(centerX, bottomY), Offset(rightX, topY), paint);
+  }
+
+  void _drawOutlineW(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.2;
+    final rightX = size.width * 0.8;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final quarter1X = size.width * 0.4;
+    final quarter3X = size.width * 0.6;
+    final centerX = size.width / 2;
+    final midY = size.height * 0.6;
+    
+    canvas.drawLine(Offset(leftX, topY), Offset(quarter1X, bottomY), paint);
+    canvas.drawLine(Offset(quarter1X, bottomY), Offset(centerX, midY), paint);
+    canvas.drawLine(Offset(centerX, midY), Offset(quarter3X, bottomY), paint);
+    canvas.drawLine(Offset(quarter3X, bottomY), Offset(rightX, topY), paint);
+  }
+
+  void _drawOutlineX(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    
+    canvas.drawLine(Offset(leftX, topY), Offset(rightX, bottomY), paint);
+    canvas.drawLine(Offset(rightX, topY), Offset(leftX, bottomY), paint);
+  }
+
+  void _drawOutlineY(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final centerX = size.width / 2;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    canvas.drawLine(Offset(leftX, topY), Offset(centerX, midY), paint);
+    canvas.drawLine(Offset(rightX, topY), Offset(centerX, midY), paint);
+    canvas.drawLine(Offset(centerX, midY), Offset(centerX, bottomY), paint);
+  }
+
+  void _drawOutlineZ(Canvas canvas, Size size, Paint paint) {
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    
+    canvas.drawLine(Offset(leftX, topY), Offset(rightX, topY), paint);
+    canvas.drawLine(Offset(rightX, topY), Offset(leftX, bottomY), paint);
+    canvas.drawLine(Offset(leftX, bottomY), Offset(rightX, bottomY), paint);
   }
 
   @override
@@ -4409,6 +4880,69 @@ class _LetterDemoPainter extends CustomPainter {
         break;
       case 'L':
         _paintDemoLetterL(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'D':
+        _paintDemoLetterD(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'E':
+        _paintDemoLetterE(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'F':
+        _paintDemoLetterF(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'G':
+        _paintDemoLetterG(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'H':
+        _paintDemoLetterH(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'J':
+        _paintDemoLetterJ(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'K':
+        _paintDemoLetterK(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'M':
+        _paintDemoLetterM(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'N':
+        _paintDemoLetterN(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case '\u00D1':
+        _paintDemoLetterN_tilde(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'P':
+        _paintDemoLetterP(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'Q':
+        _paintDemoLetterQ(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'R':
+        _paintDemoLetterR(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'S':
+        _paintDemoLetterS(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'T':
+        _paintDemoLetterT(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'U':
+        _paintDemoLetterU(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'V':
+        _paintDemoLetterV(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'W':
+        _paintDemoLetterW(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'X':
+        _paintDemoLetterX(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'Y':
+        _paintDemoLetterY(canvas, size, demoPaint, startPaint, arrowPaint);
+        break;
+      case 'Z':
+        _paintDemoLetterZ(canvas, size, demoPaint, startPaint, arrowPaint);
         break;
       default:
         _paintDemoGenericLetter(canvas, size, demoPaint, startPaint, arrowPaint);
@@ -4627,6 +5161,597 @@ class _LetterDemoPainter extends CustomPainter {
     }
   }
   
+  // Nuevas implementaciones para letras faltantes
+  void _paintDemoLetterD(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.6;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    // Línea vertical izquierda (0-50%)
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 2, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(leftX, bottomY), stroke1Progress, paint);
+      if (stroke1Progress < 1.0) canvas.drawCircle(Offset(leftX, topY), 8, startPaint);
+    }
+    
+    // Curva derecha (50-100%)
+    if (progress > 0.5) {
+      final stroke2Progress = math.min((progress - 0.5) * 2, 1.0);
+      final path = Path()
+        ..moveTo(leftX, topY)
+        ..cubicTo(rightX, topY, rightX, bottomY, leftX, bottomY);
+      final pathMetrics = path.computeMetrics();
+      if (pathMetrics.isNotEmpty) {
+        final pathMetric = pathMetrics.first;
+        final extractPath = pathMetric.extractPath(0, pathMetric.length * stroke2Progress);
+        canvas.drawPath(extractPath, paint);
+      }
+    }
+  }
+
+  void _paintDemoLetterE(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.6;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    // Línea vertical (0-25%)
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(leftX, bottomY), stroke1Progress, paint);
+      if (stroke1Progress < 1.0) canvas.drawCircle(Offset(leftX, topY), 8, startPaint);
+    }
+    
+    // Línea superior (25-50%)
+    if (progress > 0.25) {
+      final stroke2Progress = math.min((progress - 0.25) * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(rightX, topY), stroke2Progress, paint);
+    }
+    
+    // Línea media (50-75%)
+    if (progress > 0.5) {
+      final stroke3Progress = math.min((progress - 0.5) * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, midY), Offset(rightX * 0.9, midY), stroke3Progress, paint);
+    }
+    
+    // Línea inferior (75-100%)
+    if (progress > 0.75) {
+      final stroke4Progress = math.min((progress - 0.75) * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, bottomY), Offset(rightX, bottomY), stroke4Progress, paint);
+    }
+  }
+
+  void _paintDemoLetterF(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.6;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    // Similar a E pero sin línea inferior
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 3.33, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(leftX, bottomY), stroke1Progress, paint);
+      if (stroke1Progress < 1.0) canvas.drawCircle(Offset(leftX, topY), 8, startPaint);
+    }
+    
+    if (progress > 0.33) {
+      final stroke2Progress = math.min((progress - 0.33) * 3, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(rightX, topY), stroke2Progress, paint);
+    }
+    
+    if (progress > 0.66) {
+      final stroke3Progress = math.min((progress - 0.66) * 3, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, midY), Offset(rightX * 0.9, midY), stroke3Progress, paint);
+    }
+  }
+
+  void _paintDemoLetterG(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = math.min(size.width, size.height) * 0.3;
+    
+    // Similar a C pero con línea horizontal interna
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 1.5, 1.0);
+      final startAngle = math.pi * 0.25;
+      final sweepAngle = math.pi * 1.5 * stroke1Progress;
+      final rect = Rect.fromCircle(center: center, radius: radius);
+      final path = Path();
+      path.addArc(rect, startAngle, sweepAngle);
+      canvas.drawPath(path, paint);
+      
+      if (stroke1Progress < 0.1) {
+        final startPoint = Offset(center.dx + radius * 0.7, center.dy - radius * 0.7);
+        canvas.drawCircle(startPoint, 8, startPaint);
+      }
+    }
+    
+    // Línea horizontal interna (75-100%)
+    if (progress > 0.75) {
+      final stroke2Progress = math.min((progress - 0.75) * 4, 1.0);
+      final rightX = center.dx + radius * 0.7;
+      final midRightX = center.dx + radius * 0.3;
+      _drawAnimatedLine(canvas, Offset(rightX, center.dy), Offset(midRightX, center.dy), stroke2Progress, paint);
+    }
+  }
+
+  void _paintDemoLetterH(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    // Línea vertical izquierda (0-33%)
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 3, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(leftX, bottomY), stroke1Progress, paint);
+      if (stroke1Progress < 1.0) canvas.drawCircle(Offset(leftX, topY), 8, startPaint);
+    }
+    
+    // Línea horizontal media (33-66%)
+    if (progress > 0.33) {
+      final stroke2Progress = math.min((progress - 0.33) * 3, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, midY), Offset(rightX, midY), stroke2Progress, paint);
+    }
+    
+    // Línea vertical derecha (66-100%)
+    if (progress > 0.66) {
+      final stroke3Progress = math.min((progress - 0.66) * 3, 1.0);
+      _drawAnimatedLine(canvas, Offset(rightX, topY), Offset(rightX, bottomY), stroke3Progress, paint);
+    }
+  }
+
+  void _paintDemoLetterJ(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final centerX = size.width / 2;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final leftX = size.width * 0.3;
+    
+    // Línea vertical (0-75%)
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 1.33, 1.0);
+      _drawAnimatedLine(canvas, Offset(centerX, topY), Offset(centerX, bottomY * 0.9), stroke1Progress, paint);
+      if (stroke1Progress < 1.0) canvas.drawCircle(Offset(centerX, topY), 8, startPaint);
+    }
+    
+    // Curva inferior (75-100%)
+    if (progress > 0.75) {
+      final stroke2Progress = math.min((progress - 0.75) * 4, 1.0);
+      final path = Path()
+        ..moveTo(centerX, bottomY * 0.9)
+        ..quadraticBezierTo(leftX, bottomY, leftX, bottomY * 0.8);
+      final pathMetrics = path.computeMetrics();
+      if (pathMetrics.isNotEmpty) {
+        final pathMetric = pathMetrics.first;
+        final extractPath = pathMetric.extractPath(0, pathMetric.length * stroke2Progress);
+        canvas.drawPath(extractPath, paint);
+      }
+    }
+  }
+
+  void _paintDemoLetterK(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    // Línea vertical izquierda (0-50%)
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 2, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(leftX, bottomY), stroke1Progress, paint);
+      if (stroke1Progress < 1.0) canvas.drawCircle(Offset(leftX, topY), 8, startPaint);
+    }
+    
+    // Línea diagonal superior (50-75%)
+    if (progress > 0.5) {
+      final stroke2Progress = math.min((progress - 0.5) * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, midY), Offset(rightX, topY), stroke2Progress, paint);
+    }
+    
+    // Línea diagonal inferior (75-100%)
+    if (progress > 0.75) {
+      final stroke3Progress = math.min((progress - 0.75) * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, midY), Offset(rightX, bottomY), stroke3Progress, paint);
+    }
+  }
+
+  void _paintDemoLetterM(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final leftX = size.width * 0.25;
+    final rightX = size.width * 0.75;
+    final centerX = size.width / 2;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.6;
+    
+    // Línea vertical izquierda (0-25%)
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, bottomY), Offset(leftX, topY), stroke1Progress, paint);
+      if (stroke1Progress < 1.0) canvas.drawCircle(Offset(leftX, bottomY), 8, startPaint);
+    }
+    
+    // Línea diagonal al centro (25-50%)
+    if (progress > 0.25) {
+      final stroke2Progress = math.min((progress - 0.25) * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(centerX, midY), stroke2Progress, paint);
+    }
+    
+    // Línea diagonal del centro a derecha (50-75%)
+    if (progress > 0.5) {
+      final stroke3Progress = math.min((progress - 0.5) * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(centerX, midY), Offset(rightX, topY), stroke3Progress, paint);
+    }
+    
+    // Línea vertical derecha (75-100%)
+    if (progress > 0.75) {
+      final stroke4Progress = math.min((progress - 0.75) * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(rightX, topY), Offset(rightX, bottomY), stroke4Progress, paint);
+    }
+  }
+
+  void _paintDemoLetterN(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    
+    // Línea vertical izquierda (0-33%)
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 3, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, bottomY), Offset(leftX, topY), stroke1Progress, paint);
+      if (stroke1Progress < 1.0) canvas.drawCircle(Offset(leftX, bottomY), 8, startPaint);
+    }
+    
+    // Línea diagonal (33-66%)
+    if (progress > 0.33) {
+      final stroke2Progress = math.min((progress - 0.33) * 3, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(rightX, bottomY), stroke2Progress, paint);
+    }
+    
+    // Línea vertical derecha (66-100%)
+    if (progress > 0.66) {
+      final stroke3Progress = math.min((progress - 0.66) * 3, 1.0);
+      _drawAnimatedLine(canvas, Offset(rightX, bottomY), Offset(rightX, topY), stroke3Progress, paint);
+    }
+  }
+
+  void _paintDemoLetterN_tilde(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    // Similar a N pero con tilde arriba
+    _paintDemoLetterN(canvas, size, paint, startPaint, arrowPaint);
+    
+    // Tilde arriba (se dibuja al final)
+    if (progress > 0.8) {
+      final tildeProgress = math.min((progress - 0.8) * 5, 1.0);
+      final centerX = size.width / 2;
+      final tildeY = size.height * 0.1;
+      final tildeWidth = size.width * 0.2;
+      
+      final path = Path()
+        ..moveTo(centerX - tildeWidth / 2, tildeY)
+        ..quadraticBezierTo(centerX, tildeY - 10, centerX + tildeWidth / 2, tildeY);
+      final pathMetrics = path.computeMetrics();
+      if (pathMetrics.isNotEmpty) {
+        final pathMetric = pathMetrics.first;
+        final extractPath = pathMetric.extractPath(0, pathMetric.length * tildeProgress);
+        canvas.drawPath(extractPath, paint);
+      }
+    }
+  }
+
+  void _paintDemoLetterP(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.6;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    // Línea vertical (0-50%)
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 2, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(leftX, bottomY), stroke1Progress, paint);
+      if (stroke1Progress < 1.0) canvas.drawCircle(Offset(leftX, topY), 8, startPaint);
+    }
+    
+    // Línea superior (50-75%)
+    if (progress > 0.5) {
+      final stroke2Progress = math.min((progress - 0.5) * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(rightX, topY), stroke2Progress, paint);
+    }
+    
+    // Línea derecha y curva (75-100%)
+    if (progress > 0.75) {
+      final stroke3Progress = math.min((progress - 0.75) * 4, 1.0);
+      final path = Path()
+        ..moveTo(rightX, topY)
+        ..lineTo(rightX, midY * 0.9)
+        ..lineTo(leftX, midY);
+      final pathMetrics = path.computeMetrics();
+      if (pathMetrics.isNotEmpty) {
+        final pathMetric = pathMetrics.first;
+        final extractPath = pathMetric.extractPath(0, pathMetric.length * stroke3Progress);
+        canvas.drawPath(extractPath, paint);
+      }
+    }
+  }
+
+  void _paintDemoLetterQ(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = math.min(size.width, size.height) * 0.3;
+    
+    // Círculo (0-80%)
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 1.25, 1.0);
+      final sweepAngle = math.pi * 2 * stroke1Progress;
+      final rect = Rect.fromCircle(center: center, radius: radius);
+      final path = Path();
+      path.addArc(rect, -math.pi / 2, sweepAngle);
+      canvas.drawPath(path, paint);
+      
+      if (stroke1Progress < 0.1) {
+        final startPoint = Offset(center.dx, center.dy - radius);
+        canvas.drawCircle(startPoint, 8, startPaint);
+      }
+    }
+    
+    // Cola diagonal (80-100%)
+    if (progress > 0.8) {
+      final stroke2Progress = math.min((progress - 0.8) * 5, 1.0);
+      final startX = center.dx + radius * 0.5;
+      final startY = center.dy + radius * 0.5;
+      final endX = center.dx + radius * 1.2;
+      final endY = center.dy + radius * 1.2;
+      _drawAnimatedLine(canvas, Offset(startX, startY), Offset(endX, endY), stroke2Progress, paint);
+    }
+  }
+
+  void _paintDemoLetterR(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    // Similar a P pero con línea diagonal adicional
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.6;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    // Similar a P (0-75%)
+    if (progress > 0) {
+      final pProgress = math.min(progress * 1.33, 1.0);
+      _paintDemoLetterP(canvas, size, paint, startPaint, arrowPaint);
+    }
+    
+    // Línea diagonal adicional (75-100%)
+    if (progress > 0.75) {
+      final stroke4Progress = math.min((progress - 0.75) * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX + (rightX - leftX) * 0.7, midY), 
+                       Offset(rightX, bottomY), stroke4Progress, paint);
+    }
+  }
+
+  void _paintDemoLetterS(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final centerX = size.width / 2;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height / 2;
+    final width = size.width * 0.25;
+    
+    // Curva S completa
+    final path = Path()
+      ..moveTo(centerX + width, topY + width * 0.5)
+      ..quadraticBezierTo(centerX - width, topY, centerX, midY)
+      ..quadraticBezierTo(centerX + width, bottomY, centerX - width, bottomY - width * 0.5);
+    
+    final pathMetrics = path.computeMetrics();
+    if (pathMetrics.isNotEmpty) {
+      final pathMetric = pathMetrics.first;
+      final extractPath = pathMetric.extractPath(0, pathMetric.length * progress);
+      canvas.drawPath(extractPath, paint);
+      
+      if (progress < 0.1) {
+        canvas.drawCircle(Offset(centerX + width, topY + width * 0.5), 8, startPaint);
+      }
+    }
+  }
+
+  void _paintDemoLetterT(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final centerX = size.width / 2;
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    
+    // Línea horizontal superior (0-50%)
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 2, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(rightX, topY), stroke1Progress, paint);
+      if (stroke1Progress < 1.0) canvas.drawCircle(Offset(leftX, topY), 8, startPaint);
+    }
+    
+    // Línea vertical central (50-100%)
+    if (progress > 0.5) {
+      final stroke2Progress = math.min((progress - 0.5) * 2, 1.0);
+      _drawAnimatedLine(canvas, Offset(centerX, topY), Offset(centerX, bottomY), stroke2Progress, paint);
+    }
+  }
+
+  void _paintDemoLetterU(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final centerX = size.width / 2;
+    
+    // Forma de U con curva
+    final path = Path()
+      ..moveTo(leftX, topY)
+      ..lineTo(leftX, bottomY * 0.7)
+      ..quadraticBezierTo(centerX, bottomY, rightX, bottomY * 0.7)
+      ..lineTo(rightX, topY);
+    
+    final pathMetrics = path.computeMetrics();
+    if (pathMetrics.isNotEmpty) {
+      final pathMetric = pathMetrics.first;
+      final extractPath = pathMetric.extractPath(0, pathMetric.length * progress);
+      canvas.drawPath(extractPath, paint);
+      
+      if (progress < 0.1) {
+        canvas.drawCircle(Offset(leftX, topY), 8, startPaint);
+      }
+    }
+  }
+
+  void _paintDemoLetterV(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final centerX = size.width / 2;
+    
+    // Línea diagonal izquierda (0-50%)
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 2, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(centerX, bottomY), stroke1Progress, paint);
+      if (stroke1Progress < 1.0) canvas.drawCircle(Offset(leftX, topY), 8, startPaint);
+    }
+    
+    // Línea diagonal derecha (50-100%)
+    if (progress > 0.5) {
+      final stroke2Progress = math.min((progress - 0.5) * 2, 1.0);
+      _drawAnimatedLine(canvas, Offset(centerX, bottomY), Offset(rightX, topY), stroke2Progress, paint);
+    }
+  }
+
+  void _paintDemoLetterW(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final leftX = size.width * 0.2;
+    final rightX = size.width * 0.8;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final quarter1X = size.width * 0.4;
+    final quarter3X = size.width * 0.6;
+    final centerX = size.width / 2;
+    final midY = size.height * 0.6;
+    
+    // V doble - 4 líneas
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(quarter1X, bottomY), stroke1Progress, paint);
+      if (stroke1Progress < 1.0) canvas.drawCircle(Offset(leftX, topY), 8, startPaint);
+    }
+    
+    if (progress > 0.25) {
+      final stroke2Progress = math.min((progress - 0.25) * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(quarter1X, bottomY), Offset(centerX, midY), stroke2Progress, paint);
+    }
+    
+    if (progress > 0.5) {
+      final stroke3Progress = math.min((progress - 0.5) * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(centerX, midY), Offset(quarter3X, bottomY), stroke3Progress, paint);
+    }
+    
+    if (progress > 0.75) {
+      final stroke4Progress = math.min((progress - 0.75) * 4, 1.0);
+      _drawAnimatedLine(canvas, Offset(quarter3X, bottomY), Offset(rightX, topY), stroke4Progress, paint);
+    }
+  }
+
+  void _paintDemoLetterX(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    
+    // Diagonal \ (0-50%)
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 2, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(rightX, bottomY), stroke1Progress, paint);
+      if (stroke1Progress < 1.0) canvas.drawCircle(Offset(leftX, topY), 8, startPaint);
+    }
+    
+    // Diagonal / (50-100%)
+    if (progress > 0.5) {
+      final stroke2Progress = math.min((progress - 0.5) * 2, 1.0);
+      _drawAnimatedLine(canvas, Offset(rightX, topY), Offset(leftX, bottomY), stroke2Progress, paint);
+    }
+  }
+
+  void _paintDemoLetterY(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final centerX = size.width / 2;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    final midY = size.height * 0.5;
+    
+    // Diagonal izquierda (0-33%)
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 3, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(centerX, midY), stroke1Progress, paint);
+      if (stroke1Progress < 1.0) canvas.drawCircle(Offset(leftX, topY), 8, startPaint);
+    }
+    
+    // Diagonal derecha (33-66%)
+    if (progress > 0.33) {
+      final stroke2Progress = math.min((progress - 0.33) * 3, 1.0);
+      _drawAnimatedLine(canvas, Offset(rightX, topY), Offset(centerX, midY), stroke2Progress, paint);
+    }
+    
+    // Línea vertical inferior (66-100%)
+    if (progress > 0.66) {
+      final stroke3Progress = math.min((progress - 0.66) * 3, 1.0);
+      _drawAnimatedLine(canvas, Offset(centerX, midY), Offset(centerX, bottomY), stroke3Progress, paint);
+    }
+  }
+
+  void _paintDemoLetterZ(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
+    if (progress <= 0.0) return;
+    final leftX = size.width * 0.3;
+    final rightX = size.width * 0.7;
+    final topY = size.height * 0.2;
+    final bottomY = size.height * 0.8;
+    
+    // Línea superior (0-33%)
+    if (progress > 0) {
+      final stroke1Progress = math.min(progress * 3, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(rightX, topY), stroke1Progress, paint);
+      if (stroke1Progress < 1.0) canvas.drawCircle(Offset(leftX, topY), 8, startPaint);
+    }
+    
+    // Diagonal (33-66%)
+    if (progress > 0.33) {
+      final stroke2Progress = math.min((progress - 0.33) * 3, 1.0);
+      _drawAnimatedLine(canvas, Offset(rightX, topY), Offset(leftX, bottomY), stroke2Progress, paint);
+    }
+    
+    // Línea inferior (66-100%)
+    if (progress > 0.66) {
+      final stroke3Progress = math.min((progress - 0.66) * 3, 1.0);
+      _drawAnimatedLine(canvas, Offset(leftX, bottomY), Offset(rightX, bottomY), stroke3Progress, paint);
+    }
+  }
+
   void _paintDemoGenericLetter(Canvas canvas, Size size, Paint paint, Paint startPaint, Paint arrowPaint) {
     // Para letras no implementadas, mostrar solo el punto de inicio
     if (progress > 0) {
