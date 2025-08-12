@@ -5,6 +5,7 @@ class ReferenceStyleHouse extends StatelessWidget {
   final String letter;
   final double size;
   final VoidCallback onTap;
+  final VoidCallback? onDoorTap;
   final bool isUnlocked;
 
   const ReferenceStyleHouse({
@@ -12,6 +13,7 @@ class ReferenceStyleHouse extends StatelessWidget {
     required this.letter,
     required this.size,
     required this.onTap,
+    this.onDoorTap,
     this.isUnlocked = true,
   });
 
@@ -29,12 +31,30 @@ class ReferenceStyleHouse extends StatelessWidget {
       child: SizedBox(
         width: houseWidth,
         height: houseHeight,
-        child: CustomPaint(
-          painter: ReferenceHousePainter(
-            letter: letter,
-            isUnlocked: isUnlocked,
-            isMobile: isMobile,
-          ),
+        child: Stack(
+          children: [
+            CustomPaint(
+              painter: ReferenceHousePainter(
+                letter: letter,
+                isUnlocked: isUnlocked,
+                isMobile: isMobile,
+              ),
+            ),
+            // Área clickeable de la puerta (ajustada para puerta a la derecha)
+            if (onDoorTap != null)
+              Positioned(
+                left: houseWidth * 0.625, // Puerta a la derecha
+                top: houseHeight * 0.45, // Posición vertical de la puerta
+                child: GestureDetector(
+                  onTap: onDoorTap,
+                  child: Container(
+                    width: houseWidth * 0.18, // Ancho de la puerta
+                    height: houseHeight * 0.3, // Alto de la puerta
+                    color: Colors.transparent,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -106,7 +126,8 @@ class ReferenceHousePainter extends CustomPainter {
     canvas.drawRRect(foundation, paint);
     
     // Contorno blanco de la fundación
-    strokePaint.strokeWidth = isMobile ? 1.5 : 2; // Contornos más finos en móvil
+    strokePaint.strokeWidth = isMobile ? 1.5 : 2;
+    strokePaint.color = Colors.white;
     canvas.drawRRect(foundation, strokePaint);
 
     // 2. PAREDES PRINCIPALES (amarillo/naranja alternado)
@@ -120,6 +141,8 @@ class ReferenceHousePainter extends CustomPainter {
       const Radius.circular(6),
     );
     canvas.drawRRect(walls, paint);
+    strokePaint.strokeWidth = isMobile ? 1.5 : 2.0;
+    strokePaint.color = Colors.white;
     canvas.drawRRect(walls, strokePaint);
 
     // 3. TECHO AZUL TRIANGULAR (exacto como referencia)
@@ -138,8 +161,9 @@ class ReferenceHousePainter extends CustomPainter {
     
     canvas.drawPath(roofPath, paint);
     strokePaint.strokeWidth = isMobile ? 1.5 : 2;
+    strokePaint.color = Colors.white;
     canvas.drawPath(roofPath, strokePaint);
-
+    
     // 4. CHIMENEA PEQUEÑA (como en referencia)
     paint.color = const Color(0xFF8D6E63); // Marrón chimenea
     final chimney = RRect.fromRectAndRadius(
@@ -153,6 +177,7 @@ class ReferenceHousePainter extends CustomPainter {
     );
     canvas.drawRRect(chimney, paint);
     strokePaint.strokeWidth = 1.5;
+    strokePaint.color = Colors.white;
     canvas.drawRRect(chimney, strokePaint);
 
     // 5. PUERTA AZUL (como en la segunda casa de referencia)
@@ -167,6 +192,7 @@ class ReferenceHousePainter extends CustomPainter {
     );
     canvas.drawRRect(door, paint);
     strokePaint.strokeWidth = 1.5;
+    strokePaint.color = Colors.white;
     canvas.drawRRect(door, strokePaint);
 
     // Manija dorada de la puerta
@@ -189,6 +215,7 @@ class ReferenceHousePainter extends CustomPainter {
     );
     canvas.drawRRect(window, paint);
     strokePaint.strokeWidth = 1.5;
+    strokePaint.color = Colors.white;
     canvas.drawRRect(window, strokePaint);
 
     // Cruz de la ventana
@@ -294,7 +321,7 @@ class ReferenceHousePainter extends CustomPainter {
       canvas.drawRRect(lockRect, paint);
       
       // Arco del candado
-      strokePaint.strokeWidth = isMobile ? 2.5 : 3; // Candado más fino en móvil
+      strokePaint.strokeWidth = isMobile ? 2.5 : 3;
       strokePaint.color = const Color(0xFFFFD700);
       canvas.drawArc(
         Rect.fromCenter(
