@@ -138,20 +138,28 @@ class _SplashScreenState extends State<SplashScreen>
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: DefaultTextStyle(
-                  style: const TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width < 600 ? 32 : 48, // Responsivo
+                    fontWeight: FontWeight.w900,
                     color: Colors.white,
                     shadows: [
-                      Shadow(
-                        blurRadius: 15.0,
-                        color: Colors.black87,
-                        offset: Offset(3.0, 3.0),
+                      // Sombra verde oscuro principal
+                      const Shadow(
+                        blurRadius: 8.0,
+                        color: Color(0xFF1B5E20), // Verde oscuro
+                        offset: Offset(4.0, 4.0),
                       ),
-                      Shadow(
-                        blurRadius: 5.0,
-                        color: Colors.black54,
-                        offset: Offset(1.0, 1.0),
+                      // Sombra negra para mayor contraste
+                      const Shadow(
+                        blurRadius: 12.0,
+                        color: Colors.black87,
+                        offset: Offset(2.0, 2.0),
+                      ),
+                      // Sombra adicional para contorno
+                      const Shadow(
+                        blurRadius: 20.0,
+                        color: Color(0xFF2E7D32), // Verde medio
+                        offset: Offset(6.0, 6.0),
                       ),
                     ],
                   ),
@@ -169,18 +177,31 @@ class _SplashScreenState extends State<SplashScreen>
               const SizedBox(height: 20),
               FadeTransition(
                 opacity: _fadeAnimation,
-                child: const Text(
+                child: Text(
                   '¡A aprender che!',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: MediaQuery.of(context).size.width < 600 ? 20 : 26, // Responsivo
                     color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 2.0,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 2.5,
                     shadows: [
-                      Shadow(
-                        blurRadius: 8.0,
+                      // Sombra verde oscuro principal
+                      const Shadow(
+                        blurRadius: 6.0,
+                        color: Color(0xFF1B5E20), // Verde oscuro
+                        offset: Offset(3.0, 3.0),
+                      ),
+                      // Sombra negra para mayor contraste
+                      const Shadow(
+                        blurRadius: 10.0,
                         color: Colors.black87,
-                        offset: Offset(2.0, 2.0),
+                        offset: Offset(1.5, 1.5),
+                      ),
+                      // Contorno adicional
+                      const Shadow(
+                        blurRadius: 15.0,
+                        color: Color(0xFF2E7D32), // Verde medio
+                        offset: Offset(4.0, 4.0),
                       ),
                     ],
                   ),
@@ -207,17 +228,31 @@ class _SplashScreenState extends State<SplashScreen>
                         strokeWidth: 3,
                       ),
                       const SizedBox(height: 20),
-                      const Text(
+                      Text(
                         'Preparando tu aventura argentina...',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                          fontSize: MediaQuery.of(context).size.width < 600 ? 16 : 20, // Responsivo
+                          fontWeight: FontWeight.w600,
                           shadows: [
-                            Shadow(
-                              blurRadius: 6.0,
+                            // Sombra verde oscuro principal
+                            const Shadow(
+                              blurRadius: 5.0,
+                              color: Color(0xFF1B5E20), // Verde oscuro
+                              offset: Offset(2.5, 2.5),
+                            ),
+                            // Sombra negra para mayor contraste
+                            const Shadow(
+                              blurRadius: 10.0,
                               color: Colors.black87,
                               offset: Offset(1.5, 1.5),
+                            ),
+                            // Contorno adicional
+                            const Shadow(
+                              blurRadius: 12.0,
+                              color: Color(0xFF2E7D32), // Verde medio
+                              offset: Offset(3.0, 3.0),
                             ),
                           ],
                         ),
@@ -291,18 +326,18 @@ class _SplashScreenState extends State<SplashScreen>
   List<Widget> _buildAnimatedAnimals() {
     final animals = <Widget>[];
     
-    // Vacas caminando por diferentes partes del campo
-    animals.add(_buildMovingAnimal('🐄', 0.15, 120, 35, 0.2));
-    animals.add(_buildMovingAnimal('🐄', 0.75, 110, 32, 0.35));
-    animals.add(_buildMovingAnimal('🐄', 0.45, 130, 38, 0.6));
+    // Vacas estáticas pastando en diferentes partes del campo
+    animals.add(_buildStaticAnimal('🐄', 0.15, 120, 35));
+    animals.add(_buildStaticAnimal('🐄', 0.75, 110, 32));
+    animals.add(_buildStaticAnimal('🐄', 0.45, 130, 38));
     
     // Caballos quietos pastando
     animals.add(_buildStaticAnimal('🐎', 0.25, 150, 35));
     animals.add(_buildStaticAnimal('🐴', 0.75, 140, 33));
     
-    // Chanchos caminando
-    animals.add(_buildMovingAnimal('🐷', 0.35, 100, 28, 0.4));
-    animals.add(_buildMovingAnimal('🐷', 0.65, 115, 30, 0.7));
+    // Chanchos estáticos descansando
+    animals.add(_buildStaticAnimal('🐷', 0.35, 100, 28));
+    animals.add(_buildStaticAnimal('🐷', 0.65, 115, 30));
     
     // Ovejas
     animals.add(_buildBouncingAnimal('🐑', 0.55, 125, 32, 0.25));
@@ -425,32 +460,56 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Widget _buildFeatureIcon(IconData icon, String label) {
+    final isSmallScreen = MediaQuery.of(context).size.width < 600;
+    
     return Column(
       children: [
         Container(
-          width: 60,
-          height: 60,
+          width: isSmallScreen ? 50 : 70,
+          height: isSmallScreen ? 50 : 70,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(30),
+            color: Colors.white.withValues(alpha: 0.25),
+            borderRadius: BorderRadius.circular(isSmallScreen ? 25 : 35),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
-              width: 2,
+              color: Colors.white.withValues(alpha: 0.4),
+              width: 3,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF1B5E20).withValues(alpha: 0.3),
+                blurRadius: 8,
+                offset: const Offset(2, 2),
+              ),
+            ],
           ),
           child: Icon(
             icon,
             color: Colors.white,
-            size: 30,
+            size: isSmallScreen ? 25 : 35,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: isSmallScreen ? 14 : 16,
+            fontWeight: FontWeight.w700,
+            shadows: [
+              // Sombra verde oscuro principal
+              const Shadow(
+                blurRadius: 4.0,
+                color: Color(0xFF1B5E20), // Verde oscuro
+                offset: Offset(2.0, 2.0),
+              ),
+              // Sombra negra para mayor contraste
+              const Shadow(
+                blurRadius: 8.0,
+                color: Colors.black87,
+                offset: Offset(1.0, 1.0),
+              ),
+            ],
           ),
         ),
       ],

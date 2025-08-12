@@ -9,6 +9,8 @@ import 'house_preview_screen.dart';
 // import 'first_person_park_screen.dart'; // Removido
 import '../widgets/progress_header.dart';
 import '../widgets/reference_style_house.dart';
+import '../widgets/isometric_house_3d.dart';
+import '../widgets/rounded_letter_house.dart';
 import '../widgets/rolling_hills_terrain.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -375,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 ),
                               ],
                             ),
-                            child: ReferenceStyleHouse(
+                            child: RoundedLetterHouse(
                               letter: letter.character,
                               size: position['size'] ?? (isMobile ? 55.0 : 75.0), // Tamaño consistente por dispositivo
                               onTap: () => _onLetterTap(letter.character),
@@ -1205,6 +1207,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
+
 
   // Métodos para crear elementos del parque real tipo videojuego
   List<Widget> _buildParkPaths(Size size) {

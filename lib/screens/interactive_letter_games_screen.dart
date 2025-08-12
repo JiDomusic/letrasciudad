@@ -2397,31 +2397,32 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   bool _validateSimpleP(List<Offset> stroke, double canvasWidth, double canvasHeight) {
-    // P: Línea vertical izquierda o curva superior derecha
-    if (stroke.length < 3) return false;
+    // P: Línea vertical izquierda, curva superior o líneas horizontales
+    if (stroke.length < 2) return false;
     
-    // ignore: unused_local_variable
     final start = stroke.first;
-    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
     final startY = start.dy / canvasHeight;
     final endY = end.dy / canvasHeight;
     
-    // Línea vertical izquierda
-    final isVerticalLeft = (startX < 0.4 && endX < 0.4) && (endY - startY).abs() > 0.3;
+    // Línea vertical izquierda (tallo principal de P)
+    final isVerticalLeft = (startX < 0.4 && endX < 0.4) && (endY - startY).abs() > 0.4;
     
-    // Curva superior derecha (parte distintiva de P)
-    final isUpperCurve = (startY < 0.6) && (endX > startX + 0.1) && _hasSignificantCurvature(stroke);
+    // Línea horizontal superior (parte superior de P)
+    final isTopHorizontal = (startY < 0.4) && (startY - endY).abs() < 0.15 && (endX - startX).abs() > 0.25;
     
-    // Línea horizontal superior
-    final isTopHorizontal = (startY < 0.4) && (startY - endY).abs() < 0.2 && (endX - startX).abs() > 0.2;
+    // Línea horizontal media (parte media de P)
+    final isMiddleHorizontal = (startY > 0.35 && startY < 0.65) && (startY - endY).abs() < 0.15 && (endX - startX).abs() > 0.2;
     
-    // Línea horizontal media
-    final isMiddleHorizontal = (startY > 0.4 && startY < 0.6) && (startY - endY).abs() < 0.2 && (endX - startX).abs() > 0.2;
+    // Curva derecha superior (arco de P)
+    final isRightCurve = (startX > 0.3) && (startY < 0.6) && _hasSignificantCurvature(stroke);
     
-    return isVerticalLeft || isUpperCurve || isTopHorizontal || isMiddleHorizontal;
+    // Cualquier trazo razonable en la zona correcta
+    final isInPZone = startX < 0.8 && startY < 0.8;
+    
+    return (isVerticalLeft || isTopHorizontal || isMiddleHorizontal || isRightCurve) && isInPZone;
   }
   
   bool _validateSimpleQ(List<Offset> stroke, double canvasWidth, double canvasHeight) {
