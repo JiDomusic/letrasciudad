@@ -130,7 +130,7 @@ class _SplashScreenState extends State<SplashScreen>
                   child: const Icon(
                     Icons.home_outlined, // Icono de casa más claro y apropiado
                     size: 80,
-                    color: Colors.white,
+                    color: Color(0xFF7B1FA2), // Color violeta
                   ),
                 ),
               ),
@@ -141,7 +141,7 @@ class _SplashScreenState extends State<SplashScreen>
                   style: TextStyle(
                     fontSize: MediaQuery.of(context).size.width < 600 ? 32 : 48, // Responsivo
                     fontWeight: FontWeight.w900,
-                    color: Colors.white,
+                    color: const Color(0xFF1B5E20), // Verde oscuro
                     shadows: [
                       // Sombra verde oscuro principal
                       const Shadow(
@@ -181,7 +181,7 @@ class _SplashScreenState extends State<SplashScreen>
                   '¡A aprender che!',
                   style: TextStyle(
                     fontSize: MediaQuery.of(context).size.width < 600 ? 20 : 26, // Responsivo
-                    color: Colors.white,
+                    color: const Color(0xFF1B5E20), // Verde oscuro
                     fontWeight: FontWeight.w700,
                     letterSpacing: 2.5,
                     shadows: [

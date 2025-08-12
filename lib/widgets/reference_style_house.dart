@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
@@ -96,6 +97,22 @@ class ReferenceHousePainter extends CustomPainter {
     return colors[index % colors.length];
   }
 
+  Color _getChimneyColor(String letter) {
+    // Colores diferentes para cada chimenea
+    final colors = [
+      const Color(0xFF8D6E63), // Marrón
+      const Color(0xFFD32F2F), // Rojo ladrillo
+      const Color(0xFF689F38), // Verde oscuro
+      const Color(0xFF455A64), // Gris azulado
+      const Color(0xFF6A1B9A), // Púrpura
+      const Color(0xFFE65100), // Naranja quemado
+      const Color(0xFF2E7D32), // Verde
+      const Color(0xFF795548), // Marrón chocolate
+    ];
+    final index = letter.codeUnitAt(0) - 65;
+    return colors[index % colors.length];
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
@@ -145,37 +162,71 @@ class ReferenceHousePainter extends CustomPainter {
     strokePaint.color = Colors.white;
     canvas.drawRRect(walls, strokePaint);
 
-    // 3. TECHO AZUL TRIANGULAR (exacto como referencia)
-    paint.color = const Color(0xFF1976D2); // Azul más oscuro para el techo
-    final roofPath = Path();
+    // 3. TECHO ESTILO CHINO CON TEJAS TRIANGULARES
     final roofTop = baseY - houseHeight - roofHeight + 8;
     
-    // Techo triangular con bordes redondeados
-    roofPath.moveTo(centerX - houseWidth/2 - 8, baseY - houseHeight + 8);
-    roofPath.lineTo(centerX, roofTop);
-    roofPath.lineTo(centerX + houseWidth/2 + 8, baseY - houseHeight + 8);
+    // Techo base con curvatura china
+    paint.color = const Color(0xFF8B0000); // Rojo oscuro tradicional chino
+    final roofPath = Path();
+    roofPath.moveTo(centerX - houseWidth/2 - 12, baseY - houseHeight + 8);
+    roofPath.quadraticBezierTo(centerX, roofTop - 10, centerX + houseWidth/2 + 12, baseY - houseHeight + 8);
     roofPath.lineTo(centerX + houseWidth/2 - 2, baseY - houseHeight + 12);
-    roofPath.lineTo(centerX, roofTop + 6);
-    roofPath.lineTo(centerX - houseWidth/2 + 2, baseY - houseHeight + 12);
+    roofPath.quadraticBezierTo(centerX, roofTop + 2, centerX - houseWidth/2 + 2, baseY - houseHeight + 12);
     roofPath.close();
     
     canvas.drawPath(roofPath, paint);
-    strokePaint.strokeWidth = isMobile ? 1.5 : 2;
-    strokePaint.color = Colors.white;
+    
+    // Tejas triangulares superpuestas
+    paint.color = const Color(0xFFB71C1C); // Rojo más brillante para tejas
+    final tileWidth = houseWidth / 8;
+    final tileHeight = roofHeight * 0.3;
+    
+    for (int i = 0; i < 8; i++) {
+      final tileX = centerX - houseWidth/2 + (i * tileWidth);
+      final tileY = baseY - houseHeight + 8 - (i * 2);
+      
+      final tilePath = Path();
+      tilePath.moveTo(tileX, tileY);
+      tilePath.lineTo(tileX + tileWidth/2, tileY - tileHeight);
+      tilePath.lineTo(tileX + tileWidth, tileY);
+      tilePath.close();
+      
+      canvas.drawPath(tilePath, paint);
+      
+      // Contorno blanco de cada teja
+      strokePaint.strokeWidth = 1;
+      strokePaint.color = Colors.white;
+      canvas.drawPath(tilePath, strokePaint);
+    }
+    
+    // Borde decorativo del techo estilo chino
+    strokePaint.strokeWidth = 3;
+    strokePaint.color = const Color(0xFFFFD700); // Dorado
     canvas.drawPath(roofPath, strokePaint);
     
-    // 4. CHIMENEA PEQUEÑA (como en referencia)
-    paint.color = const Color(0xFF8D6E63); // Marrón chimenea
+    // 4. CHIMENEA CON DIFERENTES COLORES
+    paint.color = _getChimneyColor(letter);
     final chimney = RRect.fromRectAndRadius(
       Rect.fromLTWH(
-        centerX + houseWidth/4,
-        roofTop + 8,
-        8,
-        20,
+        centerX + houseWidth/3,
+        roofTop + 5,
+        12,
+        25,
       ),
-      const Radius.circular(2),
+      const Radius.circular(3),
     );
     canvas.drawRRect(chimney, paint);
+    
+    // Humo de la chimenea
+    paint.color = Colors.grey.withOpacity(0.6);
+    for (int i = 0; i < 3; i++) {
+      canvas.drawCircle(
+        Offset(centerX + houseWidth/3 + 6, roofTop - 5 - (i * 8)),
+        3 - (i * 0.5),
+        paint,
+      );
+    }
+    
     strokePaint.strokeWidth = 1.5;
     strokePaint.color = Colors.white;
     canvas.drawRRect(chimney, strokePaint);

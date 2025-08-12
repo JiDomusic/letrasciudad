@@ -102,8 +102,8 @@ class IsometricHousePainter extends CustomPainter {
     canvas.drawPath(frontWall, paint);
     canvas.drawPath(frontWall, strokePaint);
 
-    // 3. Dibujar techo lateral (oscuro)
-    paint.color = const Color(0xFF654321);
+    // 3. Dibujar techo triangular lateral (oscuro)
+    paint.color = const Color(0xFF8B0000); // Rojo oscuro como las otras casas
     final sideRoof = Path()
       ..moveTo(frontTopRight.dx, frontTopRight.dy)
       ..lineTo(backTopRight.dx, backTopRight.dy)
@@ -113,8 +113,8 @@ class IsometricHousePainter extends CustomPainter {
     canvas.drawPath(sideRoof, paint);
     canvas.drawPath(sideRoof, strokePaint);
 
-    // 4. Dibujar techo frontal (más claro)
-    paint.color = const Color(0xFF8B4513);
+    // 4. Dibujar techo triangular frontal (más claro)
+    paint.color = const Color(0xFFB71C1C); // Rojo más brillante como las tejas
     final frontRoof = Path()
       ..moveTo(frontTopLeft.dx, frontTopLeft.dy)
       ..lineTo(frontTopRight.dx, frontTopRight.dy)
@@ -122,6 +122,34 @@ class IsometricHousePainter extends CustomPainter {
       ..close();
     canvas.drawPath(frontRoof, paint);
     canvas.drawPath(frontRoof, strokePaint);
+
+    // 4.5. Agregar tejas triangulares en el techo frontal
+    paint.color = const Color(0xFFD32F2F); // Rojo brillante para tejas
+    final tileCount = 6;
+    final tileWidth = (frontTopRight.dx - frontTopLeft.dx) / tileCount;
+    
+    for (int i = 0; i < tileCount; i++) {
+      final tileX = frontTopLeft.dx + (i * tileWidth);
+      final tileY = frontTopLeft.dy + (i * 2); // Ligera inclinación
+      final tileHeight = roofHeight * 0.15;
+      
+      final tilePath = Path();
+      tilePath.moveTo(tileX, tileY);
+      tilePath.lineTo(tileX + tileWidth/2, tileY - tileHeight);
+      tilePath.lineTo(tileX + tileWidth, tileY);
+      tilePath.close();
+      
+      canvas.drawPath(tilePath, paint);
+      
+      // Contorno blanco de cada teja
+      strokePaint.strokeWidth = 0.8;
+      strokePaint.color = Colors.white;
+      canvas.drawPath(tilePath, strokePaint);
+    }
+    
+    // Restaurar strokePaint original
+    strokePaint.strokeWidth = 1.5;
+    strokePaint.color = Colors.black.withOpacity(0.3);
 
     // 5. Dibujar puerta
     paint.color = const Color(0xFF4A4A4A);

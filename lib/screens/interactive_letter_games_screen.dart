@@ -402,6 +402,27 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     final wordLower = word.toLowerCase();
     final letterLower = letter.toLowerCase();
     
+    // Normalizar caracteres con acentos
+    String normalizeChar(String char) {
+      switch (char) {
+        case 'á': case 'à': case 'ä': case 'â':
+          return 'a';
+        case 'é': case 'è': case 'ë': case 'ê':
+          return 'e';
+        case 'í': case 'ì': case 'ï': case 'î':
+          return 'i';
+        case 'ó': case 'ò': case 'ö': case 'ô':
+          return 'o';
+        case 'ú': case 'ù': case 'ü': case 'û':
+          return 'u';
+        default:
+          return char;
+      }
+    }
+    
+    final normalizedWord = normalizeChar(wordLower[0]);
+    final normalizedLetter = normalizeChar(letterLower);
+    
     // Casos especiales del español argentino
     switch (letterLower) {
       case 'h':
@@ -412,7 +433,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       case 'qu':
         return wordLower.startsWith('qu');
       default:
-        return wordLower.startsWith(letterLower);
+        // Verificar tanto la letra original como la normalizada
+        return wordLower.startsWith(letterLower) || normalizedWord == normalizedLetter;
     }
   }
 
@@ -482,6 +504,9 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   void _handleObjectTap(Map<String, dynamic> obj) {
+    // DETENER NARRACIÓN ANTERIOR ANTES DE NUEVA RESPUESTA
+    _audioService.stop();
+    
     final wordName = obj['name'] as String;
     final isCorrect = obj['correct'] as bool;
     
@@ -5807,12 +5832,12 @@ class _LetterDemoPainter extends CustomPainter {
       _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(rightX, topY), stroke2Progress, paint);
     }
     
-    // Línea derecha y curva (75-100%)
+    // Línea derecha y línea media horizontal (75-100%)
     if (progress > 0.75) {
       final stroke3Progress = math.min((progress - 0.75) * 4, 1.0);
       final path = Path()
         ..moveTo(rightX, topY)
-        ..lineTo(rightX, midY * 0.9)
+        ..lineTo(rightX, midY)
         ..lineTo(leftX, midY);
       final pathMetrics = path.computeMetrics();
       if (pathMetrics.isNotEmpty) {
