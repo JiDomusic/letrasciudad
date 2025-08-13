@@ -45,10 +45,10 @@ class AudioService {
       await _flutterTts.setVolume(1.0);
       await _flutterTts.setPitch(1.5); // Pitch más alto para voz de niña
       
-      // Probar hablar para verificar funcionamiento
+      // Probar hablar para verificar funcionamiento (SIN DELAY para mejor sincronización)
       debugPrint('🧪 Probando TTS con voz de niña...');
-      await _flutterTts.speak("¡Hola! Soy tu amiga virtual");
-      await Future.delayed(const Duration(milliseconds: 2000));
+      _flutterTts.speak("¡Hola! Soy tu amiga virtual");
+      // REMOVIDO: await Future.delayed() para respuesta inmediata
       
       _isInitialized = true;
       debugPrint('✅ AudioService inicializado correctamente con voz de niña');
@@ -156,8 +156,8 @@ class AudioService {
         }
       }
       
-      // Configuración adicional para web
-      await _flutterTts.awaitSpeakCompletion(true);
+      // Configuración adicional para web - NO ESPERAR completion para mejor sincronización
+      await _flutterTts.awaitSpeakCompletion(false);
       
     } catch (e) {
       debugPrint('⚠️ Error configurando voz para web: $e');
@@ -281,8 +281,8 @@ class AudioService {
           debugPrint('⚠️ No se encontró voz femenina específica en móvil');
         }
         
-        // Configuraciones adicionales para móvil
-        await _flutterTts.awaitSpeakCompletion(true);
+        // Configuraciones adicionales para móvil - NO ESPERAR completion para mejor sincronización
+        await _flutterTts.awaitSpeakCompletion(false);
         await _flutterTts.setSharedInstance(true);
       }
       
@@ -327,34 +327,34 @@ class AudioService {
 
   Future<void> speakText(String text) async {
     try {
-      debugPrint('🎤 Intentando hablar: "$text"');
-      debugPrint('🎤 TTS inicializado: $_isInitialized');
+      debugPrint('🎤 Hablar INMEDIATO: "$text"');
       
       if (!_isInitialized) {
-        debugPrint('⚠️ TTS no inicializado, inicializando...');
+        debugPrint('⚠️ TTS no inicializado, inicialización rápida...');
         await initialize();
       }
       
-      // Asegurar configuración de voz de niña antes de cada habla
-      await _ensureChildVoiceSettings();
+      // RESPUESTA INMEDIATA: detener cualquier audio anterior y hablar inmediatamente
+      await _flutterTts.stop();
       
-      debugPrint('✅ Parámetros de voz de niña configurados, hablando...');
-      await _flutterTts.speak(text);
-      debugPrint('✅ Comando speak enviado con voz de niña');
+      // Configuración mínima y rápida sin delays
+      _flutterTts.setLanguage("es-ES");
+      _flutterTts.setSpeechRate(0.8); // Ligeramente más rápida para respuesta inmediata
+      _flutterTts.setPitch(1.5); // Voz de niña
+      _flutterTts.setVolume(1.0);
+      
+      // COMANDO INMEDIATO sin await para no bloquear la UI
+      _flutterTts.speak(text);
+      debugPrint('✅ Audio INMEDIATO enviado: "$text"');
       
     } catch (e) {
-      debugPrint('❌ Error completo hablando: $e');
-      debugPrint('❌ Stack trace: ${StackTrace.current}');
-      // Intentar reinicializar si hay error
-      if (!_isInitialized) {
-        await initialize();
-        // Reintentar una vez
-        try {
-          await _ensureChildVoiceSettings();
-          await _flutterTts.speak(text);
-        } catch (retryError) {
-          debugPrint('❌ Error en reintento: $retryError');
-        }
+      debugPrint('❌ Error audio inmediato: $e');
+      // Reintentar con método simplificado
+      try {
+        await _flutterTts.stop();
+        _flutterTts.speak(text);
+      } catch (retryError) {
+        debugPrint('❌ Error en reintento inmediato: $retryError');
       }
     }
   }

@@ -165,6 +165,8 @@ class ActivityCard extends StatelessWidget {
         return Icons.touch_app;
       case ActivityType.memory:
         return Icons.psychology;
+      case ActivityType.writing:
+        return Icons.edit;
     }
   }
 
@@ -182,6 +184,8 @@ class ActivityCard extends StatelessWidget {
         return Colors.red;
       case ActivityType.memory:
         return Colors.teal;
+      case ActivityType.writing:
+        return Colors.brown;
     }
   }
 

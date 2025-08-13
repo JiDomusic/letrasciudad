@@ -6,7 +6,8 @@ enum ActivityType {
   wordFormation,
   wordReading,
   dragDrop,
-  memory
+  memory,
+  writing
 }
 
 enum DifficultyLevel {

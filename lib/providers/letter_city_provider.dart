@@ -143,6 +143,19 @@ class LetterCityProvider extends ChangeNotifier {
       score: score,
     );
 
+    // For ALL letters: automatically complete all circle-related activities when any activity is completed
+    final letterChar = _letters[letterIndex].character.toLowerCase();
+    // Complete all search_game and coloring_game activities for all letters (not just B, V, K)
+    for (int i = 0; i < updatedActivities.length; i++) {
+      final activity = updatedActivities[i];
+      if (activity.id.contains('search_game') || activity.id.contains('coloring_game')) {
+        updatedActivities[i] = activity.copyWith(
+          isCompleted: true,
+          score: activity.score > 0 ? activity.score : 100, // Use existing score or set to 100
+        );
+      }
+    }
+
     _letters[letterIndex] = _letters[letterIndex].copyWith(
       activities: updatedActivities,
     );

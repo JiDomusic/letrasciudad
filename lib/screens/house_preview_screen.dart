@@ -150,6 +150,12 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
               // Pasto detallado
               _buildDetailedGrass(),
               
+              // Tierra extra y vegetación
+              _buildExtraGround(),
+              
+              // Plantas extra (árboles y arbustos)
+              ..._buildExtraPlants(),
+              
               // Flores dispersas
               ..._buildFlowers(),
               
@@ -721,6 +727,85 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
         painter: DetailedGrassPainter(),
       ),
     );
+  }
+
+  Widget _buildExtraGround() {
+    return Positioned.fill(
+      child: CustomPaint(
+        painter: ExtraGroundPainter(),
+      ),
+    );
+  }
+
+  List<Widget> _buildExtraPlants() {
+    final plants = <Widget>[];
+    
+    // Árboles en el fondo
+    final treePositions = [
+      {'x': 0.05, 'y': 0.3, 'size': 80.0, 'type': '🌳'},
+      {'x': 0.15, 'y': 0.25, 'size': 70.0, 'type': '🌲'},
+      {'x': 0.85, 'y': 0.28, 'size': 75.0, 'type': '🌳'},
+      {'x': 0.95, 'y': 0.32, 'size': 65.0, 'type': '🌲'},
+    ];
+
+    for (final tree in treePositions) {
+      plants.add(
+        Positioned(
+          left: MediaQuery.of(context).size.width * (tree['x'] as double),
+          bottom: MediaQuery.of(context).size.height * (1 - (tree['y'] as double)),
+          child: AnimatedBuilder(
+            animation: _animalsController,
+            builder: (context, child) {
+              final sway = math.sin(_animalsController.value * 1.5 * math.pi) * 3;
+              return Transform.translate(
+                offset: Offset(sway, 0),
+                child: Text(
+                  tree['type'] as String,
+                  style: TextStyle(fontSize: tree['size'] as double),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    }
+
+    // Arbustos y plantas más grandes
+    final bushPositions = [
+      {'x': 0.08, 'y': 0.6, 'emoji': '🌿', 'size': 35.0},
+      {'x': 0.18, 'y': 0.62, 'emoji': '🍀', 'size': 30.0},
+      {'x': 0.28, 'y': 0.58, 'emoji': '🌱', 'size': 25.0},
+      {'x': 0.72, 'y': 0.6, 'emoji': '🌿', 'size': 32.0},
+      {'x': 0.82, 'y': 0.63, 'emoji': '🍀', 'size': 28.0},
+      {'x': 0.92, 'y': 0.58, 'emoji': '🌱', 'size': 30.0},
+      {'x': 0.45, 'y': 0.65, 'emoji': '🌾', 'size': 28.0},
+      {'x': 0.55, 'y': 0.67, 'emoji': '🌿', 'size': 26.0},
+    ];
+
+    for (int i = 0; i < bushPositions.length; i++) {
+      final bush = bushPositions[i];
+      plants.add(
+        Positioned(
+          left: MediaQuery.of(context).size.width * (bush['x'] as double),
+          bottom: MediaQuery.of(context).size.height * (1 - (bush['y'] as double)),
+          child: AnimatedBuilder(
+            animation: _animalsController,
+            builder: (context, child) {
+              final sway = math.sin(_animalsController.value * 2 * math.pi + i * 0.3) * 2;
+              return Transform.translate(
+                offset: Offset(sway, 0),
+                child: Text(
+                  bush['emoji'] as String,
+                  style: TextStyle(fontSize: bush['size'] as double),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    }
+
+    return plants;
   }
 
   List<Widget> _buildFlowers() {
@@ -1502,6 +1587,68 @@ class PathPainter extends CustomPainter {
     path.close();
 
     canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class ExtraGroundPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint();
+
+    // Tierra base más rica
+    paint.shader = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        const Color(0xFF8D6E63), // Marrón tierra
+        const Color(0xFF6D4C41), // Marrón más oscuro
+        const Color(0xFF5D4037), // Marrón profundo
+      ],
+    ).createShader(Rect.fromLTWH(0, size.height * 0.7, size.width, size.height * 0.3));
+
+    canvas.drawRect(
+      Rect.fromLTWH(0, size.height * 0.7, size.width, size.height * 0.3),
+      paint,
+    );
+
+    // Parches de tierra con diferentes tonos
+    paint.shader = null;
+    paint.style = PaintingStyle.fill;
+    
+    // Varios parches de tierra
+    final patches = [
+      {'x': 0.1, 'y': 0.75, 'width': 0.15, 'height': 0.1, 'color': const Color(0xFF795548)},
+      {'x': 0.3, 'y': 0.8, 'width': 0.2, 'height': 0.08, 'color': const Color(0xFF8D6E63)},
+      {'x': 0.6, 'y': 0.77, 'width': 0.18, 'height': 0.12, 'color': const Color(0xFF6D4C41)},
+      {'x': 0.8, 'y': 0.82, 'width': 0.15, 'height': 0.09, 'color': const Color(0xFF795548)},
+    ];
+
+    for (final patch in patches) {
+      paint.color = patch['color'] as Color;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(
+            size.width * (patch['x'] as double),
+            size.height * (patch['y'] as double),
+            size.width * (patch['width'] as double),
+            size.height * (patch['height'] as double),
+          ),
+          const Radius.circular(8),
+        ),
+        paint,
+      );
+    }
+
+    // Pequeñas piedras en la tierra
+    paint.color = const Color(0xFF9E9E9E);
+    for (int i = 0; i < 20; i++) {
+      final x = size.width * (0.05 + (i * 0.043) % 0.9);
+      final y = size.height * (0.75 + (i % 3) * 0.08);
+      canvas.drawCircle(Offset(x, y), 2 + (i % 3), paint);
+    }
   }
 
   @override

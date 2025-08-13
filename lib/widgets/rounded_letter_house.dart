@@ -68,7 +68,6 @@ class RoundedLetterHouse extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final letterColor = _getLetterColor(letter);
     
     return GestureDetector(
       onTap: onTap,
@@ -114,12 +113,12 @@ class RoundedLetterHouse extends StatelessWidget {
               ),
             ),
             
-            // Puerta azul redondeada
+            // Puerta azul redondeada MÁS GRANDE con letra prominente
             Positioned(
               bottom: size * 0.02,
               child: Container(
-                width: size * 0.25,
-                height: size * 0.4,
+                width: size * 0.45, // Puerta MUCHO más ancha
+                height: size * 0.6, // Puerta MUCHO más alta
                 decoration: BoxDecoration(
                   color: const Color(0xFF1565C0),
                   borderRadius: BorderRadius.circular(size * 0.06),
@@ -128,13 +127,35 @@ class RoundedLetterHouse extends StatelessWidget {
                     width: 2,
                   ),
                 ),
+                child: Center(
+                  child: Text(
+                    letter.toUpperCase(),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: size * 0.35, // Letra SÚPER GRANDE en la puerta
+                      fontWeight: FontWeight.w900,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.7),
+                          offset: const Offset(1, 1),
+                          blurRadius: 2,
+                        ),
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          offset: const Offset(2, 2),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
             
-            // Manija dorada de la puerta
+            // Manija dorada de la puerta (ajustada para puerta más grande)
             Positioned(
-              bottom: size * 0.22,
-              right: size * 0.32,
+              bottom: size * 0.28,
+              right: size * 0.25,
               child: Container(
                 width: size * 0.04,
                 height: size * 0.04,
@@ -182,47 +203,7 @@ class RoundedLetterHouse extends StatelessWidget {
               ),
             ),
             
-            // Círculo de la letra (elemento principal)
-            Positioned(
-              bottom: size * 0.45,
-              left: size * 0.1,
-              child: Container(
-                width: size * 0.45,
-                height: size * 0.45,
-                decoration: BoxDecoration(
-                  color: letterColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white,
-                    width: size * 0.02,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: letterColor.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    letter.toUpperCase(),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: size * 0.35, // Letras más grandes
-                      fontWeight: FontWeight.w900,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          offset: const Offset(1, 1),
-                          blurRadius: 2,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            
             
             // Camino desde la puerta
             Positioned(

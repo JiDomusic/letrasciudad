@@ -242,9 +242,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             final contentHeight = baseHeight + (totalRows * rowHeight) + extraSpace;
             
             // ALTURA DINÁMICA SEGÚN DISPOSITIVO
-            final baseMobileHouseSize = screenWidth < 400 ? 45.0 : 55.0;
+            final baseMobileHouseSize = screenWidth < 400 ? 60.0 : 70.0; // Más grande para móviles
             final finalHeight = isMobile 
-                ? (totalRows * (baseMobileHouseSize + 30)) + baseHeight + extraSpace 
+                ? (totalRows * (baseMobileHouseSize + 35)) + baseHeight + extraSpace 
                 : contentHeight;
             
             return SizedBox(
@@ -377,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ),
                             child: RoundedLetterHouse(
                               letter: letter.character,
-                              size: position['size'] ?? (isMobile ? 55.0 : 75.0), // Tamaño consistente por dispositivo
+                              size: position['size'] ?? (isMobile ? 70.0 : 75.0), // Tamaño más grande para móviles
                               onTap: () => _onLetterTap(letter.character),
                               isUnlocked: letter.isUnlocked,
                             ),
@@ -430,8 +430,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     
     // TAMAÑO ADAPTATIVO CON VERIFICACIÓN DE CONTENEDOR
     final maxHouseSize = (availableWidth / housesPerRow) - 15; // Restar espaciado
-    final idealHouseSize = screenWidth < 400 ? 45.0 : (screenWidth < 500 ? 50.0 : 55.0);
-    final houseSize = math.min(idealHouseSize, maxHouseSize).clamp(35.0, 70.0);
+    final idealHouseSize = screenWidth < 400 ? 60.0 : (screenWidth < 500 ? 65.0 : 70.0); // Más grandes
+    final houseSize = math.min(idealHouseSize, maxHouseSize).clamp(50.0, 80.0); // Rango más grande
     final row = (index / housesPerRow).floor();
     final col = index % housesPerRow;
     

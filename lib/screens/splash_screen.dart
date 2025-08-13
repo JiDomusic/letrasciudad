@@ -153,45 +153,56 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ],
                   ),
-                  child: ShaderMask(
-                    shaderCallback: (bounds) => const LinearGradient(
-                      colors: [
-                        Color(0xFF1A237E), // Azul índigo oscuro
-                        Color(0xFF3F51B5), // Azul índigo
-                        Color(0xFF5C6BC0), // Azul claro
-                        Color(0xFF7B1FA2), // Violeta púrpura
+                  child: DefaultTextStyle(
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width < 600 ? 32 : 48,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white, // Color blanco como pediste
+                      letterSpacing: 1.5,
+                      shadows: [
+                        // Sombras negras fuertes para contraste
+                        const Shadow(
+                          blurRadius: 4.0,
+                          color: Colors.black87,
+                          offset: Offset(-2.0, -2.0),
+                        ),
+                        const Shadow(
+                          blurRadius: 4.0,
+                          color: Colors.black87,
+                          offset: Offset(2.0, -2.0),
+                        ),
+                        const Shadow(
+                          blurRadius: 4.0,
+                          color: Colors.black87,
+                          offset: Offset(-2.0, 2.0),
+                        ),
+                        const Shadow(
+                          blurRadius: 4.0,
+                          color: Colors.black87,
+                          offset: Offset(2.0, 2.0),
+                        ),
+                        // Sombra negra principal más gruesa
+                        const Shadow(
+                          blurRadius: 8.0,
+                          color: Colors.black,
+                          offset: Offset(3.0, 3.0),
+                        ),
+                        // Sombra difusa negra para mayor profundidad
+                        const Shadow(
+                          blurRadius: 12.0,
+                          color: Colors.black54,
+                          offset: Offset(0, 4.0),
+                        ),
                       ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ).createShader(bounds),
-                    child: DefaultTextStyle(
-                      style: TextStyle(
-                        fontSize: MediaQuery.of(context).size.width < 600 ? 32 : 48,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: 1.5,
-                        shadows: [
-                          const Shadow(
-                            blurRadius: 8.0,
-                            color: Colors.black45,
-                            offset: Offset(2.0, 2.0),
-                          ),
-                          const Shadow(
-                            blurRadius: 15.0,
-                            color: Color(0xFF1B5E20),
-                            offset: Offset(0, 4.0),
-                          ),
-                        ],
-                      ),
-                      child: AnimatedTextKit(
-                        animatedTexts: [
-                          TypewriterAnimatedText(
-                            'Parque de Letras',
-                            speed: const Duration(milliseconds: 120),
-                          ),
-                        ],
-                        isRepeatingAnimation: false,
-                      ),
+                    ),
+                    child: AnimatedTextKit(
+                      animatedTexts: [
+                        TypewriterAnimatedText(
+                          'Parque de Letras',
+                          speed: const Duration(milliseconds: 120),
+                        ),
+                      ],
+                      isRepeatingAnimation: false,
                     ),
                   ),
                 ),
@@ -517,31 +528,42 @@ class _SplashScreenState extends State<SplashScreen>
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: const Color(0xFF1B5E20), // Color azul verde oscuro
+            color: Colors.white, // Cambiado a blanco para mayor contraste
             fontSize: isSmallScreen ? 14 : 16,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800, // Aumentado peso de fuente
             shadows: [
-              // Sombra negra principal
+              // Sombra negra principal más gruesa
               const Shadow(
-                blurRadius: 3.0,
-                color: Colors.black,
-                offset: Offset(1.0, 1.0),
+                blurRadius: 4.0,
+                color: Colors.black87,
+                offset: Offset(2.0, 2.0),
               ),
-              // Sombra negra adicional para bordes
+              // Contorno negro completo para mejor legibilidad
               const Shadow(
-                blurRadius: 1.0,
+                blurRadius: 2.0,
                 color: Colors.black,
-                offset: Offset(-1.0, -1.0),
-              ),
-              const Shadow(
-                blurRadius: 1.0,
-                color: Colors.black,
-                offset: Offset(1.0, -1.0),
+                offset: Offset(-1.5, -1.5),
               ),
               const Shadow(
-                blurRadius: 1.0,
+                blurRadius: 2.0,
                 color: Colors.black,
-                offset: Offset(-1.0, 1.0),
+                offset: Offset(1.5, -1.5),
+              ),
+              const Shadow(
+                blurRadius: 2.0,
+                color: Colors.black,
+                offset: Offset(-1.5, 1.5),
+              ),
+              const Shadow(
+                blurRadius: 2.0,
+                color: Colors.black,
+                offset: Offset(1.5, 1.5),
+              ),
+              // Sombra adicional azul oscuro para mayor profundidad
+              const Shadow(
+                blurRadius: 6.0,
+                color: Color(0xFF1B5E20),
+                offset: Offset(3.0, 3.0),
               ),
             ],
           ),
