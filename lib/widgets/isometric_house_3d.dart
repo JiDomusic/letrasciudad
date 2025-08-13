@@ -52,7 +52,7 @@ class IsometricHousePainter extends CustomPainter {
     final strokePaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5
-      ..color = Colors.black.withOpacity(0.3);
+      ..color = Colors.black.withValues(alpha: 0.3);
 
     // Dimensiones base para vista isométrica
     final baseWidth = size.width * 0.8;
@@ -81,7 +81,7 @@ class IsometricHousePainter extends CustomPainter {
     final backRoofPeak = Offset(roofPeak.dx - depth * 0.5, roofPeak.dy - depth * 0.3);
 
     // 1. Dibujar cara lateral (más oscura)
-    paint.color = houseColor.withOpacity(0.7);
+    paint.color = houseColor.withValues(alpha: 0.7);
     final sideWall = Path()
       ..moveTo(frontBottomRight.dx, frontBottomRight.dy)
       ..lineTo(backBottomRight.dx, backBottomRight.dy)
@@ -149,7 +149,7 @@ class IsometricHousePainter extends CustomPainter {
     
     // Restaurar strokePaint original
     strokePaint.strokeWidth = 1.5;
-    strokePaint.color = Colors.black.withOpacity(0.3);
+    strokePaint.color = Colors.black.withValues(alpha: 0.3);
 
     // 5. Dibujar puerta
     paint.color = const Color(0xFF4A4A4A);
@@ -195,7 +195,7 @@ class IsometricHousePainter extends CustomPainter {
           fontWeight: FontWeight.bold,
           shadows: [
             Shadow(
-              color: Colors.black.withOpacity(0.7),
+              color: Colors.black.withValues(alpha: 0.7),
               offset: const Offset(1, 1),
               blurRadius: 2,
             ),
@@ -212,7 +212,7 @@ class IsometricHousePainter extends CustomPainter {
 
     // 8. Overlay si no está desbloqueada
     if (!isUnlocked) {
-      paint.color = Colors.black.withOpacity(0.4);
+      paint.color = Colors.black.withValues(alpha: 0.4);
       canvas.drawPath(frontWall, paint);
       
       // Candado

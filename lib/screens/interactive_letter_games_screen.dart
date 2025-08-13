@@ -44,9 +44,22 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   void _playWelcomeMessage() async {
     await Future.delayed(const Duration(milliseconds: 500));
     // El niño puede interrumpir tocando la pantalla
-    _audioService.speakText(
-      '¡Bienvenido a la casa de la letra ${widget.letter.character}!'
-    );
+    
+    // Check if this is a special game that needs explanation about circles
+    final hasSearchGame = widget.letter.activities.any((activity) => 
+        activity.id.contains('search_game'));
+    final hasColoringGame = widget.letter.activities.any((activity) => 
+        activity.id.contains('coloring_game'));
+        
+    if (hasSearchGame || hasColoringGame) {
+      _audioService.speakText(
+        '¡Bienvenido a la casa de la letra ${widget.letter.character}! Debes completar los círculos de los objetos encontrados con esa letra.'
+      );
+    } else {
+      _audioService.speakText(
+        '¡Bienvenido a la casa de la letra ${widget.letter.character}!'
+      );
+    }
   }
 
   void _skipNarration() {
@@ -121,7 +134,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
               gradient: RadialGradient(
                 colors: [
                   widget.letter.primaryColor,
-                  widget.letter.primaryColor.withOpacity(0.7),
+                  widget.letter.primaryColor.withValues(alpha: 0.7),
                 ],
               ),
               shape: BoxShape.circle,
@@ -154,7 +167,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                 Text(
                   '¡Juegos interactivos!',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 18, // Aumentado de 14 a 18
                   ),
                 ),
@@ -192,11 +205,32 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   Widget _buildGameContent() {
+    // Check if this letter has special activities
+    final hasColoringGame = widget.letter.activities.any((activity) => 
+        activity.id.contains('coloring_game'));
+    final hasWordCompletion = widget.letter.activities.any((activity) => 
+        activity.id.contains('word_completion'));
+    final hasSearchGame = widget.letter.activities.any((activity) => 
+        activity.id.contains('search_game'));
+    
     switch (_selectedGameIndex) {
       case 0:
-        return _buildObjectSelectionGame();
+        // Special case: letter A should show coloring game
+        if (widget.letter.character.toUpperCase() == 'A') {
+          return _buildColoringGame();
+        } else if (hasColoringGame) {
+          return _buildColoringGame();
+        } else if (hasSearchGame) {
+          return _buildLetterSearchGame(widget.letter.character);
+        } else {
+          return _buildObjectSelectionGame();
+        }
       case 1:
-        return _buildLetterTracingGame();
+        if (hasWordCompletion) {
+          return _buildWordCompletionGame();
+        } else {
+          return _buildLetterTracingGame();
+        }
       case 2:
         return _buildFindAllLettersGame();
       case 3:
@@ -207,9 +241,25 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   Widget _buildGameSelector() {
+    // Check if this letter has special activities
+    final hasColoringGame = widget.letter.activities.any((activity) => 
+        activity.id.contains('coloring_game'));
+    final hasWordCompletion = widget.letter.activities.any((activity) => 
+        activity.id.contains('word_completion'));
+    final hasSearchGame = widget.letter.activities.any((activity) => 
+        activity.id.contains('search_game'));
+    
     final games = [
-      {'icon': Icons.touch_app, 'title': 'Seleccionar', 'color': Colors.green[400]!},
-      {'icon': Icons.edit, 'title': 'Trazar', 'color': Colors.blue[400]!},
+      {
+        'icon': (widget.letter.character.toUpperCase() == 'A' || hasColoringGame) ? Icons.color_lens : (hasSearchGame ? Icons.search : Icons.touch_app), 
+        'title': (widget.letter.character.toUpperCase() == 'A' || hasColoringGame) ? 'Colorear' : (hasSearchGame ? 'Buscar' : 'Seleccionar'), 
+        'color': Colors.green[400]!
+      },
+      {
+        'icon': hasWordCompletion ? Icons.text_fields : Icons.edit, 
+        'title': hasWordCompletion ? 'Completar' : 'Trazar', 
+        'color': Colors.blue[400]!
+      },
       {'icon': Icons.search, 'title': 'Buscar', 'color': Colors.purple[400]!},
       {'icon': Icons.volume_up, 'title': 'Sonidos', 'color': Colors.orange[400]!},
     ];
@@ -253,7 +303,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: (game['color'] as Color).withOpacity(0.4),
+                    color: (game['color'] as Color).withValues(alpha: 0.4),
                     blurRadius: isSelected ? 12 : 6,
                     offset: const Offset(0, 4),
                   ),
@@ -341,11 +391,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -370,24 +420,31 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
           ),
           const SizedBox(height: 20),
           Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isWeb = MediaQuery.of(context).size.width > 800;
-                
-                return GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: isWeb ? 3 : 2, // 3 en web, 2 en móvil
-                    childAspectRatio: isWeb ? 0.9 : 0.8, // Más cuadrado en web
-                    crossAxisSpacing: isWeb ? 30 : 20, // Más espacio en web
-                    mainAxisSpacing: isWeb ? 30 : 20, // Más espacio en web
-                  ),
-                  itemCount: availableObjects.length,
-                  itemBuilder: (context, index) {
-                    final obj = availableObjects[index];
-                    return _buildSelectableObject(obj, isWeb);
-                  },
-                );
-              },
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWeb = MediaQuery.of(context).size.width > 800;
+                  final screenWidth = MediaQuery.of(context).size.width;
+                  final crossAxisCount = screenWidth < 600 ? 2 : (screenWidth < 1200 ? 3 : 4);
+                  
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      childAspectRatio: 0.85,
+                      crossAxisSpacing: 15,
+                      mainAxisSpacing: 20,
+                    ),
+                    itemCount: availableObjects.length,
+                    itemBuilder: (context, index) {
+                      final obj = availableObjects[index];
+                      return _buildSelectableObject(obj, isWeb);
+                    },
+                  );
+                }
+              ),
             ),
           ),
         ],
@@ -461,8 +518,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? (isCorrect ? Colors.green.withOpacity(0.4) : Colors.red.withOpacity(0.4))
-                  : Colors.black.withOpacity(0.1),
+                  ? (isCorrect ? Colors.green.withValues(alpha: 0.4) : Colors.red.withValues(alpha: 0.4))
+                  : Colors.black.withValues(alpha: 0.1),
               blurRadius: isSelected ? 12 : 6, // Sombra dinámica
               offset: Offset(0, isSelected ? 6 : 3),
               spreadRadius: isSelected ? 2 : 0,
@@ -475,7 +532,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
             // EMOJI ADAPTATIVO: Más grande en web, normal en móvil
             Text(
               obj['emoji'] as String,
-              style: TextStyle(fontSize: isWeb ? 120 : 70), // 120 en web, 70 en móvil
+              style: TextStyle(fontSize: isWeb ? 140 : 100), // Más grandes: 140 en web, 100 en móvil
             ),
             SizedBox(height: isWeb ? 16 : 12),
             // QUITAR TEXTO PARA QUE EL NINO ADIVINE
@@ -546,7 +603,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
@@ -582,7 +639,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 5),
                       ),
@@ -610,62 +667,244 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     
     return Container(
       padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.lightBlue[50]!,
+            Colors.white,
+          ],
+        ),
+      ),
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
-              borderRadius: BorderRadius.circular(16),
+          // Título principal
+          Text(
+            'BUSCAMOS LA ${widget.letter.character.toUpperCase()}',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
-            child: Row(
-              children: [
-                Icon(Icons.search, color: Colors.purple[600], size: 24),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Busca y marca todas las letras "${widget.letter.character.toUpperCase()}"',
-                    style: const TextStyle(
-                      fontSize: 20, // Aumentado de 16 a 20
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF7B1FA2),
-                    ),
-                  ),
-                ),
-              ],
+          ),
+          const SizedBox(height: 8),
+          // Subtítulo
+          Text(
+            'Has click y encuentra las letras ${widget.letter.character.toUpperCase()}',
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.black54,
             ),
           ),
           const SizedBox(height: 20),
+          // Indicador de progreso (ahora para 3 letras)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(3, (index) {
+              int foundCount = letters.where((l) => l['isTarget'] == true && l['found'] == true).length;
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 6),
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: index < foundCount ? Colors.green : Colors.grey[300],
+                  border: Border.all(
+                    color: Colors.grey[400]!,
+                    width: 2,
+                  ),
+                ),
+                child: index < foundCount 
+                  ? const Icon(Icons.check, color: Colors.white, size: 16)
+                  : null,
+              );
+            }),
+          ),
+          const SizedBox(height: 30),
+          // Grid de letras (4x3 para 12 letras)
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
+              constraints: const BoxConstraints(maxHeight: 400),
               child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4, // Reducido a 4 para letras aún más grandes
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
                   childAspectRatio: 1,
-                  crossAxisSpacing: 12, // Más espacio entre letras
-                  mainAxisSpacing: 12, // Más espacio vertical
+                  crossAxisSpacing: MediaQuery.of(context).size.width < 600 ? 12 : 20,
+                  mainAxisSpacing: MediaQuery.of(context).size.width < 600 ? 12 : 20,
                 ),
                 itemCount: letters.length,
                 itemBuilder: (context, index) {
                   final letterData = letters[index];
-                  return _buildFindableLetter(letterData);
+                  return _buildNewStyleLetter(letterData);
                 },
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildNewStyleLetter(Map<String, dynamic> letterData) {
+    final letter = letterData['letter'] as String;
+    final isTarget = letterData['isTarget'] as bool;
+    final isFound = letterData['found'] as bool? ?? false;
+    final isWeb = MediaQuery.of(context).size.width > 800;
+    final fontSize = isWeb ? 50.0 : 36.0;
+
+    return GestureDetector(
+      onTap: () => _handleLetterFind(letterData),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Colors.grey[400]!,
+            width: 3,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Container(
+          margin: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.lightBlue[200]!,
+                Colors.blue[300]!,
+                Colors.blue[500]!,
+                Colors.blue[700]!,
+                Colors.indigo[800]!,
+              ],
+              stops: const [0.0, 0.2, 0.5, 0.8, 1.0],
+            ),
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              // Sombra exterior azul brillante
+              BoxShadow(
+                color: Colors.blue.withValues(alpha: 0.8),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+                spreadRadius: 6,
+              ),
+              // Sombra cyan brillante
+              BoxShadow(
+                color: Colors.cyan.withValues(alpha: 0.6),
+                blurRadius: 15,
+                offset: const Offset(0, -5),
+                spreadRadius: 3,
+              ),
+              // Resplandor exterior tipo neón
+              BoxShadow(
+                color: Colors.lightBlue.withValues(alpha: 0.7),
+                blurRadius: 30,
+                offset: const Offset(0, 0),
+                spreadRadius: 12,
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Brillo superior adicional
+              Positioned(
+                top: 6,
+                left: 6,
+                right: 6,
+                height: 20,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
+                    ),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.white.withValues(alpha: 0.4),
+                        Colors.white.withValues(alpha: 0.0),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // Letra central
+              Center(
+                child: Text(
+                  letter,
+                  style: TextStyle(
+                    fontSize: fontSize * 1.5,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.blue[100],
+                    letterSpacing: 3,
+                    shadows: [
+                      // Sombra profunda azul
+                      Shadow(
+                        offset: const Offset(4, 4),
+                        blurRadius: 10,
+                        color: Colors.blue[900]!,
+                      ),
+                      // Sombra media
+                      Shadow(
+                        offset: const Offset(2, 2),
+                        blurRadius: 6,
+                        color: Colors.blue[700]!,
+                      ),
+                      // Brillo cyan superior
+                      Shadow(
+                        offset: const Offset(-2, -2),
+                        blurRadius: 8,
+                        color: Colors.cyan[300]!,
+                      ),
+                      // Resplandor exterior
+                      Shadow(
+                        offset: const Offset(0, 0),
+                        blurRadius: 15,
+                        color: Colors.lightBlue[200]!,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Checkmark verde cuando se encuentra
+              if (isFound && isTarget)
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: Colors.green[600],
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.green.withValues(alpha: 0.4),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -695,11 +934,23 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
           child: Text(
             letter,
             style: TextStyle(
-              fontSize: 42, // Aumentado aún más para mejor visibilidad
+              fontSize: 64, // Letras súper grandes tipo goma juguetonas
               fontWeight: FontWeight.bold,
               color: isFound 
                   ? (isTarget ? Colors.green[700] : Colors.red[700])
-                  : Colors.black87,
+                  : Colors.blue[800],
+              shadows: [
+                Shadow(
+                  color: Colors.blue[200]!,
+                  offset: const Offset(3, 3),
+                  blurRadius: 6,
+                ),
+                Shadow(
+                  color: Colors.cyan[300]!,
+                  offset: const Offset(-1, -1),
+                  blurRadius: 4,
+                ),
+              ],
             ),
           ),
         ),
@@ -732,7 +983,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
@@ -770,13 +1021,13 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                           gradient: RadialGradient(
                             colors: [
                               widget.letter.primaryColor,
-                              widget.letter.primaryColor.withOpacity(0.7),
+                              widget.letter.primaryColor.withValues(alpha: 0.7),
                             ],
                           ),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: widget.letter.primaryColor.withOpacity(0.4),
+                              color: widget.letter.primaryColor.withValues(alpha: 0.4),
                               blurRadius: 20,
                               spreadRadius: 5,
                             ),
@@ -1298,8 +1549,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     final letters = <Map<String, dynamic>>[];
     final targetLetter = widget.letter.character.toUpperCase();
     
-    // Agregar letras target (5-8 instancias)
-    for (int i = 0; i < 6; i++) {
+    // Agregar letras target (3-4 instancias para un grid más pequeño)
+    for (int i = 0; i < 3; i++) {
       letters.add({
         'letter': targetLetter,
         'isTarget': true,
@@ -1307,13 +1558,13 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       });
     }
     
-    // Agregar letras distractoras
+    // Agregar letras distractoras (solo 9 para completar 12 total)
     final distractorLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         .split('')
         .where((l) => l != targetLetter)
         .toList();
     
-    for (int i = 0; i < 30; i++) {
+    for (int i = 0; i < 9; i++) {
       letters.add({
         'letter': distractorLetters[random.nextInt(distractorLetters.length)],
         'isTarget': false,
@@ -1352,6 +1603,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       builder: (context) => _SuccessMessageWidget(
         wordName: wordName,
         letterName: widget.letter.character.toUpperCase(),
+        audioService: _audioService,
         onComplete: () {
           overlayEntry.remove();
         },
@@ -1375,6 +1627,836 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     );
     
     overlay.insert(overlayEntry);
+  }
+
+  // Coloring game for B and V letters
+  Widget _buildColoringGame() {
+    final coloredObjects = <String>{};
+    
+    return StatefulBuilder(
+      builder: (context, setState) {
+        final objectsToColor = _getObjectsForColoring(widget.letter.character);
+        final foundCount = coloredObjects.length;
+        
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.color_lens, color: Colors.orange[600], size: 24),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Colorea los objetos que empiecen con "${widget.letter.character.toUpperCase()}"',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2E7D32),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(objectsToColor.where((obj) => obj['correct'] as bool).length, (index) {
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: index < foundCount ? Colors.green : Colors.grey[300],
+                            border: Border.all(color: Colors.grey[600]!, width: 2),
+                          ),
+                          child: index < foundCount
+                              ? const Icon(Icons.check, color: Colors.white, size: 16)
+                              : null,
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Encontrados: $foundCount/${objectsToColor.where((obj) => obj['correct'] as bool).length}',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: MediaQuery.of(context).size.width < 600 ? 2 : (MediaQuery.of(context).size.width < 1200 ? 3 : 4),
+                      childAspectRatio: 1.1,
+                    crossAxisSpacing: MediaQuery.of(context).size.width < 600 ? 12 : 16,
+                    mainAxisSpacing: MediaQuery.of(context).size.width < 600 ? 12 : 16,
+                  ),
+                  itemCount: objectsToColor.length,
+                  itemBuilder: (context, index) {
+                    final obj = objectsToColor[index];
+                    final isColored = coloredObjects.contains(obj['name']);
+                    final isCorrect = obj['correct'] as bool;
+                    
+                    return GestureDetector(
+                      onTap: () {
+                        if (isCorrect && !isColored) {
+                          setState(() {
+                            coloredObjects.add(obj['name'] as String);
+                          });
+                          _audioService.speakText('¡Muy bien! ${obj['name']} empieza con ${widget.letter.character}');
+                          
+                          final totalCorrectObjects = objectsToColor.where((obj) => obj['correct'] as bool).length;
+                          if (coloredObjects.length >= totalCorrectObjects) {
+                            _audioService.speakText('¡Felicidades! Has completado el juego de colorear');
+                          }
+                        } else if (!isCorrect) {
+                          _audioService.speakText('${obj['name']} no empieza con ${widget.letter.character}. Intenta con otro objeto');
+                        }
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: isColored 
+                              ? (isCorrect ? Colors.green.withValues(alpha: 0.3) : Colors.white)
+                              : Colors.grey[100],
+                          border: Border.all(
+                            color: isColored && isCorrect ? Colors.green : Colors.grey[400]!,
+                            width: 2,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              obj['emoji'] as String,
+                              style: TextStyle(
+                                fontSize: MediaQuery.of(context).size.width < 600 ? 80 : 120,
+                                color: isColored && isCorrect ? null : Colors.grey[400],
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              obj['name'] as String,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: isColored && isCorrect ? Colors.green[800] : Colors.grey[600],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Word completion game for Y, X, and K letters
+  Widget _buildWordCompletionGame() {
+    final completedWords = <String>{};
+    
+    return StatefulBuilder(
+      builder: (context, setState) {
+        final wordsToComplete = _getWordsForCompletion(widget.letter.character);
+        
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.text_fields, color: Colors.blue[600], size: 24),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Completa las palabras que empiecen con "${widget.letter.character.toUpperCase()}"',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2E7D32),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: wordsToComplete.length,
+                  itemBuilder: (context, index) {
+                    final wordData = wordsToComplete[index];
+                    final word = wordData['word'] as String;
+                    final missingPart = wordData['missing'] as String;
+                    final displayWord = wordData['display'] as String;
+                    final isCompleted = completedWords.contains(word);
+                    
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isCompleted ? Colors.green.withValues(alpha: 0.1) : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isCompleted ? Colors.green : Colors.grey[300]!,
+                          width: 2,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            wordData['emoji'] as String,
+                            style: TextStyle(fontSize: MediaQuery.of(context).size.width < 600 ? 80 : 120),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isCompleted ? word.toUpperCase() : displayWord,
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: isCompleted ? Colors.green[800] : Colors.black87,
+                                  ),
+                                ),
+                                if (!isCompleted) ...[
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 8,
+                                    children: missingPart.split('').map((letter) {
+                                      return GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            completedWords.add(word);
+                                          });
+                                          _audioService.speakText('¡Excelente! Completaste la palabra $word');
+                                        },
+                                        child: Container(
+                                          width: 40,
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue[100],
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(color: Colors.blue[300]!),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              letter.toUpperCase(),
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.blue[800],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          if (isCompleted)
+                            Icon(Icons.check_circle, color: Colors.green, size: 32),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Generic search game for any letter
+  Widget _buildLetterSearchGame(String targetLetter) {
+    final foundLetters = <int>{};
+    
+    return StatefulBuilder(
+      builder: (context, setState) {
+        // Generate a 4x3 grid with 7 target letters and 5 distractors
+        final allLetters = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('');
+        final targetLetterPositions = <int>[];
+        final distractorLetters = <String>[];
+        
+        // Generate 8 random positions for target letters in 15 slots
+        final random = DateTime.now().millisecondsSinceEpoch;
+        final positions = <int>[];
+        for (int i = 0; i < 15; i++) {
+          positions.add(i);
+        }
+        positions.shuffle();
+        targetLetterPositions.addAll(positions.take(8));
+        
+        // Get distractor letters (not the target letter)
+        final availableDistractors = allLetters.where((l) => l != targetLetter).toList();
+        availableDistractors.shuffle();
+        distractorLetters.addAll(availableDistractors.take(7));
+        
+        final foundCount = foundLetters.length;
+        
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'BUSCAMOS LA $targetLetter',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue[800],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Has click y encuentra las letras $targetLetter',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[700],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(8, (index) {
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: index < foundCount ? Colors.green : Colors.grey[300],
+                            border: Border.all(color: Colors.grey[600]!, width: 2),
+                          ),
+                          child: index < foundCount
+                              ? const Icon(Icons.check, color: Colors.white, size: 18)
+                              : null,
+                        );
+                      }),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.grey[300]!, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(12),
+                    physics: const BouncingScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: MediaQuery.of(context).size.width < 600 ? 3 : (MediaQuery.of(context).size.width < 1200 ? 4 : 5),
+                      childAspectRatio: 1.0,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 15,
+                    ),
+                    itemCount: 15, // Aumentado para más letras y scroll
+                    itemBuilder: (context, index) {
+                      final isTargetPosition = targetLetterPositions.contains(index);
+                      final isFound = foundLetters.contains(index);
+                      
+                      String displayLetter;
+                      if (isTargetPosition) {
+                        displayLetter = targetLetter;
+                      } else {
+                        final distractorIndex = (index + targetLetter.hashCode) % distractorLetters.length;
+                        displayLetter = distractorLetters[distractorIndex];
+                      }
+                      
+                      return GestureDetector(
+                        onTap: () {
+                          if (isTargetPosition && !isFound) {
+                            setState(() {
+                              foundLetters.add(index);
+                            });
+                            _audioService.speakText('¡Perfecto! Encontraste la letra $targetLetter');
+                            
+                            if (foundLetters.length == 8) {
+                              _audioService.speakText('¡Increíble! Has encontrado todas las letras $targetLetter');
+                            }
+                          } else if (!isTargetPosition) {
+                            _audioService.speakText('Esta es la letra $displayLetter. Busca la letra $targetLetter');
+                          }
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: isTargetPosition && isFound 
+                                  ? [Colors.green[300]!, Colors.green[500]!]
+                                  : [Colors.blue[100]!, Colors.blue[200]!],
+                            ),
+                            border: Border.all(
+                              color: isTargetPosition && isFound 
+                                  ? Colors.green[600]! 
+                                  : Colors.blue[300]!,
+                              width: 3,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                              BoxShadow(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                blurRadius: 4,
+                                offset: const Offset(-2, -2),
+                              ),
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              Center(
+                                child: Text(
+                                  displayLetter,
+                                  style: TextStyle(
+                                    fontSize: MediaQuery.of(context).size.width < 600 ? 
+                                        (MediaQuery.of(context).size.width < 400 ? 56 : 68) : 88,
+                                    fontWeight: FontWeight.w900,
+                                    color: isTargetPosition && isFound 
+                                        ? Colors.white 
+                                        : Colors.blue[800],
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.blue[300]!,
+                                        offset: const Offset(2, 2),
+                                        blurRadius: 6,
+                                      ),
+                                      Shadow(
+                                        color: Colors.cyan[200]!,
+                                        offset: const Offset(-1, -1),
+                                        blurRadius: 4,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              if (isTargetPosition && isFound)
+                                Positioned(
+                                  top: 4,
+                                  right: 4,
+                                  child: Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.green,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.check,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // New A search game using the generic letter search
+  Widget _buildASearchGame() {
+    return _buildLetterSearchGame('A');
+  }
+
+  // Helper method for coloring game objects
+  List<Map<String, dynamic>> _getObjectsForColoring(String letter) {
+    switch (letter.toLowerCase()) {
+      case 'a':
+        return [
+          {'emoji': '🚗', 'name': 'Auto', 'correct': true},
+          {'emoji': '🌳', 'name': 'Árbol', 'correct': true},
+          {'emoji': '💍', 'name': 'Anillo', 'correct': true},
+          {'emoji': '✈️', 'name': 'Avión', 'correct': true},
+          {'emoji': '🦅', 'name': 'Águila', 'correct': true},
+          {'emoji': '🍎', 'name': 'Manzana', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+        ];
+      case 'b':
+        return [
+          {'emoji': '🍌', 'name': 'Banana', 'correct': true},
+          {'emoji': '🦋', 'name': 'Mariposa', 'correct': false},
+          {'emoji': '🏀', 'name': 'Balón', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🦇', 'name': 'Murciélago', 'correct': false},
+          {'emoji': '📚', 'name': 'Libro', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
+        ];
+      case 'v':
+        return [
+          {'emoji': '🌋', 'name': 'Volcán', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '💨', 'name': 'Viento', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🐄', 'name': 'Vaca', 'correct': true},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
+        ];
+      case 'c':
+        return [
+          {'emoji': '🐱', 'name': 'Gato', 'correct': false},
+          {'emoji': '🚗', 'name': 'Carro', 'correct': true},
+          {'emoji': '🍎', 'name': 'Manzana', 'correct': false},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': true},
+          {'emoji': '🐺', 'name': 'Lobo', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '👔', 'name': 'Camisa', 'correct': true},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🔔', 'name': 'Campana', 'correct': true},
+        ];
+      case 'd':
+        return [
+          {'emoji': '🦷', 'name': 'Diente', 'correct': true},
+          {'emoji': '🍎', 'name': 'Manzana', 'correct': false},
+          {'emoji': '🐉', 'name': 'Dragón', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '💎', 'name': 'Diamante', 'correct': true},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🎯', 'name': 'Diana', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+        ];
+      case 'e':
+        return [
+          {'emoji': '🐘', 'name': 'Elefante', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '⭐', 'name': 'Estrella', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '✉️', 'name': 'Sobre', 'correct': false},
+          {'emoji': '🪜', 'name': 'Escalera', 'correct': true},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌍', 'name': 'Tierra', 'correct': false},
+        ];
+      case 'f':
+        return [
+          {'emoji': '🌸', 'name': 'Flor', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '🍓', 'name': 'Fresa', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '💡', 'name': 'Foco', 'correct': true},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🔥', 'name': 'Fuego', 'correct': true},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
+        ];
+      case 'g':
+        return [
+          {'emoji': '🐱', 'name': 'Gato', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🧤', 'name': 'Guante', 'correct': true},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🎸', 'name': 'Guitarra', 'correct': true},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
+        ];
+      case 'h':
+        return [
+          {'emoji': '🔨', 'name': 'Martillo', 'correct': false},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '🍯', 'name': 'Miel', 'correct': false},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '❄️', 'name': 'Hielo', 'correct': true},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🏥', 'name': 'Hospital', 'correct': true},
+        ];
+      case 'i':
+        return [
+          {'emoji': '🏝️', 'name': 'Isla', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '🦎', 'name': 'Iguana', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '⛪', 'name': 'Iglesia', 'correct': true},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
+        ];
+      case 'j':
+        return [
+          {'emoji': '🧼', 'name': 'Jabón', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '🦒', 'name': 'Jirafa', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🧃', 'name': 'Jugo', 'correct': true},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
+        ];
+      case 'l':
+        return [
+          {'emoji': '🦁', 'name': 'León', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '🌙', 'name': 'Luna', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '📚', 'name': 'Libro', 'correct': true},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🍋', 'name': 'Limón', 'correct': true},
+        ];
+      case 'm':
+        return [
+          {'emoji': '🍎', 'name': 'Manzana', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '🦋', 'name': 'Mariposa', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🌎', 'name': 'Mundo', 'correct': true},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🏔️', 'name': 'Montaña', 'correct': true},
+        ];
+      case 'n':
+        return [
+          {'emoji': '☁️', 'name': 'Nube', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '🐧', 'name': 'Pingüino', 'correct': false},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '👃', 'name': 'Nariz', 'correct': true},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
+        ];
+      case 'ñ':
+        return [
+          {'emoji': '🪆', 'name': 'Muñeca', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '🌰', 'name': 'Castaña', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🧸', 'name': 'Oso', 'correct': false},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
+        ];
+      case 'o':
+        return [
+          {'emoji': '🐻', 'name': 'Oso', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '👁️', 'name': 'Ojo', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🥚', 'name': 'Huevo', 'correct': false},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🐙', 'name': 'Pulpo', 'correct': false},
+        ];
+      case 'p':
+        return [
+          {'emoji': '🐧', 'name': 'Pingüino', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '🍕', 'name': 'Pizza', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🐶', 'name': 'Perro', 'correct': true},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
+        ];
+      case 'q':
+        return [
+          {'emoji': '🧀', 'name': 'Queso', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '👑', 'name': 'Corona', 'correct': false},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🔥', 'name': 'Fuego', 'correct': false},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
+        ];
+      case 'r':
+        return [
+          {'emoji': '🐭', 'name': 'Ratón', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '🌹', 'name': 'Rosa', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '📻', 'name': 'Radio', 'correct': true},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
+        ];
+      case 's':
+        return [
+          {'emoji': '🐍', 'name': 'Serpiente', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '☀️', 'name': 'Sol', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🛏️', 'name': 'Cama', 'correct': false},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🪑', 'name': 'Silla', 'correct': true},
+        ];
+      case 't':
+        return [
+          {'emoji': '🐅', 'name': 'Tigre', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '📺', 'name': 'Televisión', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🏆', 'name': 'Trofeo', 'correct': true},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
+        ];
+      case 'u':
+        return [
+          {'emoji': '🦄', 'name': 'Unicornio', 'correct': true},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '🍇', 'name': 'Uva', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '☂️', 'name': 'Paraguas', 'correct': false},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
+        ];
+      case 'z':
+        return [
+          {'emoji': '🦓', 'name': 'Cebra', 'correct': false},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
+          {'emoji': '👠', 'name': 'Zapato', 'correct': true},
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+          {'emoji': '🥕', 'name': 'Zanahoria', 'correct': true},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
+          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
+        ];
+      default:
+        return [];
+    }
+  }
+
+  // Helper method for word completion objects
+  List<Map<String, dynamic>> _getWordsForCompletion(String letter) {
+    switch (letter.toLowerCase()) {
+      case 'y':
+        return [
+          {'emoji': '🧘', 'word': 'yoga', 'missing': 'y', 'display': '_oga'},
+          {'emoji': '🪀', 'word': 'yoyo', 'missing': 'y', 'display': '_oyo'},
+          {'emoji': '🍳', 'word': 'yema', 'missing': 'y', 'display': '_ema'},
+        ];
+      case 'x':
+        return [
+          {'emoji': '🎷', 'word': 'saxofón', 'missing': 'x', 'display': 'sa_ofón'},
+          {'emoji': '💀', 'word': 'boxeo', 'missing': 'x', 'display': 'bo_eo'},
+          {'emoji': '🛺', 'word': 'taxi', 'missing': 'x', 'display': 'ta_i'},
+        ];
+      case 'k':
+        return [
+          {'emoji': '🥝', 'word': 'kiwi', 'missing': 'k', 'display': '_iwi'},
+          {'emoji': '🥋', 'word': 'karate', 'missing': 'k', 'display': '_arate'},
+          {'emoji': '🛶', 'word': 'kayak', 'missing': 'k', 'display': '_ayak'},
+        ];
+      default:
+        return [];
+    }
   }
 }
 
@@ -1466,9 +2548,9 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
                     height: drawingRect.height,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.blue.withOpacity(0.3), width: 2),
+                        border: Border.all(color: Colors.blue.withValues(alpha: 0.3), width: 2),
                       ),
                       child: Stack(
                         children: [
@@ -1532,7 +2614,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
                                     
                                     // Celebrar cuando complete suficientes trazos válidos
                                     if (_validStrokes >= _requiredStrokes) {
-                                      Future.delayed(const Duration(milliseconds: 500), () {
+                                      Future.delayed(const Duration(milliseconds: 100), () {
                                         widget.onCelebrationStars();
                                         widget.onTracingComplete(); // IMPORTANTE: Marcar como completado
                                         widget.audioService.speakText('¡Has trazado muy bien la letra ${widget.letter}!');
@@ -5832,19 +6914,16 @@ class _LetterDemoPainter extends CustomPainter {
       _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(rightX, topY), stroke2Progress, paint);
     }
     
-    // Línea derecha y línea media horizontal (75-100%)
+    // Línea derecha (75-87.5%)
     if (progress > 0.75) {
-      final stroke3Progress = math.min((progress - 0.75) * 4, 1.0);
-      final path = Path()
-        ..moveTo(rightX, topY)
-        ..lineTo(rightX, midY)
-        ..lineTo(leftX, midY);
-      final pathMetrics = path.computeMetrics();
-      if (pathMetrics.isNotEmpty) {
-        final pathMetric = pathMetrics.first;
-        final extractPath = pathMetric.extractPath(0, pathMetric.length * stroke3Progress);
-        canvas.drawPath(extractPath, paint);
-      }
+      final stroke3Progress = math.min((progress - 0.75) * 8, 1.0);
+      _drawAnimatedLine(canvas, Offset(rightX, topY), Offset(rightX, midY), stroke3Progress, paint);
+    }
+    
+    // Línea media horizontal (87.5-100%)
+    if (progress > 0.875) {
+      final stroke4Progress = math.min((progress - 0.875) * 8, 1.0);
+      _drawAnimatedLine(canvas, Offset(rightX, midY), Offset(leftX, midY), stroke4Progress, paint);
     }
   }
 
@@ -6138,7 +7217,7 @@ class _LetterDemoPainter extends CustomPainter {
           color: Colors.white,
           shadows: [
             Shadow(
-              color: Colors.black.withOpacity(0.7),
+              color: Colors.black.withValues(alpha: 0.7),
               offset: const Offset(1, 1),
               blurRadius: 2,
             ),
@@ -6208,7 +7287,7 @@ class _CelebrationStarsWidgetState extends State<_CelebrationStarsWidget>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 1),
       vsync: this,
     );
     
@@ -6248,7 +7327,7 @@ class _CelebrationStarsWidgetState extends State<_CelebrationStarsWidget>
                     gradient: RadialGradient(
                       center: Alignment.center,
                       colors: [
-                        Colors.blue.withOpacity(0.1 * _controller.value),
+                        Colors.blue.withValues(alpha: 0.1 * _controller.value),
                         Colors.transparent,
                       ],
                     ),
@@ -6267,7 +7346,7 @@ class _CelebrationStarsWidgetState extends State<_CelebrationStarsWidget>
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 10,
                             offset: const Offset(0, 5),
                           ),
@@ -6284,7 +7363,7 @@ class _CelebrationStarsWidgetState extends State<_CelebrationStarsWidget>
                               color: Colors.white,
                               shadows: [
                                 Shadow(
-                                  color: Colors.black.withOpacity(0.5),
+                                  color: Colors.black.withValues(alpha: 0.5),
                                   offset: const Offset(1, 1),
                                   blurRadius: 2,
                                 ),
@@ -6327,7 +7406,7 @@ class _CelebrationStarsWidgetState extends State<_CelebrationStarsWidget>
                         angle: progress * star.rotation,
                         child: Icon(
                           Icons.star,
-                          color: star.color.withOpacity(opacity),
+                          color: star.color.withValues(alpha: opacity),
                           size: star.size,
                         ),
                       ),
@@ -6388,7 +7467,7 @@ class _FailureFeedbackWidgetState extends State<_FailureFeedbackWidget>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
     
@@ -6425,7 +7504,7 @@ class _FailureFeedbackWidgetState extends State<_FailureFeedbackWidget>
                     gradient: RadialGradient(
                       center: Alignment.center,
                       colors: [
-                        Colors.orange.withOpacity(0.1 * _controller.value),
+                        Colors.orange.withValues(alpha: 0.1 * _controller.value),
                         Colors.transparent,
                       ],
                     ),
@@ -6444,7 +7523,7 @@ class _FailureFeedbackWidgetState extends State<_FailureFeedbackWidget>
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 10,
                             offset: const Offset(0, 5),
                           ),
@@ -6461,7 +7540,7 @@ class _FailureFeedbackWidgetState extends State<_FailureFeedbackWidget>
                               color: Colors.white,
                               shadows: [
                                 Shadow(
-                                  color: Colors.black.withOpacity(0.5),
+                                  color: Colors.black.withValues(alpha: 0.5),
                                   offset: const Offset(1, 1),
                                   blurRadius: 2,
                                 ),
@@ -6495,11 +7574,13 @@ class _SuccessMessageWidget extends StatefulWidget {
   final String wordName;
   final String letterName;
   final VoidCallback onComplete;
+  final AudioService audioService;
 
   const _SuccessMessageWidget({
     required this.wordName,
     required this.letterName,
     required this.onComplete,
+    required this.audioService,
   });
 
   @override
@@ -6552,7 +7633,7 @@ class _SuccessMessageWidgetState extends State<_SuccessMessageWidget>
       builder: (context, child) {
         return Positioned.fill(
           child: Container(
-            color: Colors.black.withOpacity(0.3 * (1 - _fadeAnimation.value)),
+            color: Colors.black.withValues(alpha: 0.3 * (1 - _fadeAnimation.value)),
             child: Center(
               child: Transform.scale(
                 scale: _scaleAnimation.value,
@@ -6575,7 +7656,7 @@ class _SuccessMessageWidgetState extends State<_SuccessMessageWidget>
                         border: Border.all(color: Colors.white, width: 3), // Borde blanco
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           ),
@@ -6594,7 +7675,7 @@ class _SuccessMessageWidgetState extends State<_SuccessMessageWidget>
                             letterSpacing: 2.0, // Espaciado de letras
                             shadows: [
                               Shadow(
-                                color: Colors.black.withOpacity(0.5),
+                                color: Colors.black.withValues(alpha: 0.5),
                                 offset: const Offset(2, 2),
                                 blurRadius: 4,
                               ),
@@ -6656,7 +7737,7 @@ class _SuccessMessageWidgetState extends State<_SuccessMessageWidget>
                           size: 48,
                           shadows: [
                             Shadow(
-                              color: Colors.black.withOpacity(0.5),
+                              color: Colors.black.withValues(alpha: 0.5),
                               offset: const Offset(2, 2),
                               blurRadius: 4,
                             ),
@@ -6673,4 +7754,5 @@ class _SuccessMessageWidgetState extends State<_SuccessMessageWidget>
       },
     );
   }
+
 }

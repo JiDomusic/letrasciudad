@@ -137,40 +137,62 @@ class _SplashScreenState extends State<SplashScreen>
               const SizedBox(height: 40),
               FadeTransition(
                 opacity: _fadeAnimation,
-                child: DefaultTextStyle(
-                  style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width < 600 ? 32 : 48, // Responsivo
-                    fontWeight: FontWeight.w900,
-                    color: const Color(0xFF1B5E20), // Verde oscuro
-                    shadows: [
-                      // Sombra verde oscuro principal
-                      const Shadow(
-                        blurRadius: 8.0,
-                        color: Color(0xFF1B5E20), // Verde oscuro
-                        offset: Offset(4.0, 4.0),
-                      ),
-                      // Sombra negra para mayor contraste
-                      const Shadow(
-                        blurRadius: 12.0,
-                        color: Colors.black87,
-                        offset: Offset(2.0, 2.0),
-                      ),
-                      // Sombra adicional para contorno
-                      const Shadow(
-                        blurRadius: 20.0,
-                        color: Color(0xFF2E7D32), // Verde medio
-                        offset: Offset(6.0, 6.0),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
                       ),
                     ],
                   ),
-                  child: AnimatedTextKit(
-                    animatedTexts: [
-                      TypewriterAnimatedText(
-                        'Parque de Letras',
-                        speed: const Duration(milliseconds: 120),
+                  child: ShaderMask(
+                    shaderCallback: (bounds) => const LinearGradient(
+                      colors: [
+                        Color(0xFF1A237E), // Azul índigo oscuro
+                        Color(0xFF3F51B5), // Azul índigo
+                        Color(0xFF5C6BC0), // Azul claro
+                        Color(0xFF7B1FA2), // Violeta púrpura
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ).createShader(bounds),
+                    child: DefaultTextStyle(
+                      style: TextStyle(
+                        fontSize: MediaQuery.of(context).size.width < 600 ? 32 : 48,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: 1.5,
+                        shadows: [
+                          const Shadow(
+                            blurRadius: 8.0,
+                            color: Colors.black45,
+                            offset: Offset(2.0, 2.0),
+                          ),
+                          const Shadow(
+                            blurRadius: 15.0,
+                            color: Color(0xFF1B5E20),
+                            offset: Offset(0, 4.0),
+                          ),
+                        ],
                       ),
-                    ],
-                    isRepeatingAnimation: false,
+                      child: AnimatedTextKit(
+                        animatedTexts: [
+                          TypewriterAnimatedText(
+                            'Parque de Letras',
+                            speed: const Duration(milliseconds: 120),
+                          ),
+                        ],
+                        isRepeatingAnimation: false,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -181,14 +203,14 @@ class _SplashScreenState extends State<SplashScreen>
                   '¡A aprender che!',
                   style: TextStyle(
                     fontSize: MediaQuery.of(context).size.width < 600 ? 20 : 26, // Responsivo
-                    color: const Color(0xFF1B5E20), // Verde oscuro
+                    color: const Color(0xFFFF9800), // Naranja principal
                     fontWeight: FontWeight.w700,
                     letterSpacing: 2.5,
                     shadows: [
-                      // Sombra verde oscuro principal
+                      // Sombra naranja principal
                       const Shadow(
                         blurRadius: 6.0,
-                        color: Color(0xFF1B5E20), // Verde oscuro
+                        color: Color(0xFFE65100), // Naranja oscuro
                         offset: Offset(3.0, 3.0),
                       ),
                       // Sombra negra para mayor contraste
@@ -197,10 +219,10 @@ class _SplashScreenState extends State<SplashScreen>
                         color: Colors.black87,
                         offset: Offset(1.5, 1.5),
                       ),
-                      // Contorno adicional
+                      // Contorno adicional rojo
                       const Shadow(
                         blurRadius: 15.0,
-                        color: Color(0xFF2E7D32), // Verde medio
+                        color: Color(0xFFD32F2F), // Rojo
                         offset: Offset(4.0, 4.0),
                       ),
                     ],
@@ -378,6 +400,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
   
+  /*
   Widget _buildMovingAnimal(String emoji, double xFactor, double baseY, double fontSize, double offset) {
     return AnimatedBuilder(
       animation: _animalAnimationController,
@@ -398,6 +421,7 @@ class _SplashScreenState extends State<SplashScreen>
       },
     );
   }
+  */
   
   Widget _buildBouncingAnimal(String emoji, double xFactor, double baseY, double fontSize, double offset) {
     return AnimatedBuilder(
@@ -493,21 +517,31 @@ class _SplashScreenState extends State<SplashScreen>
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.white,
+            color: const Color(0xFF1B5E20), // Color azul verde oscuro
             fontSize: isSmallScreen ? 14 : 16,
             fontWeight: FontWeight.w700,
             shadows: [
-              // Sombra verde oscuro principal
+              // Sombra negra principal
               const Shadow(
-                blurRadius: 4.0,
-                color: Color(0xFF1B5E20), // Verde oscuro
-                offset: Offset(2.0, 2.0),
-              ),
-              // Sombra negra para mayor contraste
-              const Shadow(
-                blurRadius: 8.0,
-                color: Colors.black87,
+                blurRadius: 3.0,
+                color: Colors.black,
                 offset: Offset(1.0, 1.0),
+              ),
+              // Sombra negra adicional para bordes
+              const Shadow(
+                blurRadius: 1.0,
+                color: Colors.black,
+                offset: Offset(-1.0, -1.0),
+              ),
+              const Shadow(
+                blurRadius: 1.0,
+                color: Colors.black,
+                offset: Offset(1.0, -1.0),
+              ),
+              const Shadow(
+                blurRadius: 1.0,
+                color: Colors.black,
+                offset: Offset(-1.0, 1.0),
               ),
             ],
           ),

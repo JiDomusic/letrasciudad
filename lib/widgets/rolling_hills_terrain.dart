@@ -138,7 +138,7 @@ class RollingHillsPainter extends CustomPainter {
       
       // Sombras suaves para dar profundidad
       if (layer > 0) {
-        paint.color = Colors.black.withOpacity(0.1);
+        paint.color = Colors.black.withValues(alpha: 0.1);
         final shadowHills = Path();
         shadowHills.moveTo(0, baseHeight + 3);
         
@@ -230,7 +230,7 @@ class RollingHillsPainter extends CustomPainter {
     }
     
     // Nubes suaves
-    paint.color = Colors.white.withOpacity(0.8);
+    paint.color = Colors.white.withValues(alpha: 0.8);
     for (int i = 0; i < 5; i++) {
       final x = random.nextDouble() * size.width;
       final y = size.height * (0.1 + random.nextDouble() * 0.2);
@@ -275,7 +275,7 @@ class RollingHillsPainter extends CustomPainter {
 
   void _drawCloud(Canvas canvas, Offset position, double size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.9)
+      ..color = Colors.white.withValues(alpha: 0.9)
       ..style = PaintingStyle.fill;
     
     // Nube con múltiples círculos

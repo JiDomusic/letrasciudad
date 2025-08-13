@@ -244,7 +244,7 @@ class ColorfulHousePainter extends CustomPainter {
           fontWeight: FontWeight.w900,
           shadows: [
             Shadow(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               offset: const Offset(2, 2),
               blurRadius: 4,
             ),
@@ -275,7 +275,7 @@ class ColorfulHousePainter extends CustomPainter {
 
     // 10. Overlay si no está desbloqueada
     if (!isUnlocked) {
-      paint.color = Colors.black.withOpacity(0.6);
+      paint.color = Colors.black.withValues(alpha: 0.6);
       canvas.drawRRect(mainWalls, paint);
       
       // Candado grande y visible

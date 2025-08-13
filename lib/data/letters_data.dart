@@ -8,19 +8,19 @@ class LettersData {
       name: 'a',
       phoneme: 'ah',
       syllables: ['a'],
-      exampleWords: ['auto', 'abuela', 'ancla', 'árbol', 'anillo', 'alfombra', 'almohada', 'avión'],
+      exampleWords: ['auto', 'abuela', 'agua', 'árbol', 'anillo', 'ala', 'azul', 'avión'],
       imagePath: 'assets/letters/a_house.png',
       audioPath: 'assets/audio/letters/a.mp3',
       primaryColor: Colors.red,
       isUnlocked: true,
       activities: [
         Activity(
-          id: 'object_selection_A',
-          name: 'Selección de objetos con A',
-          description: 'Encuentra objetos que empiezan con A',
+          id: 'a_search_game',
+          name: 'Busca todos los elementos que empiecen con A',
+          description: 'Encuentra objetos que empiezan con A y completa los círculos',
           type: ActivityType.wordReading,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Toca los objetos que empiecen con la letra A',
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con A',
         ),
         Activity(
           id: 'letter_tracing_A',
@@ -42,7 +42,7 @@ class LettersData {
     ),
     Letter(
       character: 'B',
-      name: 'be',
+      name: 'b larga',
       phoneme: 'beh',
       syllables: ['ba', 'be', 'bi', 'bo', 'bu'],
       exampleWords: ['banana', 'barco', 'bebé', 'bola'],
@@ -51,12 +51,12 @@ class LettersData {
       primaryColor: Colors.blue,
       activities: [
         Activity(
-          id: 'b_syllables',
-          name: 'Sílabas con B',
-          description: 'Aprende las sílabas ba, be, bi, bo, bu',
-          type: ActivityType.syllables,
+          id: 'b_coloring_game',
+          name: 'Colorea objetos con B larga',
+          description: 'Encuentra y colorea los objetos que empiezan con B larga',
+          type: ActivityType.wordReading,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Escucha y repite cada sílaba',
+          instruction: 'Colorea los objetos que empiecen con la letra B larga y cuenta cuántos encontraste',
         ),
         Activity(
           id: 'letter_tracing_B',
@@ -97,11 +97,27 @@ class LettersData {
       name: 'ce',
       phoneme: 'seh',
       syllables: ['ca', 'ce', 'ci', 'co', 'cu'],
-      exampleWords: ['cielo', 'cereza', 'ciudad', 'corazón'],
+      exampleWords: ['casa', 'cereza', 'coche', 'corazón'],
       imagePath: 'assets/letters/c_house.png',
       audioPath: 'assets/audio/letters/c.mp3',
       primaryColor: Colors.orange,
       activities: [
+        Activity(
+          id: 'c_search_game',
+          name: 'Busca todos los elementos que empiecen con C',
+          description: 'Encuentra objetos que empiezan con C y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con C',
+        ),
+        Activity(
+          id: 'c_coloring_game',
+          name: 'Colorea objetos con C',
+          description: 'Encuentra y colorea los objetos que empiezan con C',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra C y cuenta cuántos encontraste',
+        ),
         Activity(
           id: 'letter_tracing_C',
           name: 'Trazado de la letra C',
@@ -117,11 +133,27 @@ class LettersData {
       name: 'de',
       phoneme: 'deh',
       syllables: ['da', 'de', 'di', 'do', 'du'],
-      exampleWords: ['dedo', 'dinosaurio', 'dulce', 'cuchillo'],
+      exampleWords: ['dedo', 'dinosaurio', 'dulce', 'dado'],
       imagePath: 'assets/letters/d_house.png',
       audioPath: 'assets/audio/letters/d.mp3',
       primaryColor: Colors.green,
       activities: [
+        Activity(
+          id: 'd_search_game',
+          name: 'Busca todos los elementos que empiecen con D',
+          description: 'Encuentra objetos que empiezan con D y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con D',
+        ),
+        Activity(
+          id: 'd_coloring_game',
+          name: 'Colorea objetos con D',
+          description: 'Encuentra y colorea los objetos que empiezan con D',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra D y cuenta cuántos encontraste',
+        ),
         Activity(
           id: 'letter_tracing_D',
           name: 'Trazado de la letra D',
@@ -137,11 +169,27 @@ class LettersData {
       name: 'e',
       phoneme: 'eh',
       syllables: ['e'],
-      exampleWords: ['elefante', 'estrella', 'escuela', 'espejo'],
+      exampleWords: ['elefante', 'estrella', 'escuela', 'escalera'],
       imagePath: 'assets/letters/e_house.png',
       audioPath: 'assets/audio/letters/e.mp3',
       primaryColor: Colors.purple,
       activities: [
+        Activity(
+          id: 'e_search_game',
+          name: 'Busca todos los elementos que empiecen con E',
+          description: 'Encuentra objetos que empiezan con E y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con E',
+        ),
+        Activity(
+          id: 'e_coloring_game',
+          name: 'Colorea objetos con E',
+          description: 'Encuentra y colorea los objetos que empiezan con E',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra E y cuenta cuántos encontraste',
+        ),
         Activity(
           id: 'letter_tracing_E',
           name: 'Trazado de la letra E',
@@ -163,6 +211,22 @@ class LettersData {
       primaryColor: Colors.pink,
       activities: [
         Activity(
+          id: 'f_search_game',
+          name: 'Busca todos los elementos que empiecen con F',
+          description: 'Encuentra objetos que empiezan con F y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con F',
+        ),
+        Activity(
+          id: 'f_coloring_game',
+          name: 'Colorea objetos con F',
+          description: 'Encuentra y colorea los objetos que empiezan con F',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra F y cuenta cuántos encontraste',
+        ),
+        Activity(
           id: 'letter_tracing_F',
           name: 'Trazado de la letra F',
           description: 'Aprende a trazar la letra F',
@@ -183,6 +247,22 @@ class LettersData {
       primaryColor: Colors.teal,
       activities: [
         Activity(
+          id: 'g_search_game',
+          name: 'Busca todos los elementos que empiecen con G',
+          description: 'Encuentra objetos que empiezan con G y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con G',
+        ),
+        Activity(
+          id: 'g_coloring_game',
+          name: 'Colorea objetos con G',
+          description: 'Encuentra y colorea los objetos que empiezan con G',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra G y cuenta cuántos encontraste',
+        ),
+        Activity(
           id: 'letter_tracing_G',
           name: 'Trazado de la letra G',
           description: 'Aprende a trazar la letra G',
@@ -197,11 +277,27 @@ class LettersData {
       name: 'hache',
       phoneme: 'silent',
       syllables: ['ha', 'he', 'hi', 'ho', 'hu'],
-      exampleWords: ['hielo', 'hospital', 'huevo', 'hermano'],
+      exampleWords: ['hielo', 'hoja', 'huevo', 'hermano'],
       imagePath: 'assets/letters/h_house.png',
       audioPath: 'assets/audio/letters/h.mp3',
       primaryColor: Colors.brown,
       activities: [
+        Activity(
+          id: 'h_search_game',
+          name: 'Busca todos los elementos que empiecen con H',
+          description: 'Encuentra objetos que empiezan con H y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con H',
+        ),
+        Activity(
+          id: 'h_coloring_game',
+          name: 'Colorea objetos con H',
+          description: 'Encuentra y colorea los objetos que empiezan con H',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra H y cuenta cuántos encontraste',
+        ),
         Activity(
           id: 'letter_tracing_H',
           name: 'Trazado de la letra H',
@@ -222,6 +318,22 @@ class LettersData {
       audioPath: 'assets/audio/letters/i.mp3',
       primaryColor: Colors.indigo,
       activities: [
+        Activity(
+          id: 'i_search_game',
+          name: 'Busca todos los elementos que empiecen con I',
+          description: 'Encuentra objetos que empiezan con I y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con I',
+        ),
+        Activity(
+          id: 'i_coloring_game',
+          name: 'Colorea objetos con I',
+          description: 'Encuentra y colorea los objetos que empiezan con I',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra I y cuenta cuántos encontraste',
+        ),
         Activity(
           id: 'word_recognition_i',
           name: 'Reconocimiento de palabras con i',
@@ -259,6 +371,22 @@ class LettersData {
       primaryColor: Colors.lime,
       activities: [
         Activity(
+          id: 'j_search_game',
+          name: 'Busca todos los elementos que empiecen con J',
+          description: 'Encuentra objetos que empiezan con J y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con J',
+        ),
+        Activity(
+          id: 'j_coloring_game',
+          name: 'Colorea objetos con J',
+          description: 'Encuentra y colorea los objetos que empiezan con J',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra J y cuenta cuántos encontraste',
+        ),
+        Activity(
           id: 'letter_tracing_J',
           name: 'Trazado de la letra J',
           description: 'Aprende a trazar la letra J',
@@ -278,6 +406,22 @@ class LettersData {
       audioPath: 'assets/audio/letters/k.mp3',
       primaryColor: Colors.cyan,
       activities: [
+        Activity(
+          id: 'k_search_game',
+          name: 'Busca todos los elementos que empiecen con K',
+          description: 'Encuentra objetos que empiezan con K y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con K',
+        ),
+        Activity(
+          id: 'k_word_completion',
+          name: 'Completa palabras con K',
+          description: 'Completa las palabras que empiezan con K',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Completa cada palabra escribiendo las letras que faltan',
+        ),
         Activity(
           id: 'letter_tracing_K',
           name: 'Trazado de la letra K',
@@ -299,6 +443,22 @@ class LettersData {
       primaryColor: Colors.lightBlue,
       activities: [
         Activity(
+          id: 'l_search_game',
+          name: 'Busca todos los elementos que empiecen con L',
+          description: 'Encuentra objetos que empiezan con L y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con L',
+        ),
+        Activity(
+          id: 'l_coloring_game',
+          name: 'Colorea objetos con L',
+          description: 'Encuentra y colorea los objetos que empiezan con L',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra L y cuenta cuántos encontraste',
+        ),
+        Activity(
           id: 'letter_tracing_L',
           name: 'Trazado de la letra L',
           description: 'Aprende a trazar la letra L',
@@ -318,6 +478,22 @@ class LettersData {
       audioPath: 'assets/audio/letters/m.mp3',
       primaryColor: Colors.deepOrange,
       activities: [
+        Activity(
+          id: 'm_search_game',
+          name: 'Busca todos los elementos que empiecen con M',
+          description: 'Encuentra objetos que empiezan con M y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con M',
+        ),
+        Activity(
+          id: 'm_coloring_game',
+          name: 'Colorea objetos con M',
+          description: 'Encuentra y colorea los objetos que empiezan con M',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra M y cuenta cuántos encontraste',
+        ),
         Activity(
           id: 'letter_tracing_M',
           name: 'Trazado de la letra M',
@@ -339,6 +515,22 @@ class LettersData {
       primaryColor: Colors.amber,
       activities: [
         Activity(
+          id: 'n_search_game',
+          name: 'Busca todos los elementos que empiecen con N',
+          description: 'Encuentra objetos que empiezan con N y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con N',
+        ),
+        Activity(
+          id: 'n_coloring_game',
+          name: 'Colorea objetos con N',
+          description: 'Encuentra y colorea los objetos que empiezan con N',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra N y cuenta cuántos encontraste',
+        ),
+        Activity(
           id: 'letter_tracing_N',
           name: 'Trazado de la letra N',
           description: 'Aprende a trazar la letra N',
@@ -358,6 +550,14 @@ class LettersData {
       audioPath: 'assets/audio/letters/nn.mp3',
       primaryColor: Colors.deepPurple,
       activities: [
+        Activity(
+          id: 'ñ_coloring_game',
+          name: 'Colorea objetos con Ñ',
+          description: 'Encuentra y colorea los objetos que empiezan con Ñ',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra Ñ y cuenta cuántos encontraste',
+        ),
         Activity(
           id: 'letter_tracing_Ñ',
           name: 'Trazado de la letra Ñ',
@@ -379,6 +579,22 @@ class LettersData {
       primaryColor: Colors.redAccent,
       activities: [
         Activity(
+          id: 'o_search_game',
+          name: 'Busca todos los elementos que empiecen con O',
+          description: 'Encuentra objetos que empiezan con O y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con O',
+        ),
+        Activity(
+          id: 'o_coloring_game',
+          name: 'Colorea objetos con O',
+          description: 'Encuentra y colorea los objetos que empiezan con O',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra O y cuenta cuántos encontraste',
+        ),
+        Activity(
           id: 'letter_tracing_O',
           name: 'Trazado de la letra O',
           description: 'Aprende a trazar la letra O',
@@ -398,6 +614,22 @@ class LettersData {
       audioPath: 'assets/audio/letters/p.mp3',
       primaryColor: Colors.lightGreen,
       activities: [
+        Activity(
+          id: 'p_search_game',
+          name: 'Busca todos los elementos que empiecen con P',
+          description: 'Encuentra objetos que empiezan con P y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con P',
+        ),
+        Activity(
+          id: 'p_coloring_game',
+          name: 'Colorea objetos con P',
+          description: 'Encuentra y colorea los objetos que empiezan con P',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra P y cuenta cuántos encontraste',
+        ),
         Activity(
           id: 'letter_tracing_P',
           name: 'Trazado de la letra P',
@@ -419,6 +651,22 @@ class LettersData {
       primaryColor: Colors.blueGrey,
       activities: [
         Activity(
+          id: 'q_search_game',
+          name: 'Busca todos los elementos que empiecen con Q',
+          description: 'Encuentra objetos que empiezan con Q y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con Q',
+        ),
+        Activity(
+          id: 'q_coloring_game',
+          name: 'Colorea objetos con Q',
+          description: 'Encuentra y colorea los objetos que empiezan con Q',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra Q y cuenta cuántos encontraste',
+        ),
+        Activity(
           id: 'letter_tracing_Q',
           name: 'Trazado de la letra Q',
           description: 'Aprende a trazar la letra Q',
@@ -438,6 +686,22 @@ class LettersData {
       audioPath: 'assets/audio/letters/r.mp3',
       primaryColor: Colors.red,
       activities: [
+        Activity(
+          id: 'r_search_game',
+          name: 'Busca todos los elementos que empiecen con R',
+          description: 'Encuentra objetos que empiezan con R y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con R',
+        ),
+        Activity(
+          id: 'r_coloring_game',
+          name: 'Colorea objetos con R',
+          description: 'Encuentra y colorea los objetos que empiezan con R',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra R y cuenta cuántos encontraste',
+        ),
         Activity(
           id: 'letter_tracing_R',
           name: 'Trazado de la letra R',
@@ -459,6 +723,22 @@ class LettersData {
       primaryColor: Colors.yellow,
       activities: [
         Activity(
+          id: 's_search_game',
+          name: 'Busca todos los elementos que empiecen con S',
+          description: 'Encuentra objetos que empiezan con S y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con S',
+        ),
+        Activity(
+          id: 's_coloring_game',
+          name: 'Colorea objetos con S',
+          description: 'Encuentra y colorea los objetos que empiezan con S',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra S y cuenta cuántos encontraste',
+        ),
+        Activity(
           id: 'letter_tracing_S',
           name: 'Trazado de la letra S',
           description: 'Aprende a trazar la letra S',
@@ -478,6 +758,22 @@ class LettersData {
       audioPath: 'assets/audio/letters/t.mp3',
       primaryColor: Colors.green,
       activities: [
+        Activity(
+          id: 't_search_game',
+          name: 'Busca todos los elementos que empiecen con T',
+          description: 'Encuentra objetos que empiezan con T y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con T',
+        ),
+        Activity(
+          id: 't_coloring_game',
+          name: 'Colorea objetos con T',
+          description: 'Encuentra y colorea los objetos que empiezan con T',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra T y cuenta cuántos encontraste',
+        ),
         Activity(
           id: 'letter_tracing_T',
           name: 'Trazado de la letra T',
@@ -499,6 +795,22 @@ class LettersData {
       primaryColor: Colors.purple,
       activities: [
         Activity(
+          id: 'u_search_game',
+          name: 'Busca todos los elementos que empiecen con U',
+          description: 'Encuentra objetos que empiezan con U y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con U',
+        ),
+        Activity(
+          id: 'u_coloring_game',
+          name: 'Colorea objetos con U',
+          description: 'Encuentra y colorea los objetos que empiezan con U',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra U y cuenta cuántos encontraste',
+        ),
+        Activity(
           id: 'letter_tracing_U',
           name: 'Trazado de la letra U',
           description: 'Aprende a trazar la letra U',
@@ -510,7 +822,7 @@ class LettersData {
     ),
     Letter(
       character: 'V',
-      name: 've',
+      name: 've corta',
       phoneme: 'veh',
       syllables: ['va', 've', 'vi', 'vo', 'vu'],
       exampleWords: ['vaca', 'ventana', 'violín', 'volcán'],
@@ -518,6 +830,14 @@ class LettersData {
       audioPath: 'assets/audio/letters/v.mp3',
       primaryColor: Colors.teal,
       activities: [
+        Activity(
+          id: 'v_coloring_game',
+          name: 'Colorea objetos con V corta',
+          description: 'Encuentra y colorea los objetos que empiezan con V corta',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra V corta y cuenta cuántos encontraste',
+        ),
         Activity(
           id: 'letter_tracing_V',
           name: 'Trazado de la letra V',
@@ -530,7 +850,7 @@ class LettersData {
     ),
     Letter(
       character: 'W',
-      name: 'doble ve',
+      name: 'dobleve',
       phoneme: 'weh',
       syllables: ['wa', 'we', 'wi', 'wo', 'wu'],
       exampleWords: ['walkman', 'waterpolo', 'wifi', 'web'],
@@ -559,6 +879,14 @@ class LettersData {
       primaryColor: Colors.brown,
       activities: [
         Activity(
+          id: 'x_word_completion',
+          name: 'Completa palabras con X',
+          description: 'Completa las palabras que empiezan con X',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Completa cada palabra escribiendo las letras que faltan',
+        ),
+        Activity(
           id: 'letter_tracing_X',
           name: 'Trazado de la letra X',
           description: 'Aprende a trazar la letra X',
@@ -579,6 +907,14 @@ class LettersData {
       primaryColor: Colors.orange,
       activities: [
         Activity(
+          id: 'y_word_completion',
+          name: 'Completa palabras con Y',
+          description: 'Completa las palabras que empiezan con Y',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Completa cada palabra escribiendo las letras que faltan',
+        ),
+        Activity(
           id: 'letter_tracing_Y',
           name: 'Trazado de la letra Y',
           description: 'Aprende a trazar la letra Y',
@@ -598,6 +934,22 @@ class LettersData {
       audioPath: 'assets/audio/letters/z.mp3',
       primaryColor: Colors.pink,
       activities: [
+        Activity(
+          id: 'z_search_game',
+          name: 'Busca todos los elementos que empiecen con Z',
+          description: 'Encuentra objetos que empiezan con Z y completa los círculos',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Haz click en la imagen y encuentra los 7 elementos que comienzan con Z',
+        ),
+        Activity(
+          id: 'z_coloring_game',
+          name: 'Colorea objetos con Z',
+          description: 'Encuentra y colorea los objetos que empiezan con Z',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.beginner,
+          instruction: 'Colorea los objetos que empiecen con la letra Z y cuenta cuántos encontraste',
+        ),
         Activity(
           id: 'letter_tracing_Z',
           name: 'Trazado de la letra Z',

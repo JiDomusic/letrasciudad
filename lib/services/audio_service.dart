@@ -115,10 +115,10 @@ class AudioService {
           for (dynamic voice in voices) {
             if (voice is Map && voice['name'] != null) {
               String voiceName = voice['name'].toString();
-              String locale = voice['locale']?.toString() ?? '';
+              // String locale = voice['locale']?.toString() ?? '';
               
               if (voiceName.toLowerCase().contains(preferredVoice.toLowerCase()) ||
-                  (locale.contains('es') && voiceName.toLowerCase().contains('female'))) {
+                  (voice['locale']?.toString().contains('es') == true && voiceName.toLowerCase().contains('female'))) {
                 debugPrint('✅ Configurando voz preferida: $voiceName');
                 await _flutterTts.setVoice(Map<String, String>.from(voice));
                 voiceSet = true;
@@ -234,7 +234,7 @@ class AudioService {
           for (dynamic voice in voices) {
             if (voice is Map && voice['name'] != null) {
               String voiceName = voice['name'].toString();
-              String locale = voice['locale']?.toString() ?? '';
+              // String locale = voice['locale']?.toString() ?? '';
               
               if (voiceName.toLowerCase().contains(preferredVoice.toLowerCase())) {
                 debugPrint('✅ Configurando voz móvil preferida: $voiceName');

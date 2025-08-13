@@ -10,7 +10,7 @@ class HousePreviewScreen extends StatefulWidget {
   const HousePreviewScreen({super.key, required this.letterData});
 
   @override
-  _HousePreviewScreenState createState() => _HousePreviewScreenState();
+  State<HousePreviewScreen> createState() => _HousePreviewScreenState();
 }
 
 class _HousePreviewScreenState extends State<HousePreviewScreen>
@@ -81,7 +81,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
         'y jugar conmigo. ¡Será muy divertido aprender juntos!'
       );
     } catch (e) {
-      print('Error playing narration: $e');
+      debugPrint('Error playing narration: $e');
     } finally {
       setState(() {
         _isNarrationPlaying = false;
@@ -224,7 +224,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
+                          color: Colors.black.withValues(alpha: 0.3),
                           blurRadius: 15,
                           offset: const Offset(0, 5),
                         ),
@@ -260,7 +260,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(15),
                           ),
                           child: const Text(
@@ -326,12 +326,12 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                 border: Border.all(color: const Color(0xFF9C27B0), width: 4), // Violeta
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(4, 10),
                   ),
                   BoxShadow(
-                    color: Colors.orange.withOpacity(0.2),
+                    color: Colors.orange.withValues(alpha: 0.2),
                     blurRadius: 30,
                     offset: const Offset(0, 5),
                   ),
@@ -363,7 +363,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(3, 6),
                   ),
@@ -402,7 +402,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                 borderRadius: BorderRadius.circular(40),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.brown.withOpacity(0.3),
+                    color: Colors.brown.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -433,7 +433,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                           border: Border.all(color: Colors.brown[800]!, width: 3),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.4),
+                              color: Colors.black.withValues(alpha: 0.4),
                               blurRadius: 8,
                               offset: const Offset(3, 5),
                             ),
@@ -462,7 +462,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 8,
                               offset: Offset(2 + _doorAnimation.value * 4, 4),
                             ),
@@ -502,7 +502,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.amber.withOpacity(0.5),
+                                      color: Colors.amber.withValues(alpha: 0.5),
                                       blurRadius: 4,
                                       spreadRadius: 1,
                                     ),
@@ -655,7 +655,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.yellow.withOpacity(0.4),
+                    color: Colors.yellow.withValues(alpha: 0.4),
                     blurRadius: 30,
                     spreadRadius: 5,
                   ),
@@ -785,7 +785,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: (flower['colors'] as List<Color>)[2].withOpacity(0.3),
+                              color: (flower['colors'] as List<Color>)[2].withValues(alpha: 0.3),
                               blurRadius: 5,
                               offset: const Offset(0, 2),
                             ),
@@ -886,7 +886,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                   / 2),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 4,
                   offset: const Offset(2, 2),
                 ),
@@ -1005,7 +1005,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 8,
                   offset: const Offset(2, 4),
                 ),
@@ -1045,7 +1045,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 10,
                     offset: const Offset(2, 5),
                   ),
@@ -1086,7 +1086,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                 borderRadius: BorderRadius.circular(25),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(3, 6),
                   ),
@@ -1134,7 +1134,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.3),
+                        color: Colors.blue.withValues(alpha: 0.3),
                         blurRadius: 5,
                         offset: const Offset(0, 2),
                       ),
@@ -1166,7 +1166,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 5,
             offset: const Offset(1, 2),
           ),
@@ -1236,7 +1236,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(2, 4),
                   ),
@@ -1461,7 +1461,7 @@ class HillsPainter extends CustomPainter {
     final paint = Paint()..style = PaintingStyle.fill;
 
     // Colinas de fondo
-    paint.color = const Color(0xFF32CD32).withOpacity(0.3);
+    paint.color = const Color(0xFF32CD32).withValues(alpha: 0.3);
     Path hill1 = Path();
     hill1.moveTo(0, size.height * 0.4);
     hill1.quadraticBezierTo(size.width * 0.3, size.height * 0.2, size.width * 0.6, size.height * 0.4);
@@ -1472,7 +1472,7 @@ class HillsPainter extends CustomPainter {
     canvas.drawPath(hill1, paint);
 
     // Segunda colina
-    paint.color = const Color(0xFF228B22).withOpacity(0.2);
+    paint.color = const Color(0xFF228B22).withValues(alpha: 0.2);
     Path hill2 = Path();
     hill2.moveTo(0, size.height * 0.5);
     hill2.quadraticBezierTo(size.width * 0.4, size.height * 0.3, size.width * 0.8, size.height * 0.5);

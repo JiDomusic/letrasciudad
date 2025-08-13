@@ -79,7 +79,7 @@ class Grass3DPainter extends CustomPainter {
     
     // Sombras del terreno para dar profundidad
     paint.shader = null;
-    paint.color = Colors.black.withOpacity(0.1);
+    paint.color = Colors.black.withValues(alpha: 0.1);
     
     for (double x = 0; x <= size.width; x += 40) {
       final shadowHeight = math.sin((x / size.width) * math.pi * 3) * 4;
@@ -136,7 +136,7 @@ class Grass3DPainter extends CustomPainter {
       
       // Sombra del pasto para profundidad 3D
       if (random.nextDouble() > 0.7) {
-        grassPaint.color = Colors.black.withOpacity(0.2);
+        grassPaint.color = Colors.black.withValues(alpha: 0.2);
         grassPaint.strokeWidth = grassWidth * 0.5;
         
         final shadowPath = Path();
@@ -238,7 +238,7 @@ class Grass3DPainter extends CustomPainter {
       canvas.drawPath(rockPath, rockPaint);
       
       // Sombra de la roca
-      rockPaint.color = Colors.black.withOpacity(0.3);
+      rockPaint.color = Colors.black.withValues(alpha: 0.3);
       final shadowPath = Path();
       for (int side = 0; side < sides; side++) {
         final angle = (side / sides) * 2 * math.pi;

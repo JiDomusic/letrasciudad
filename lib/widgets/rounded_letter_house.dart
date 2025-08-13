@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 
 class RoundedLetterHouse extends StatelessWidget {
   final String letter;
@@ -368,7 +367,7 @@ class ChineseRoofPainter extends CustomPainter {
     canvas.drawRRect(chimney, paint);
     
     // Humo de la chimenea
-    paint.color = Colors.grey.withOpacity(0.6);
+    paint.color = Colors.grey.withValues(alpha: 0.6);
     for (int i = 0; i < 3; i++) {
       canvas.drawCircle(
         Offset(centerX + size.width/4 + size.width * 0.04, roofTop - (i * 12)),

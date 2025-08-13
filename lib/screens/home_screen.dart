@@ -8,8 +8,6 @@ import 'letter_park_3d_screen.dart';
 import 'house_preview_screen.dart';
 // import 'first_person_park_screen.dart'; // Removido
 import '../widgets/progress_header.dart';
-import '../widgets/reference_style_house.dart';
-import '../widgets/isometric_house_3d.dart';
 import '../widgets/rounded_letter_house.dart';
 import '../widgets/rolling_hills_terrain.dart';
 
@@ -310,7 +308,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             border: Border.all(color: Colors.white, width: 3),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.blue.withOpacity(0.3),
+                                color: Colors.blue.withValues(alpha: 0.3),
                                 blurRadius: 20,
                                 offset: const Offset(2, 8),
                               ),
@@ -359,7 +357,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               boxShadow: [
                                 // Sombra principal más prominente
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.25),
+                                  color: Colors.black.withValues(alpha: 0.25),
                                   blurRadius: 12 + (elevation * 6), // Sombras más suaves y grandes
                                   offset: Offset(
                                     4 + (elevation * 3), // Sombra hacia la derecha
@@ -368,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 ),
                                 // Sombra secundaria para más profundidad
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   blurRadius: 20 + (elevation * 8),
                                   offset: Offset(
                                     6 + (elevation * 4),
@@ -597,7 +595,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.yellow.withOpacity(0.3),
+                  color: Colors.yellow.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 5),
                 ),
@@ -705,9 +703,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       gradient: RadialGradient(
                         center: const Alignment(-0.3, -0.3),
                         colors: [
-                          Colors.white.withOpacity(0.8),
+                          Colors.white.withValues(alpha: 0.8),
                           balloonColors[i],
-                          balloonColors[i].withOpacity(0.7),
+                          balloonColors[i].withValues(alpha: 0.7),
                         ],
                       ),
                       borderRadius: const BorderRadius.only(
@@ -718,7 +716,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: balloonColors[i].withOpacity(0.3),
+                          color: balloonColors[i].withValues(alpha: 0.3),
                           blurRadius: 5,
                           offset: const Offset(2, 3),
                         ),
@@ -774,7 +772,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.yellow.withOpacity(0.6),
+                          color: Colors.yellow.withValues(alpha: 0.6),
                           blurRadius: 8,
                           spreadRadius: 2,
                         ),
@@ -832,7 +830,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.purple.withOpacity(0.3),
+                        color: Colors.purple.withValues(alpha: 0.3),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -1026,7 +1024,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 border: Border.all(color: Colors.white, width: 4),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -1263,7 +1261,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -1387,7 +1385,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 8,
                               offset: const Offset(2, 4),
                             ),
@@ -1528,7 +1526,7 @@ class _CurvedPathPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFDEB887).withOpacity(0.7)
+      ..color = const Color(0xFFDEB887).withValues(alpha: 0.7)
       ..strokeWidth = 25
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -1566,7 +1564,7 @@ class _FigureEightPathPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFDEB887).withOpacity(0.6)
+      ..color = const Color(0xFFDEB887).withValues(alpha: 0.6)
       ..strokeWidth = 20
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -1691,7 +1689,7 @@ class _ParkBackgroundPainter extends CustomPainter {
       canvas.drawCircle(Offset(x, y), 3, paint);
     }
 
-    paint.color = Colors.white.withOpacity(0.8);
+    paint.color = Colors.white.withValues(alpha: 0.8);
     canvas.drawCircle(Offset(size.width * 0.2, 50), 15, paint);
     canvas.drawCircle(Offset(size.width * 0.25, 45), 18, paint);
     canvas.drawCircle(Offset(size.width * 0.3, 50), 15, paint);

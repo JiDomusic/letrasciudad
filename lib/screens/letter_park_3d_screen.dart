@@ -113,7 +113,7 @@ class _LetterPark3DScreenState extends State<LetterPark3DScreen>
                 Text(
                   '27 letras del alfabeto argentino',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 16,
                   ),
                 ),
@@ -123,7 +123,7 @@ class _LetterPark3DScreenState extends State<LetterPark3DScreen>
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
@@ -241,20 +241,20 @@ class _LetterPark3DScreenState extends State<LetterPark3DScreen>
                           end: Alignment.bottomRight,
                           colors: [
                             letter.primaryColor,
-                            letter.primaryColor.withOpacity(0.7),
-                            letter.primaryColor.withOpacity(0.9),
+                            letter.primaryColor.withValues(alpha: 0.7),
+                            letter.primaryColor.withValues(alpha: 0.9),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.white, width: 2),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                             blurRadius: 8 * scale,
                             offset: Offset(2 * scale, 4 * scale),
                           ),
                           BoxShadow(
-                            color: letter.primaryColor.withOpacity(0.4),
+                            color: letter.primaryColor.withValues(alpha: 0.4),
                             blurRadius: 15 * scale,
                             spreadRadius: 2,
                           ),
@@ -345,7 +345,7 @@ class _LetterPark3DScreenState extends State<LetterPark3DScreen>
                 border: Border.all(color: Colors.white, width: 3),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.4),
+                    color: Colors.blue.withValues(alpha: 0.4),
                     blurRadius: 15,
                     spreadRadius: 3,
                   ),
@@ -384,7 +384,7 @@ class _LetterPark3DScreenState extends State<LetterPark3DScreen>
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.yellow.withOpacity(0.5),
+                      color: Colors.yellow.withValues(alpha: 0.5),
                       blurRadius: 20,
                       spreadRadius: 10,
                     ),
@@ -420,11 +420,11 @@ class _LetterPark3DScreenState extends State<LetterPark3DScreen>
               width: 60 + index * 10,
               height: 30 + index * 5,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
+                    color: Colors.grey.withValues(alpha: 0.2),
                     blurRadius: 5,
                     offset: const Offset(0, 2),
                   ),
@@ -576,7 +576,7 @@ class _LetterPark3DScreenState extends State<LetterPark3DScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF90EE90).withOpacity(0.8),
+              const Color(0xFF90EE90).withValues(alpha: 0.8),
               const Color(0xFF228B22),
             ],
           ),
@@ -599,11 +599,11 @@ class _LetterPark3DScreenState extends State<LetterPark3DScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 5,
                   offset: const Offset(0, 2),
                 ),
@@ -746,7 +746,7 @@ class _MountainPainter extends CustomPainter {
     final paint = Paint();
 
     // Background mountains
-    paint.color = const Color(0xFF8B7D6B).withOpacity(0.3);
+    paint.color = const Color(0xFF8B7D6B).withValues(alpha: 0.3);
     final path1 = Path();
     path1.moveTo(0, size.height * 0.6);
     path1.quadraticBezierTo(size.width * 0.2, size.height * 0.3, size.width * 0.4, size.height * 0.5);
@@ -758,7 +758,7 @@ class _MountainPainter extends CustomPainter {
     canvas.drawPath(path1, paint);
 
     // Foreground mountains
-    paint.color = const Color(0xFF8B7D6B).withOpacity(0.5);
+    paint.color = const Color(0xFF8B7D6B).withValues(alpha: 0.5);
     final path2 = Path();
     path2.moveTo(0, size.height * 0.7);
     path2.quadraticBezierTo(size.width * 0.3, size.height * 0.5, size.width * 0.6, size.height * 0.6);

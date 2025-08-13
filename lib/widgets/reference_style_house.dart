@@ -218,7 +218,7 @@ class ReferenceHousePainter extends CustomPainter {
     canvas.drawRRect(chimney, paint);
     
     // Humo de la chimenea
-    paint.color = Colors.grey.withOpacity(0.6);
+    paint.color = Colors.grey.withValues(alpha: 0.6);
     for (int i = 0; i < 3; i++) {
       canvas.drawCircle(
         Offset(centerX + houseWidth/3 + 6, roofTop - 5 - (i * 8)),
@@ -316,7 +316,7 @@ class ReferenceHousePainter extends CustomPainter {
           fontFamily: 'Arial', // Fuente clean como en referencia
           shadows: [
             Shadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               offset: const Offset(1, 1),
               blurRadius: 2,
             ),
@@ -355,7 +355,7 @@ class ReferenceHousePainter extends CustomPainter {
 
     // 10. OVERLAY SI NO ESTÁ DESBLOQUEADA
     if (!isUnlocked) {
-      paint.color = Colors.black.withOpacity(0.5);
+      paint.color = Colors.black.withValues(alpha: 0.5);
       canvas.drawRRect(walls, paint);
       
       // Candado dorado grande

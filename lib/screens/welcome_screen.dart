@@ -57,7 +57,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
       
       // Ir a la pantalla principal después de un breve delay
       Future.delayed(const Duration(seconds: 3), () {
-        Navigator.of(context).pushReplacementNamed('/home');
+        if (context.mounted) {
+          Navigator.of(context).pushReplacementNamed('/home');
+        }
       });
     } else {
       _audioService.speakText('Por favor, escribe tu nombre para que pueda conocerte mejor.');
@@ -70,7 +72,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
     _audioService.speakText('¡Está bien! Te llamaré Pequeño Explorador. ¡Vamos a divertirnos!');
     
     Future.delayed(const Duration(seconds: 2), () {
-      Navigator.of(context).pushReplacementNamed('/home');
+      if (context.mounted) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
     });
   }
 
@@ -113,7 +117,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
