@@ -326,6 +326,8 @@ class AudioService {
   }
 
   Future<void> speakText(String text) async {
+    if (text.isEmpty) return;
+    
     try {
       debugPrint('🎤 Hablar INMEDIATO: "$text"');
       
@@ -336,6 +338,9 @@ class AudioService {
       
       // RESPUESTA INMEDIATA: detener cualquier audio anterior y hablar inmediatamente
       await _flutterTts.stop();
+      
+      // Small delay to prevent rapid consecutive calls that can cause crashes
+      await Future.delayed(const Duration(milliseconds: 50));
       
       // Configuración mínima y rápida sin delays
       _flutterTts.setLanguage("es-ES");

@@ -10,154 +10,142 @@ class ProgressHeader extends StatelessWidget {
     return Consumer<LetterCityProvider>(
       builder: (context, provider, child) {
         return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(24),
-              bottomRight: Radius.circular(24),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF4CAF50), // Verde divertido
+                const Color(0xFF2E7D32), // Verde más oscuro
+                const Color(0xFF1B5E20), // Verde profundo
+              ],
+            ),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(30),
+              bottomRight: Radius.circular(30),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black12,
-                blurRadius: 8,
-                offset: Offset(0, 2),
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
               ),
             ],
           ),
-          child: Column(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // TÍTULO DIVERTIDO Y COMPACTO
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Container(
+                    width: 35,
+                    height: 35,
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [
+                          Colors.yellow[300]!,
+                          Colors.orange[400]!,
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.orange.withValues(alpha: 0.4),
+                          blurRadius: 8,
+                          offset: const Offset(2, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text(
+                        '🏠',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Parque de Letras',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: const Color(0xFF1F2937),
-                          fontWeight: FontWeight.bold,
+                        '🌟 Parque de Letras',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          fontFamily: 'Comic Sans MS',
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              blurRadius: 2,
+                              offset: const Offset(1, 1),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 4),
                       Text(
-                        'Progreso: ${(provider.overallProgress * 100).round()}%',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: const Color(0xFF6B7280),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.amber[50],
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.amber[200]!),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.star,
-                              color: Colors.amber[600],
-                              size: 20,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${provider.totalStars}',
-                              style: TextStyle(
-                                color: Colors.amber[800],
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.blue[50],
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.blue[200]!),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.score,
-                              color: Colors.blue[600],
-                              size: 20,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${provider.totalScore}',
-                              style: TextStyle(
-                                color: Colors.blue[800],
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
+                        '${(provider.overallProgress * 100).round()}% completado',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              Container(
-                height: 8,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: provider.overallProgress,
-                    backgroundColor: Colors.transparent,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      _getProgressColor(provider.overallProgress),
+              // ESTADÍSTICAS COMPACTAS Y DIVERTIDAS
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('⭐', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${provider.totalStars}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildStatCard(
-                    context,
-                    'Desbloqueadas',
-                    '${provider.unlockedLetters.length}/${provider.letters.length}',
-                    Icons.lock_open,
-                    Colors.green,
-                  ),
-                  _buildStatCard(
-                    context,
-                    'En progreso',
-                    '${provider.letters.where((l) => l.isUnlocked && l.stars < 3).length}',
-                    Icons.hourglass_empty,
-                    Colors.orange,
-                  ),
-                  _buildStatCard(
-                    context,
-                    'Completadas',
-                    '${provider.letters.where((l) => l.stars == 3).length}',
-                    Icons.check_circle,
-                    Colors.blue,
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('🏆', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${provider.totalScore}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

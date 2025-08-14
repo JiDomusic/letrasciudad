@@ -27,9 +27,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   final Set<String> _usedWords = {};
   final Set<String> _usedDistractors = {};
   
-  // Letter B search game state
-  late final List<Map<String, dynamic>> _bObjectsToFind;
-  late final List<Map<String, dynamic>> _bDistractorObjects;
+  // Letters grid for find game
+  List<Map<String, dynamic>>? _lettersGrid;
 
   @override
   void initState() {
@@ -42,153 +41,20 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     // Ensure used words lists start fresh
     _usedWords.clear();
     _usedDistractors.clear();
-    
-    // Initialize Letter B search game objects
-    _bObjectsToFind = [
-      {'emoji': '🍌', 'name': 'Banana', 'found': false, 'x': 0.15, 'y': 0.2},
-      {'emoji': '⚽', 'name': 'Balón', 'found': false, 'x': 0.7, 'y': 0.15},
-      {'emoji': '🚌', 'name': 'Bus', 'found': false, 'x': 0.4, 'y': 0.3},
-      {'emoji': '🧸', 'name': 'Bebé', 'found': false, 'x': 0.8, 'y': 0.6},
-      {'emoji': '🚲', 'name': 'Bicicleta', 'found': false, 'x': 0.2, 'y': 0.7},
-      {'emoji': '🍼', 'name': 'Biberón', 'found': false, 'x': 0.6, 'y': 0.8},
-    ];
-    
-    _bDistractorObjects = [
-      {'emoji': '🚗', 'name': 'Carro', 'found': false, 'x': 0.3, 'y': 0.5},
-      {'emoji': '🌸', 'name': 'Flor', 'found': false, 'x': 0.9, 'y': 0.3},
-      {'emoji': '🏠', 'name': 'Casa', 'found': false, 'x': 0.1, 'y': 0.8},
-      {'emoji': '🌙', 'name': 'Luna', 'found': false, 'x': 0.5, 'y': 0.1},
-    ];
-    
     _playWelcomeMessage();
   }
 
   void _playWelcomeMessage() async {
     await Future.delayed(const Duration(milliseconds: 500));
     // El niño puede interrumpir tocando la pantalla
-    
-    // Check if this is a special game that needs explanation about circles
-    final hasColoringGame = widget.letter.activities.any((activity) => 
-        activity.id.contains('coloring_game'));
-        
-    // All letters now have search game, so we check for coloring or just use search explanation
-    if (hasColoringGame || !['A', 'B', 'V'].contains(widget.letter.character.toUpperCase())) {
-      _audioService.speakText(
-        '¡Bienvenido a la casa de la letra ${widget.letter.character}! Debes completar los círculos de los objetos encontrados con esa letra.'
-      );
-    } else {
-      _audioService.speakText(
-        '¡Bienvenido a la casa de la letra ${widget.letter.character}!'
-      );
-    }
+    _audioService.speakText(
+      '¡Bienvenido a la casa de la letra ${widget.letter.character}!'
+    );
   }
 
   void _skipNarration() {
     // Permite al niño saltar la narración
     _audioService.stop();
-  }
-
-  void _showExitHint() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.transparent,
-          content: Container(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF4CAF50),
-                  Color(0xFF2E7D32),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.explore,
-                  color: Colors.white,
-                  size: 50,
-                ),
-                const SizedBox(height: 15),
-                const Text(
-                  '¡Explora más casas!',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  'Hay muchas más casas de letras esperándote. ¡Ve a buscarlas y continúa aprendiendo!',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(); // Cerrar diálogo
-                        Navigator.of(context).pop(); // Volver al home
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.home, size: 20),
-                          SizedBox(width: 8),
-                          Text('¡Vamos!'),
-                        ],
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(); // Solo cerrar diálogo
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                      ),
-                      child: const Text('Seguir aquí'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -238,58 +104,17 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          Stack(
-            children: [
-              IconButton(
-                onPressed: () {
-                  // Detener la voz narradora antes de salir
-                  _audioService.stop();
-                  _showExitHint();
-                },
-                icon: const Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: 28,
-                ),
-              ),
-              // Indicator pulsante para mostrar que hay más casas
-              Positioned(
-                right: 8,
-                top: 8,
-                child: AnimatedBuilder(
-                  animation: _animationController,
-                  builder: (context, child) {
-                    final pulse = 0.8 + (math.sin(_animationController.value * 2 * math.pi) * 0.2);
-                    return Transform.scale(
-                      scale: pulse,
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          gradient: const RadialGradient(
-                            colors: [Colors.yellow, Colors.orange],
-                          ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.orange.withValues(alpha: 0.6),
-                              blurRadius: 8,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: const Center(
-                          child: Text(
-                            '🏠',
-                            style: TextStyle(fontSize: 8),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+          IconButton(
+            onPressed: () {
+              // Detener la voz narradora antes de salir
+              _audioService.stop();
+              Navigator.of(context).pop();
+            },
+            icon: const Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+              size: 28,
+            ),
           ),
           const SizedBox(width: 8),
           Container(
@@ -370,33 +195,13 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   Widget _buildGameContent() {
-    // Check if this letter has special activities
-    final hasColoringGame = widget.letter.activities.any((activity) => 
-        activity.id.contains('coloring_game'));
-    final hasWordCompletion = widget.letter.activities.any((activity) => 
-        activity.id.contains('word_completion'));
-    
     switch (_selectedGameIndex) {
       case 0:
-        // Letter B gets special search and find game
-        if (widget.letter.character.toUpperCase() == 'B') {
-          return _buildLetterBSearchAndFindGame();
-        }
-        // Special letters have coloring game as first option
-        else if (['V', 'K', 'X', 'Y', 'Ñ'].contains(widget.letter.character.toUpperCase()) && hasColoringGame) {
-          return _buildColoringGame();
-        } else {
-          // All other letters have the beautiful search game
-          return _buildLetterSearchGame(widget.letter.character);
-        }
-      case 1:
-        if (hasWordCompletion) {
-          return _buildWordCompletionGame();
-        } else {
-          return _buildLetterTracingGame();
-        }
-      case 2:
         return _buildObjectSelectionGame();
+      case 1:
+        return _buildLetterTracingGame();
+      case 2:
+        return _buildFindAllLettersGame(); // Juego original de cubos rosa/naranja
       case 3:
         return _buildLetterSoundGame();
       default:
@@ -405,24 +210,10 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   Widget _buildGameSelector() {
-    // Check if this letter has special activities
-    final hasColoringGame = widget.letter.activities.any((activity) => 
-        activity.id.contains('coloring_game'));
-    final hasWordCompletion = widget.letter.activities.any((activity) => 
-        activity.id.contains('word_completion'));
-    
     final games = [
-      {
-        'icon': widget.letter.character.toUpperCase() == 'B' ? Icons.search : (['V', 'K', 'X', 'Y', 'Ñ'].contains(widget.letter.character.toUpperCase()) && hasColoringGame) ? Icons.color_lens : Icons.search, 
-        'title': widget.letter.character.toUpperCase() == 'B' ? 'Buscar' : (['V', 'K', 'X', 'Y', 'Ñ'].contains(widget.letter.character.toUpperCase()) && hasColoringGame) ? 'Colorear' : 'Magia', 
-        'color': Colors.green[400]!
-      },
-      {
-        'icon': hasWordCompletion ? Icons.text_fields : Icons.edit, 
-        'title': hasWordCompletion ? 'Completar' : 'Trazar', 
-        'color': Colors.blue[400]!
-      },
-      {'icon': Icons.emoji_objects, 'title': 'Objetos', 'color': Colors.purple[400]!},
+      {'icon': Icons.touch_app, 'title': 'Seleccionar', 'color': Colors.green[400]!},
+      {'icon': Icons.edit, 'title': 'Trazar', 'color': Colors.blue[400]!},
+      {'icon': Icons.search, 'title': 'Buscar', 'color': Colors.purple[400]!},
       {'icon': Icons.volume_up, 'title': 'Sonidos', 'color': Colors.orange[400]!},
     ];
 
@@ -444,13 +235,13 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
 
           return GestureDetector(
             onTap: () {
-              // DETENER NARRADOR al cambiar de juego
-              _audioService.stop();
               setState(() {
                 _selectedGameIndex = index;
                 // Reset used words when switching games
                 _usedWords.clear();
                 _usedDistractors.clear();
+                // Reset letters grid when switching games
+                _lettersGrid = null;
               });
               _audioService.speakText('¡${game['title']}! ¡Qué divertido!');
             },
@@ -584,31 +375,24 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
           ),
           const SizedBox(height: 20),
           Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final isWeb = MediaQuery.of(context).size.width > 800;
-                  final screenWidth = MediaQuery.of(context).size.width;
-                  final crossAxisCount = screenWidth < 600 ? 2 : (screenWidth < 1200 ? 3 : 4);
-                  
-                  return GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      childAspectRatio: 0.85,
-                      crossAxisSpacing: 15,
-                      mainAxisSpacing: 20,
-                    ),
-                    itemCount: availableObjects.length,
-                    itemBuilder: (context, index) {
-                      final obj = availableObjects[index];
-                      return _buildSelectableObject(obj, isWeb);
-                    },
-                  );
-                }
-              ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isWeb = MediaQuery.of(context).size.width > 800;
+                
+                return GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: isWeb ? 3 : 2, // 3 en web, 2 en móvil
+                    childAspectRatio: isWeb ? 0.9 : 0.8, // Más cuadrado en web
+                    crossAxisSpacing: isWeb ? 30 : 20, // Más espacio en web
+                    mainAxisSpacing: isWeb ? 30 : 20, // Más espacio en web
+                  ),
+                  itemCount: availableObjects.length,
+                  itemBuilder: (context, index) {
+                    final obj = availableObjects[index];
+                    return _buildSelectableObject(obj, isWeb);
+                  },
+                );
+              },
             ),
           ),
         ],
@@ -623,27 +407,6 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     final wordLower = word.toLowerCase();
     final letterLower = letter.toLowerCase();
     
-    // Normalizar caracteres con acentos
-    String normalizeChar(String char) {
-      switch (char) {
-        case 'á': case 'à': case 'ä': case 'â':
-          return 'a';
-        case 'é': case 'è': case 'ë': case 'ê':
-          return 'e';
-        case 'í': case 'ì': case 'ï': case 'î':
-          return 'i';
-        case 'ó': case 'ò': case 'ö': case 'ô':
-          return 'o';
-        case 'ú': case 'ù': case 'ü': case 'û':
-          return 'u';
-        default:
-          return char;
-      }
-    }
-    
-    final normalizedWord = normalizeChar(wordLower[0]);
-    final normalizedLetter = normalizeChar(letterLower);
-    
     // Casos especiales del español argentino
     switch (letterLower) {
       case 'h':
@@ -654,8 +417,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       case 'qu':
         return wordLower.startsWith('qu');
       default:
-        // Verificar tanto la letra original como la normalizada
-        return wordLower.startsWith(letterLower) || normalizedWord == normalizedLetter;
+        return wordLower.startsWith(letterLower);
     }
   }
 
@@ -696,7 +458,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
             // EMOJI ADAPTATIVO: Más grande en web, normal en móvil
             Text(
               obj['emoji'] as String,
-              style: TextStyle(fontSize: isWeb ? 140 : 100), // Más grandes: 140 en web, 100 en móvil
+              style: TextStyle(fontSize: isWeb ? 120 : 70), // 120 en web, 70 en móvil
             ),
             SizedBox(height: isWeb ? 16 : 12),
             // QUITAR TEXTO PARA QUE EL NINO ADIVINE
@@ -725,9 +487,6 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   void _handleObjectTap(Map<String, dynamic> obj) {
-    // DETENER NARRACIÓN ANTERIOR ANTES DE NUEVA RESPUESTA
-    _audioService.stop();
-    
     final wordName = obj['name'] as String;
     final isCorrect = obj['correct'] as bool;
     
@@ -826,8 +585,10 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     );
   }
 
-  Widget _buildFindAllLettersGame() {
-    final letters = _generateLetterGrid();
+  Widget _buildMagicalSearchGame() {
+    // Lista de objetos que empiezan con la letra actual
+    final searchObjects = _getSearchObjectsForLetter(widget.letter.character.toUpperCase());
+    final foundCount = searchObjects.where((obj) => obj['found'] == true).length;
     
     return Container(
       padding: const EdgeInsets.all(16),
@@ -843,7 +604,212 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       ),
       child: Column(
         children: [
-          // Título principal MÁGICO para todas las letras
+          // Título mágico
+          Text(
+            'BUSCA TODOS LOS ELEMENTOS QUE COMIENZAN CON ${widget.letter.character.toUpperCase()}',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Has click en la imagen y encuentra los 7 elementos que comienzan con ${widget.letter.character.toUpperCase()}',
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.black54,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          
+          // Indicador de progreso con círculos
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(7, (index) {
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: index < foundCount ? Colors.green : Colors.white,
+                  border: Border.all(
+                    color: Colors.grey[400]!,
+                    width: 2,
+                  ),
+                ),
+                child: index < foundCount 
+                  ? const Icon(Icons.check, color: Colors.white, size: 16)
+                  : null,
+              );
+            }),
+          ),
+          
+          const SizedBox(height: 30),
+          
+          // Grid de objetos en casilleros mágicos
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                childAspectRatio: 1,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: searchObjects.length,
+              itemBuilder: (context, index) {
+                final obj = searchObjects[index];
+                return _buildMagicalSearchTile(obj);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Objetos de búsqueda para cada letra
+  List<Map<String, dynamic>> _getSearchObjectsForLetter(String letter) {
+    switch (letter) {
+      case 'A':
+        return [
+          {'emoji': '🐸', 'name': 'Abeja', 'correct': true, 'found': false},
+          {'emoji': '🎨', 'name': 'Arte', 'correct': true, 'found': false}, 
+          {'emoji': '🏠', 'name': 'Casa', 'correct': false, 'found': false},
+          {'emoji': '🌳', 'name': 'Árbol', 'correct': true, 'found': false},
+          {'emoji': '🐘', 'name': 'Elefante', 'correct': false, 'found': false},
+          {'emoji': '⚓', 'name': 'Ancla', 'correct': true, 'found': false},
+          {'emoji': '🚗', 'name': 'Auto', 'correct': true, 'found': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false, 'found': false},
+          {'emoji': '💍', 'name': 'Anillo', 'correct': true, 'found': false},
+          {'emoji': '✈️', 'name': 'Avión', 'correct': true, 'found': false},
+          {'emoji': '🐕', 'name': 'Perro', 'correct': false, 'found': false},
+          {'emoji': '🌟', 'name': 'Estrella', 'correct': false, 'found': false},
+        ];
+      default:
+        return [
+          {'emoji': '🍌', 'name': 'Banana', 'correct': true, 'found': false},
+          {'emoji': '⚽', 'name': 'Balón', 'correct': true, 'found': false},
+          {'emoji': '🚌', 'name': 'Bus', 'correct': true, 'found': false},
+          {'emoji': '🧸', 'name': 'Oso', 'correct': false, 'found': false},
+          {'emoji': '🚲', 'name': 'Bicicleta', 'correct': true, 'found': false},
+          {'emoji': '📖', 'name': 'Libro', 'correct': false, 'found': false},
+          {'emoji': '🍼', 'name': 'Biberón', 'correct': true, 'found': false},
+          {'emoji': '🎈', 'name': 'Globo', 'correct': false, 'found': false},
+          {'emoji': '🚢', 'name': 'Barco', 'correct': true, 'found': false},
+          {'emoji': '🎯', 'name': 'Blanco', 'correct': true, 'found': false},
+          {'emoji': '🌸', 'name': 'Flor', 'correct': false, 'found': false},
+          {'emoji': '🐱', 'name': 'Gato', 'correct': false, 'found': false},
+        ];
+    }
+  }
+
+  Widget _buildMagicalSearchTile(Map<String, dynamic> obj) {
+    final isCorrect = obj['correct'] as bool;
+    final isFound = obj['found'] as bool;
+    
+    return GestureDetector(
+      onTap: () => _handleMagicalSearch(obj),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isFound 
+                ? (isCorrect ? Colors.green : Colors.red)
+                : Colors.grey[300]!,
+            width: isFound ? 3 : 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isFound 
+                  ? (isCorrect ? Colors.green.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.3))
+                  : Colors.black.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Container(
+          margin: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isFound && isCorrect
+                  ? [Colors.green[100]!, Colors.green[200]!]
+                  : isFound
+                      ? [Colors.red[100]!, Colors.red[200]!]
+                      : [Colors.white, Colors.grey[50]!],
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                obj['emoji'] as String,
+                style: const TextStyle(fontSize: 40),
+              ),
+              const SizedBox(height: 4),
+              if (isFound)
+                Text(
+                  obj['name'] as String,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: isCorrect ? Colors.green[700] : Colors.red[700],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              if (isFound && isCorrect)
+                const Icon(Icons.check_circle, color: Colors.green, size: 16),
+              if (isFound && !isCorrect)
+                const Icon(Icons.cancel, color: Colors.red, size: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleMagicalSearch(Map<String, dynamic> obj) {
+    if (obj['found'] == true) return; // Ya fue encontrado
+    
+    setState(() {
+      obj['found'] = true;
+    });
+    
+    final isCorrect = obj['correct'] as bool;
+    if (isCorrect) {
+      _audioService.speakText('¡Excelente! ${obj['name']} empieza con ${widget.letter.character.toUpperCase()}');
+      _showCelebrationStars();
+      context.read<LetterCityProvider>().completeActivity('magical_search_${widget.letter.character}', 10);
+    } else {
+      _audioService.speakText('¡Inténtalo de nuevo! ${obj['name']} no empieza con ${widget.letter.character.toUpperCase()}');
+    }
+  }
+
+  Widget _buildMagicalColoringGame() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.purple[50]!,
+            Colors.pink[50]!,
+            Colors.orange[50]!,
+            Colors.yellow[50]!,
+          ],
+        ),
+      ),
+      child: Column(
+        children: [
+          // Título mágico con efectos rainbow
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             decoration: BoxDecoration(
@@ -851,20 +817,24 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                 colors: [
                   Colors.purple[400]!,
                   Colors.pink[400]!,
+                  Colors.orange[400]!,
+                  Colors.yellow[400]!,
+                  Colors.green[400]!,
                   Colors.blue[400]!,
                 ],
               ),
               borderRadius: BorderRadius.circular(25),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.purple.withValues(alpha: 0.4),
-                  blurRadius: 15,
+                  color: Colors.purple.withValues(alpha: 0.6),
+                  blurRadius: 20,
                   offset: const Offset(0, 5),
+                  spreadRadius: 5,
                 ),
               ],
             ),
             child: Text(
-              '✨ ¡BUSCA LA LETRA MÁGICA ${widget.letter.character.toUpperCase()}! ✨',
+              '🌈✨ ¡JUEGO MÁGICO DE COLOREAR! ✨🌈',
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
@@ -883,9 +853,14 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
           const SizedBox(height: 15),
           // Subtítulo mágico
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.9),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.pink[200]!,
+                  Colors.purple[200]!,
+                ],
+              ),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: Colors.purple[300]!,
@@ -893,7 +868,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
               ),
             ),
             child: Text(
-              '🔮 ¡Toca y descubre todas las letras ${widget.letter.character.toUpperCase()} escondidas! 🌟',
+              '🎨 ¡Toca los colores mágicos para pintar la letra ${widget.letter.character.toUpperCase()}! 🌟',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -903,55 +878,340 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
             ),
           ),
           const SizedBox(height: 20),
-          // Indicador de progreso (ahora para 3 letras)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(3, (index) {
-              int foundCount = letters.where((l) => l['isTarget'] == true && l['found'] == true).length;
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 6),
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: index < foundCount ? Colors.green : Colors.grey[300],
-                  border: Border.all(
-                    color: Colors.grey[400]!,
-                    width: 2,
-                  ),
-                ),
-                child: index < foundCount 
-                  ? const Icon(Icons.check, color: Colors.white, size: 16)
-                  : null,
-              );
-            }),
+          
+          // Paleta de colores mágicos
+          SizedBox(
+            height: 80,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                _buildMagicalColorButton(Colors.red, '❤️'),
+                _buildMagicalColorButton(Colors.orange, '🧡'),
+                _buildMagicalColorButton(Colors.yellow, '💛'),
+                _buildMagicalColorButton(Colors.green, '💚'),
+                _buildMagicalColorButton(Colors.blue, '💙'),
+                _buildMagicalColorButton(Colors.purple, '💜'),
+                _buildMagicalColorButton(Colors.pink, '🩷'),
+                _buildMagicalColorButton(Colors.brown, '🤎'),
+              ],
+            ),
           ),
-          const SizedBox(height: 30),
-          // Grid de letras (4x3 para 12 letras)
+          
+          const SizedBox(height: 20),
+          
+          // Área de colorear con la letra gigante
           Expanded(
             child: Container(
-              constraints: const BoxConstraints(maxHeight: 400),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.purple.withValues(alpha: 0.5),
+                  width: 3,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.purple.withValues(alpha: 0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: GestureDetector(
+                  onTap: () => _colorLetter(),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    child: Text(
+                      widget.letter.character.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 200,
+                        fontWeight: FontWeight.w900,
+                        color: _selectedColor ?? Colors.grey[300],
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            offset: const Offset(4, 4),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color? _selectedColor;
+
+  Widget _buildMagicalColorButton(Color color, String emoji) {
+    final isSelected = _selectedColor == color;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedColor = color;
+        });
+        _audioService.speakText('¡${_getColorName(color)} seleccionado!');
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.grey[300]!,
+            width: isSelected ? 4 : 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.6),
+              blurRadius: isSelected ? 12 : 6,
+              offset: const Offset(0, 3),
+              spreadRadius: isSelected ? 3 : 1,
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            emoji,
+            style: const TextStyle(fontSize: 24),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getColorName(Color color) {
+    if (color == Colors.red) return 'Rojo';
+    if (color == Colors.orange) return 'Naranja';
+    if (color == Colors.yellow) return 'Amarillo';
+    if (color == Colors.green) return 'Verde';
+    if (color == Colors.blue) return 'Azul';
+    if (color == Colors.purple) return 'Morado';
+    if (color == Colors.pink) return 'Rosa';
+    if (color == Colors.brown) return 'Marrón';
+    return 'Color';
+  }
+
+  void _colorLetter() {
+    if (_selectedColor != null) {
+      _audioService.speakText('¡Qué hermoso quedó! ¡Excelente trabajo!');
+      _showCelebrationStars();
+      context.read<LetterCityProvider>().completeActivity('magical_coloring_${widget.letter.character}', 25);
+    } else {
+      _audioService.speakText('¡Primero selecciona un color mágico!');
+    }
+  }
+
+  Widget _buildFindAllLettersGame() {
+    // Generar grid solo si no existe o si cambió el juego
+    if (_lettersGrid == null) {
+      _lettersGrid = _generateLetterGrid();
+    }
+    final letters = _lettersGrid!;
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.pink[50]!,
+            Colors.orange[50]!,
+          ],
+        ),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.pink[300]!,
+                  Colors.orange[300]!,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.search, color: Colors.white, size: 24),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Busca y marca todas las letras "${widget.letter.character.toUpperCase()}"',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          
+          // Casillero de progreso compacto con 8 círculos
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.purple[100]!,
+                  Colors.pink[100]!,
+                  Colors.orange[100]!,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: Colors.purple[300]!,
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.purple.withValues(alpha: 0.2),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'Busca y marca todas las ${widget.letter.character.toUpperCase()}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.purple[800],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Casillero compacto con 8 círculos
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.purple[200]!,
+                      width: 1,
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(8, (index) {
+                        int foundCount = _lettersGrid?.where((l) => l['isTarget'] == true && l['found'] == true).length ?? 0;
+                        bool isCompleted = index < foundCount;
+                            return Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 3),
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isCompleted 
+                                    ? _getColorForIndex(index)
+                                    : Colors.white,
+                                border: Border.all(
+                                  color: isCompleted ? _getColorForIndex(index) : Colors.grey[400]!,
+                                  width: 2,
+                                ),
+                                boxShadow: isCompleted ? [
+                                  BoxShadow(
+                                    color: _getColorForIndex(index).withValues(alpha: 0.4),
+                                    blurRadius: 6,
+                                    spreadRadius: 1,
+                                  ),
+                                ] : [
+                                  BoxShadow(
+                                    color: Colors.grey.withValues(alpha: 0.1),
+                                    blurRadius: 2,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: isCompleted 
+                                    ? Text(
+                                        widget.letter.character.toUpperCase(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          shadows: [
+                                            Shadow(
+                                              color: Colors.black26,
+                                              offset: Offset(1, 1),
+                                              blurRadius: 2,
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : null, // Casillero vacío
+                              ),
+                          );
+                      }),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                // Mensaje de progreso compacto
+                () {
+                  int foundCount = _lettersGrid?.where((l) => l['isTarget'] == true && l['found'] == true).length ?? 0;
+                  return Text(
+                    foundCount < 8 
+                        ? '${foundCount}/8 ¡Faltan ${8 - foundCount}! 🌟'
+                        : '¡COMPLETADO! 🎉✨',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: foundCount < 8 ? Colors.orange[700] : Colors.green[700],
+                    ),
+                    textAlign: TextAlign.center,
+                  );
+                }(),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 8),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
               child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: MediaQuery.of(context).size.width < 400 
-                      ? 2  // Móviles pequeños: 2 columnas
-                      : MediaQuery.of(context).size.width < 600
-                          ? 3  // Móviles medianos: 3 columnas  
-                          : MediaQuery.of(context).size.width < 900
-                              ? 4  // Tablets: 4 columnas
-                              : MediaQuery.of(context).size.width < 1200
-                                  ? 5  // Desktop pequeño: 5 columnas
-                                  : 6,  // Desktop grande: 6 columnas
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
                   childAspectRatio: 1,
-                  crossAxisSpacing: MediaQuery.of(context).size.width < 600 ? 8 : 16,
-                  mainAxisSpacing: MediaQuery.of(context).size.width < 600 ? 8 : 16,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
                 ),
                 itemCount: letters.length,
                 itemBuilder: (context, index) {
                   final letterData = letters[index];
-                  return _buildNewStyleLetter(letterData);
+                  return _buildMagicalCubeLetter(letterData);
                 },
               ),
             ),
@@ -965,14 +1225,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     final letter = letterData['letter'] as String;
     final isTarget = letterData['isTarget'] as bool;
     final isFound = letterData['found'] as bool? ?? false;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final fontSize = screenWidth < 400 
-        ? 36.0  // Móviles pequeños
-        : screenWidth < 600 
-            ? 42.0  // Móviles medianos
-            : screenWidth < 900 
-                ? 50.0  // Tablets
-                : 65.0; // Desktop
+    final isWeb = MediaQuery.of(context).size.width > 800;
+    final fontSize = isWeb ? 50.0 : 36.0;
 
     return GestureDetector(
       onTap: () => _handleLetterFind(letterData),
@@ -1153,23 +1407,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
           child: Text(
             letter,
             style: TextStyle(
-              fontSize: 80, // Letras súper grandes tipo goma juguetonas - aumentadas
+              fontSize: 42, // Aumentado aún más para mejor visibilidad
               fontWeight: FontWeight.bold,
               color: isFound 
                   ? (isTarget ? Colors.green[700] : Colors.red[700])
-                  : Colors.blue[800],
-              shadows: [
-                Shadow(
-                  color: Colors.blue[200]!,
-                  offset: const Offset(3, 3),
-                  blurRadius: 6,
-                ),
-                Shadow(
-                  color: Colors.cyan[300]!,
-                  offset: const Offset(-1, -1),
-                  blurRadius: 4,
-                ),
-              ],
+                  : Colors.black87,
             ),
           ),
         ),
@@ -1177,20 +1419,298 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     );
   }
 
+  Widget _buildMagicalCubeLetter(Map<String, dynamic> letterData) {
+    final letter = letterData['letter'] as String;
+    final isTarget = letterData['isTarget'] as bool;
+    final isFound = letterData['found'] as bool? ?? false;
+
+    return GestureDetector(
+      onTap: () => _handleLetterFind(letterData),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(
+            color: isFound 
+                ? (isTarget ? Colors.green : Colors.red)
+                : Colors.purple[300]!,
+            width: isFound ? 4 : 3,
+          ),
+          boxShadow: [
+            // Sombra mágica principal
+            BoxShadow(
+              color: isFound 
+                  ? (isTarget 
+                      ? Colors.green.withValues(alpha: 0.6)
+                      : Colors.red.withValues(alpha: 0.6))
+                  : Colors.purple.withValues(alpha: 0.4),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+              spreadRadius: 3,
+            ),
+            // Resplandor mágico exterior
+            BoxShadow(
+              color: Colors.pink.withValues(alpha: 0.3),
+              blurRadius: 25,
+              offset: const Offset(0, 0),
+              spreadRadius: 8,
+            ),
+          ],
+        ),
+        child: Container(
+          margin: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isFound && isTarget
+                  ? [
+                      Colors.green[200]!, 
+                      Colors.green[400]!,
+                      Colors.green[600]!,
+                    ]
+                  : isFound
+                      ? [
+                          Colors.red[200]!, 
+                          Colors.red[400]!,
+                          Colors.red[600]!,
+                        ]
+                      : [
+                          Colors.pink[100]!,
+                          Colors.pink[300]!,
+                          Colors.orange[300]!,
+                          Colors.orange[500]!,
+                          Colors.purple[400]!,
+                        ],
+              stops: isFound ? const [0.0, 0.5, 1.0] : const [0.0, 0.25, 0.5, 0.75, 1.0],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              // Brillo interior superior
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.4),
+                blurRadius: 8,
+                offset: const Offset(-3, -3),
+              ),
+              // Sombra interior inferior
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 5,
+                offset: const Offset(3, 3),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Decoración de casillero mágico - esquinas brillantes
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      colors: [
+                        Colors.white.withValues(alpha: 0.8),
+                        Colors.white.withValues(alpha: 0.0),
+                      ],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      colors: [
+                        Colors.white.withValues(alpha: 0.8),
+                        Colors.white.withValues(alpha: 0.0),
+                      ],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+              
+              // Líneas decorativas mágicas
+              Positioned(
+                top: 15,
+                left: 15,
+                right: 15,
+                height: 2,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withValues(alpha: 0.0),
+                        Colors.white.withValues(alpha: 0.6),
+                        Colors.white.withValues(alpha: 0.0),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(1),
+                  ),
+                ),
+              ),
+              
+              // Letra central con efecto mágico
+              Center(
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        blurRadius: 15,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    letter,
+                    style: TextStyle(
+                      fontSize: 55,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      shadows: [
+                        // Sombra profunda
+                        Shadow(
+                          offset: const Offset(4, 4),
+                          blurRadius: 8,
+                          color: Colors.black.withValues(alpha: 0.7),
+                        ),
+                        // Brillo superior
+                        Shadow(
+                          offset: const Offset(-2, -2),
+                          blurRadius: 4,
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                        // Resplandor mágico
+                        Shadow(
+                          offset: const Offset(0, 0),
+                          blurRadius: 12,
+                          color: Colors.cyan.withValues(alpha: 0.8),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              
+              // Estrellitas mágicas en las esquinas cuando no está encontrado
+              if (!isFound) ...[
+                Positioned(
+                  top: 5,
+                  left: 5,
+                  child: Text('✨', style: TextStyle(fontSize: 12)),
+                ),
+                Positioned(
+                  bottom: 5,
+                  right: 5,
+                  child: Text('✨', style: TextStyle(fontSize: 12)),
+                ),
+              ],
+              
+              // Checkmark mágico cuando se encuentra correctamente
+              if (isFound && isTarget)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [Colors.green[400]!, Colors.green[700]!],
+                      ),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.green.withValues(alpha: 0.6),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.star,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                ),
+              // X mágico cuando es incorrecto
+              if (isFound && !isTarget)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [Colors.red[400]!, Colors.red[700]!],
+                      ),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.red.withValues(alpha: 0.6),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Método para obtener diferentes colores para cada casillero
+  Color _getColorForIndex(int index) {
+    final colors = [
+      Colors.red[500]!,       // 1er casillero - rojo
+      Colors.orange[500]!,    // 2do casillero - naranja  
+      Colors.yellow[600]!,    // 3er casillero - amarillo
+      Colors.green[500]!,     // 4to casillero - verde
+      Colors.blue[500]!,      // 5to casillero - azul
+      Colors.purple[500]!,    // 6to casillero - púrpura
+      Colors.pink[500]!,      // 7mo casillero - rosa
+      Colors.teal[500]!,      // 8vo casillero - verde azulado
+    ];
+    return colors[index % colors.length];
+  }
+
   void _handleLetterFind(Map<String, dynamic> letterData) {
-    // DETENER NARRADOR al interactuar con letras mágicas
-    _audioService.stop();
     setState(() {
       letterData['found'] = true;
     });
 
+    // Debug: verificar el estado
+    final foundCount = _lettersGrid?.where((l) => l['isTarget'] == true && l['found'] == true).length ?? 0;
+    print('DEBUG: Letra encontrada: ${letterData['letter']}, Es target: ${letterData['isTarget']}, Total encontradas: $foundCount');
+
     if (letterData['isTarget'] as bool) {
-      _audioService.speakText('¡Excelente! ¡Encontraste una letra ${widget.letter.character} mágica! ✨');
+      _audioService.speakText('¡Correcto! Encontraste la ${widget.letter.character}');
       // CELEBRACIÓN CON ESTRELLAS Y GRATIFICACIÓN
       _showCelebrationStars();
       context.read<LetterCityProvider>().completeActivity('find_letter_${widget.letter.character}', 10);
     } else {
-      _audioService.speakText('¡Esa no es la letra ${widget.letter.character} mágica! Sigue buscando ✨');
+      _audioService.speakText('Esa no es la letra ${widget.letter.character}');
       // CELEBRACIÓN ROJA CUANDO FALLA
       _showFailureFeedback();
     }
@@ -1259,7 +1779,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                             widget.letter.character.toUpperCase(),
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 100, // Letras extra grandes para juego de sonidos
+                              fontSize: 80, // Aumentado de 60 a 80
                               fontWeight: FontWeight.w900,
                             ),
                           ),
@@ -1679,7 +2199,6 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '👟', 'name': 'Zapato', 'correct': true},
         {'emoji': '🥕', 'name': 'Zanahoria', 'correct': true},
         {'emoji': '🦊', 'name': 'Zorro', 'correct': true},
-        {'emoji': '🦆', 'name': 'Zambullida', 'correct': true},
         {'emoji': '🌈', 'name': 'Zona', 'correct': true},
         {'emoji': '🧿', 'name': 'Zombi', 'correct': true},
         {'emoji': '🦓', 'name': 'Cebra', 'correct': false},
@@ -1770,8 +2289,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     final letters = <Map<String, dynamic>>[];
     final targetLetter = widget.letter.character.toUpperCase();
     
-    // Agregar letras target (3-4 instancias para un grid más pequeño)
-    for (int i = 0; i < 3; i++) {
+    // Agregar exactamente 8 letras target para completar el casillero
+    for (int i = 0; i < 8; i++) {
       letters.add({
         'letter': targetLetter,
         'isTarget': true,
@@ -1779,13 +2298,13 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       });
     }
     
-    // Agregar letras distractoras (solo 9 para completar 12 total)
+    // Agregar letras distractoras
     final distractorLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         .split('')
         .where((l) => l != targetLetter)
         .toList();
     
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < 40; i++) {
       letters.add({
         'letter': distractorLetters[random.nextInt(distractorLetters.length)],
         'isTarget': false,
@@ -1824,7 +2343,6 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       builder: (context) => _SuccessMessageWidget(
         wordName: wordName,
         letterName: widget.letter.character.toUpperCase(),
-        audioService: _audioService,
         onComplete: () {
           overlayEntry.remove();
         },
@@ -1848,1879 +2366,6 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     );
     
     overlay.insert(overlayEntry);
-  }
-
-  // Coloring game specially designed for children
-  Widget _buildColoringGame() {
-    final coloredObjects = <String>{};
-    
-    return StatefulBuilder(
-      builder: (context, setState) {
-        final objectsToColor = _getObjectsForColoring(widget.letter.character);
-        final foundCount = coloredObjects.length;
-        final correctObjects = objectsToColor.where((obj) => obj['correct'] as bool).toList();
-        
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.pink[50]!,
-                Colors.purple[50]!,
-                Colors.blue[50]!,
-              ],
-            ),
-          ),
-          child: Column(
-            children: [
-              // Fun header with rainbow colors for kids
-              Container(
-                padding: const EdgeInsets.all(20),
-                margin: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.red[300]!,
-                      Colors.orange[300]!,
-                      Colors.yellow[300]!,
-                      Colors.green[300]!,
-                      Colors.blue[300]!,
-                      Colors.purple[300]!,
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(25),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.purple.withValues(alpha: 0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('🎨✨', style: TextStyle(fontSize: 30)),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            '¡Colorea todo lo que empieza con "${widget.letter.character.toUpperCase()}"!',
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black26,
-                                  offset: Offset(2, 2),
-                                  blurRadius: 4,
-                                ),
-                              ],
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Text('✨🎨', style: TextStyle(fontSize: 30)),
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-                    Text(
-                      '¡Toca los objetos correctos y verás la magia! 🌈',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 15),
-                    // Fun progress indicators like paint buckets
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      children: List.generate(correctObjects.length, (index) {
-                        return AnimatedBuilder(
-                          animation: _animationController,
-                          builder: (context, child) {
-                            final isColored = index < foundCount;
-                            final rotation = _animationController.value * 2 * math.pi;
-                            final scale = isColored ? 1.0 + (math.sin(rotation) * 0.1) : 1.0;
-                            
-                            return Transform.rotate(
-                              angle: isColored ? rotation * 0.1 : 0,
-                              child: Transform.scale(
-                                scale: scale,
-                                child: Container(
-                                  margin: const EdgeInsets.all(6),
-                                  width: 45,
-                                  height: 45,
-                                  child: Stack(
-                                    children: [
-                                      // Paint bucket base
-                                      Container(
-                                        width: 45,
-                                        height: 45,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: isColored ? Colors.orange[400]! : Colors.grey[400]!,
-                                            width: 3,
-                                          ),
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withValues(alpha: 0.1),
-                                              blurRadius: 4,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      // Paint filling effect
-                                      if (isColored)
-                                        ClipOval(
-                                          child: AnimatedContainer(
-                                            duration: const Duration(milliseconds: 800),
-                                            curve: Curves.bounceOut,
-                                            width: 45,
-                                            height: 45,
-                                            decoration: BoxDecoration(
-                                              gradient: RadialGradient(
-                                                colors: [
-                                                  [Colors.pink[300]!, Colors.purple[300]!, Colors.blue[300]!, Colors.green[300]!, Colors.orange[300]!][index % 5],
-                                                  [Colors.pink[500]!, Colors.purple[500]!, Colors.blue[500]!, Colors.green[500]!, Colors.orange[500]!][index % 5],
-                                                  [Colors.pink[700]!, Colors.purple[700]!, Colors.blue[700]!, Colors.green[700]!, Colors.orange[700]!][index % 5],
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      // Fun icon in center
-                                      Center(
-                                        child: isColored 
-                                            ? Container(
-                                                width: 25,
-                                                height: 25,
-                                                decoration: const BoxDecoration(
-                                                  color: Colors.white,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: const Center(
-                                                  child: Text('🎨', style: TextStyle(fontSize: 12)),
-                                                ),
-                                              )
-                                            : Container(
-                                                width: 25,
-                                                height: 25,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.grey[200],
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: Center(
-                                                  child: Text('${index + 1}', 
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.grey[600],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 15),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '¡Has coloreado $foundCount de ${correctObjects.length} objetos! 🌈',
-                        style: const TextStyle(
-                          fontSize: 18, 
-                          fontWeight: FontWeight.bold,
-                          color: Colors.purple,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: MediaQuery.of(context).size.width < 600 ? 2 : (MediaQuery.of(context).size.width < 1200 ? 3 : 4),
-                      childAspectRatio: 1.1,
-                    crossAxisSpacing: MediaQuery.of(context).size.width < 600 ? 12 : 16,
-                    mainAxisSpacing: MediaQuery.of(context).size.width < 600 ? 12 : 16,
-                  ),
-                  itemCount: objectsToColor.length,
-                  itemBuilder: (context, index) {
-                    final obj = objectsToColor[index];
-                    final isColored = coloredObjects.contains(obj['name']);
-                    final isCorrect = obj['correct'] as bool;
-                    
-                    return GestureDetector(
-                      onTap: () {
-                        // DETENER NARRADOR al interactuar con juego de colorear
-                        _audioService.stop();
-                        if (isCorrect && !isColored) {
-                          setState(() {
-                            coloredObjects.add(obj['name'] as String);
-                          });
-                          _audioService.speakText('¡Muy bien! ${obj['name']} empieza con ${widget.letter.character}');
-                          
-                          final totalCorrectObjects = objectsToColor.where((obj) => obj['correct'] as bool).length;
-                          if (coloredObjects.length >= totalCorrectObjects) {
-                            _audioService.speakText('¡Felicidades! Has completado el juego de colorear');
-                          }
-                        } else if (!isCorrect) {
-                          _audioService.speakText('${obj['name']} no empieza con ${widget.letter.character}. Intenta con otro objeto');
-                        }
-                      },
-                      child: AnimatedBuilder(
-                        animation: _animationController,
-                        builder: (context, child) {
-                          final bounce = isColored ? 1.0 + (math.sin(_animationController.value * 2 * math.pi) * 0.05) : 1.0;
-                          final shimmer = _animationController.value;
-                          
-                          return Transform.scale(
-                            scale: bounce,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                gradient: isColored && isCorrect
-                                    ? LinearGradient(
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                        colors: [
-                                          Colors.pink[100]!,
-                                          Colors.purple[100]!,
-                                          Colors.blue[100]!,
-                                          Colors.cyan[100]!,
-                                        ],
-                                        stops: [
-                                          (shimmer * 0.7) % 1.0,
-                                          (shimmer * 0.8) % 1.0,
-                                          (shimmer * 0.9) % 1.0,
-                                          (shimmer * 1.0) % 1.0,
-                                        ],
-                                      )
-                                    : isColored
-                                        ? const LinearGradient(
-                                            colors: [Colors.white, Color(0xFFFFF9C4)],
-                                          )
-                                        : LinearGradient(
-                                            colors: [Colors.grey[50]!, Colors.grey[100]!],
-                                          ),
-                                border: Border.all(
-                                  color: isColored && isCorrect 
-                                      ? Colors.purple[400]!.withValues(alpha: 0.8)
-                                      : isColored 
-                                          ? Colors.orange[300]!
-                                          : Colors.grey[300]!,
-                                  width: isColored ? 3 : 1,
-                                ),
-                                boxShadow: [
-                                  if (isColored && isCorrect) ...[
-                                    BoxShadow(
-                                      color: Colors.purple.withValues(alpha: 0.3),
-                                      blurRadius: 15,
-                                      offset: const Offset(0, 8),
-                                    ),
-                                    BoxShadow(
-                                      color: Colors.pink.withValues(alpha: 0.2),
-                                      blurRadius: 25,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ] else ...[
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.1),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              child: Stack(
-                                children: [
-                                  // Main content
-                                  Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        // Emoji with enhanced styling
-                                        Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color: isColored && isCorrect 
-                                                ? Colors.white.withValues(alpha: 0.9)
-                                                : Colors.transparent,
-                                            borderRadius: BorderRadius.circular(16),
-                                            boxShadow: isColored && isCorrect ? [
-                                              BoxShadow(
-                                                color: Colors.purple.withValues(alpha: 0.2),
-                                                blurRadius: 8,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ] : null,
-                                          ),
-                                          child: Text(
-                                            obj['emoji'] as String,
-                                            style: TextStyle(
-                                              fontSize: MediaQuery.of(context).size.width < 600 ? 60 : 80,
-                                              color: isColored && isCorrect ? null : Colors.grey[400],
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        // Enhanced name styling
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: isColored && isCorrect 
-                                                ? Colors.white.withValues(alpha: 0.9) 
-                                                : Colors.transparent,
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: Text(
-                                            obj['name'] as String,
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: isColored && isCorrect ? Colors.purple[700] : Colors.grey[600],
-                                              shadows: isColored && isCorrect ? [
-                                                Shadow(
-                                                  color: Colors.white.withValues(alpha: 0.8),
-                                                  offset: const Offset(1, 1),
-                                                  blurRadius: 2,
-                                                ),
-                                              ] : null,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  // Sparkle overlay positioned absolutely
-                                  if (isColored && isCorrect) ...[
-                                    Positioned(
-                                      top: 12,
-                                      right: 12,
-                                      child: Transform.rotate(
-                                        angle: shimmer * 2 * math.pi,
-                                        child: const Text('✨', style: TextStyle(fontSize: 22)),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      bottom: 12,
-                                      left: 12,
-                                      child: Transform.rotate(
-                                        angle: -shimmer * 2 * math.pi,
-                                        child: const Text('⭐', style: TextStyle(fontSize: 18)),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: 12,
-                                      left: 12,
-                                      child: Transform.scale(
-                                        scale: 1.0 + (math.sin(shimmer * 4 * math.pi) * 0.2),
-                                        child: const Text('🌟', style: TextStyle(fontSize: 16)),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      bottom: 12,
-                                      right: 12,
-                                      child: Transform.scale(
-                                        scale: 1.0 + (math.cos(shimmer * 3 * math.pi) * 0.3),
-                                        child: const Text('💫', style: TextStyle(fontSize: 14)),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // Word completion game for Y, X, and K letters
-  Widget _buildWordCompletionGame() {
-    final completedWords = <String>{};
-    
-    return StatefulBuilder(
-      builder: (context, setState) {
-        final wordsToComplete = _getWordsForCompletion(widget.letter.character);
-        
-        return Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.text_fields, color: Colors.blue[600], size: 24),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Completa las palabras que empiecen con "${widget.letter.character.toUpperCase()}"',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2E7D32),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: wordsToComplete.length,
-                  itemBuilder: (context, index) {
-                    final wordData = wordsToComplete[index];
-                    final word = wordData['word'] as String;
-                    final missingPart = wordData['missing'] as String;
-                    final displayWord = wordData['display'] as String;
-                    final isCompleted = completedWords.contains(word);
-                    
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: isCompleted ? Colors.green.withValues(alpha: 0.1) : Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isCompleted ? Colors.green : Colors.grey[300]!,
-                          width: 2,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            wordData['emoji'] as String,
-                            style: TextStyle(fontSize: MediaQuery.of(context).size.width < 600 ? 80 : 120),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  isCompleted ? word.toUpperCase() : displayWord,
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: isCompleted ? Colors.green[800] : Colors.black87,
-                                  ),
-                                ),
-                                if (!isCompleted) ...[
-                                  const SizedBox(height: 8),
-                                  Wrap(
-                                    spacing: 8,
-                                    children: missingPart.split('').map((letter) {
-                                      return GestureDetector(
-                                        onTap: () {
-                                          // DETENER NARRADOR al completar palabras
-                                          _audioService.stop();
-                                          setState(() {
-                                            completedWords.add(word);
-                                          });
-                                          _audioService.speakText('¡Excelente! Completaste la palabra $word');
-                                        },
-                                        child: Container(
-                                          width: 40,
-                                          height: 40,
-                                          decoration: BoxDecoration(
-                                            color: Colors.blue[100],
-                                            borderRadius: BorderRadius.circular(8),
-                                            border: Border.all(color: Colors.blue[300]!),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              letter.toUpperCase(),
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.blue[800],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                          if (isCompleted)
-                            Icon(Icons.check_circle, color: Colors.green, size: 32),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // Fun magical letter search game for any letter
-  Widget _buildLetterSearchGame(String targetLetter) {
-    final foundLetters = <int>{};
-    
-    return StatefulBuilder(
-      builder: (context, setState) {
-        // Generate a larger grid with more letters and scrolling
-        final allLetters = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('');
-        final targetLetterPositions = <int>[];
-        final distractorLetters = <String>[];
-        
-        // Generate 8 random positions for target letters in 24 slots (more content!)
-        final positions = <int>[];
-        for (int i = 0; i < 24; i++) {
-          positions.add(i);
-        }
-        positions.shuffle();
-        targetLetterPositions.addAll(positions.take(8));
-        
-        // Get distractor letters (not the target letter)
-        final availableDistractors = allLetters.where((l) => l != targetLetter).toList();
-        availableDistractors.shuffle();
-        distractorLetters.addAll(availableDistractors.take(16));
-        
-        final foundCount = foundLetters.length;
-        
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.purple[100]!,
-                Colors.pink[100]!,
-                Colors.orange[100]!,
-              ],
-            ),
-          ),
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Fun magical header
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.purple[400]!,
-                          Colors.pink[400]!,
-                          Colors.orange[400]!,
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(25),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.purple.withValues(alpha: 0.3),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text('🔍✨', style: TextStyle(fontSize: 30)),
-                            const SizedBox(width: 10),
-                            Text(
-                              '¡BUSCA LA LETRA MÁGICA $targetLetter!',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black26,
-                                    offset: Offset(1, 1),
-                                    blurRadius: 3,
-                                  ),
-                                ],
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(width: 10),
-                            const Text('✨🔍', style: TextStyle(fontSize: 30)),
-                          ],
-                        ),
-                        const SizedBox(height: 15),
-                        Text(
-                          '¡Toca las letras $targetLetter y verás la magia! 🪄',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 20),
-                        // Magical progress circles that fill like paint
-                        Wrap(
-                          alignment: WrapAlignment.center,
-                          children: List.generate(8, (index) {
-                            return AnimatedBuilder(
-                              animation: _animationController,
-                              builder: (context, child) {
-                                final isFound = index < foundCount;
-                                final rotation = _animationController.value * 2 * math.pi;
-                                final scale = isFound ? 1.0 + (math.sin(rotation) * 0.2) : 1.0;
-                                final fillProgress = isFound ? 1.0 : 0.0;
-                                
-                                return Transform.rotate(
-                                  angle: isFound ? rotation * 0.1 : 0,
-                                  child: Transform.scale(
-                                    scale: scale,
-                                    child: Container(
-                                      margin: const EdgeInsets.all(4),
-                                      width: 45,
-                                      height: 45,
-                                      child: Stack(
-                                        children: [
-                                          // Base circle (empty)
-                                          Container(
-                                            width: 45,
-                                            height: 45,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color: isFound ? Colors.green[600]! : Colors.grey[400]!,
-                                                width: 3,
-                                              ),
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black.withValues(alpha: 0.1),
-                                                  blurRadius: 4,
-                                                  offset: const Offset(0, 2),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          // Filling animation (paint effect)
-                                          if (isFound)
-                                            ClipOval(
-                                              child: AnimatedContainer(
-                                                duration: const Duration(milliseconds: 800),
-                                                curve: Curves.bounceOut,
-                                                width: 45,
-                                                height: 45 * fillProgress,
-                                                alignment: Alignment.bottomCenter,
-                                                decoration: BoxDecoration(
-                                                  gradient: RadialGradient(
-                                                    colors: [
-                                                      Colors.green[300]!,
-                                                      Colors.green[500]!,
-                                                      Colors.green[700]!,
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          // Letter and checkmark
-                                          Center(
-                                            child: isFound 
-                                                ? Container(
-                                                    width: 25,
-                                                    height: 25,
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      shape: BoxShape.circle,
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          color: Colors.green.withValues(alpha: 0.3),
-                                                          blurRadius: 8,
-                                                          spreadRadius: 2,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    child: const Icon(
-                                                      Icons.check,
-                                                      color: Colors.green,
-                                                      size: 18,
-                                                    ),
-                                                  )
-                                                : Text(
-                                                    targetLetter,
-                                                    style: TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.grey[600],
-                                                    ),
-                                                  ),
-                                          ),
-                                          // Sparkle effect when completed
-                                          if (isFound)
-                                            ...List.generate(4, (sparkleIndex) {
-                                              final angle = (sparkleIndex / 4) * 2 * math.pi + rotation;
-                                              return Positioned(
-                                                left: 22.5 + math.cos(angle) * 20 - 4,
-                                                top: 22.5 + math.sin(angle) * 20 - 4,
-                                                child: Text(
-                                                  '✨',
-                                                  style: TextStyle(
-                                                    fontSize: 8 + math.sin(rotation + sparkleIndex) * 2,
-                                                  ),
-                                                ),
-                                              );
-                                            }),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-                          }),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 25),
-                  // Magical letter grid with scrolling
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.blue[50]!,
-                          Colors.purple[50]!,
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(25),
-                      border: Border.all(color: Colors.purple[200]!, width: 3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.purple.withValues(alpha: 0.2),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: GridView.builder(
-                      padding: const EdgeInsets.all(20),
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: MediaQuery.of(context).size.width < 600 
-                            ? (MediaQuery.of(context).size.width < 400 ? 2 : 3) 
-                            : (MediaQuery.of(context).size.width < 1200 ? 4 : 6),
-                        childAspectRatio: 1.0,
-                        crossAxisSpacing: MediaQuery.of(context).size.width < 600 ? 10 : 15,
-                        mainAxisSpacing: MediaQuery.of(context).size.width < 600 ? 10 : 15,
-                      ),
-                      itemCount: 24, // More content with scrolling!
-                      itemBuilder: (context, index) {
-                        final isTargetPosition = targetLetterPositions.contains(index);
-                        final isFound = foundLetters.contains(index);
-                        
-                        String displayLetter;
-                        if (isTargetPosition) {
-                          displayLetter = targetLetter;
-                        } else {
-                          final distractorIndex = (index + targetLetter.hashCode) % distractorLetters.length;
-                          displayLetter = distractorLetters[distractorIndex];
-                        }
-                        
-                        return AnimatedBuilder(
-                          animation: _animationController,
-                          builder: (context, child) {
-                            final float = math.sin(_animationController.value * 2 * math.pi + index * 0.3) * 3;
-                            final sparkle = math.sin(_animationController.value * 4 * math.pi + index * 0.5);
-                            
-                            return Transform.translate(
-                              offset: Offset(0, float),
-                              child: GestureDetector(
-                                onTap: () {
-                                  if (isTargetPosition && !isFound) {
-                                    setState(() {
-                                      foundLetters.add(index);
-                                    });
-                                    
-                                    // Fun celebration audio
-                                    final celebrations = [
-                                      '¡Fantástico! ⭐ Encontraste la letra $targetLetter',
-                                      '¡Increíble! 🎉 ¡Qué bueno eres encontrando letras!',
-                                      '¡Maravilloso! ✨ Otra letra $targetLetter encontrada',
-                                      '¡Súper! 🌟 ¡Eres un detective de letras!',
-                                      '¡Excelente! 🎊 ¡Sigue así, campeón!',
-                                    ];
-                                    _audioService.speakText(celebrations[foundLetters.length % celebrations.length]);
-                                    
-                                    if (foundLetters.length == 8) {
-                                      _audioService.speakText('¡INCREÍBLE! 🎆 ¡Has encontrado todas las letras $targetLetter! ¡Eres un súper detective! 🕵️‍♂️✨');
-                                      // Complete the search game activity
-                                      context.read<LetterCityProvider>().completeActivity('${targetLetter.toLowerCase()}_search_game', 100);
-                                      _showCelebrationStars();
-                                    }
-                                  } else if (!isTargetPosition) {
-                                    final encouragements = [
-                                      'Esta es la letra $displayLetter. 🤔 ¡Sigue buscando la $targetLetter!',
-                                      'Mmm, esta es $displayLetter. 🔍 ¡La $targetLetter está escondida!',
-                                      'Oops, $displayLetter no es. 😊 ¡Busca la letra $targetLetter!',
-                                      '¡Casi! Esta es $displayLetter. 🌟 ¡Encuentra la $targetLetter!',
-                                    ];
-                                    _audioService.speakText(encouragements[index % encouragements.length]);
-                                  }
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                    gradient: isTargetPosition && isFound 
-                                        ? RadialGradient(
-                                            colors: [
-                                              Colors.green[300]!,
-                                              Colors.green[500]!,
-                                              Colors.green[700]!,
-                                            ],
-                                          )
-                                        : isTargetPosition 
-                                            ? RadialGradient(
-                                                colors: [
-                                                  Colors.yellow[200]!,
-                                                  Colors.orange[300]!,
-                                                  Colors.pink[300]!,
-                                                ],
-                                              )
-                                            : LinearGradient(
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                                colors: [
-                                                  Colors.blue[100]!,
-                                                  Colors.purple[100]!,
-                                                  Colors.pink[100]!,
-                                                ],
-                                              ),
-                                    border: Border.all(
-                                      color: isTargetPosition && isFound 
-                                          ? Colors.green[600]! 
-                                          : isTargetPosition
-                                              ? Colors.orange[400]!
-                                              : Colors.purple[300]!,
-                                      width: 3,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: (isTargetPosition && isFound ? Colors.green : Colors.purple).withValues(alpha: 0.3),
-                                        blurRadius: isTargetPosition && isFound ? 15 : 8,
-                                        offset: const Offset(0, 4),
-                                        spreadRadius: isTargetPosition && isFound ? 2 : 0,
-                                      ),
-                                      if (isTargetPosition && !isFound)
-                                        BoxShadow(
-                                          color: Colors.yellow.withValues(alpha: 0.3 + sparkle * 0.2),
-                                          blurRadius: 10 + sparkle * 5,
-                                          spreadRadius: 1 + sparkle,
-                                        ),
-                                    ],
-                                  ),
-                                  child: Stack(
-                                    children: [
-                                      // Magical sparkles for target letters
-                                      if (isTargetPosition && !isFound)
-                                        ...List.generate(3, (i) => Positioned(
-                                          left: 10 + i * 25 + sparkle * 5,
-                                          top: 10 + i * 15 + sparkle * 3,
-                                          child: Text(
-                                            '✨',
-                                            style: TextStyle(
-                                              fontSize: 12 + sparkle * 3,
-                                              color: Colors.yellow[600],
-                                            ),
-                                          ),
-                                        )),
-                                      
-                                      Center(
-                                        child: Text(
-                                          displayLetter,
-                                          style: TextStyle(
-                                            fontSize: MediaQuery.of(context).size.width < 600 ? 48 : 64,
-                                            fontWeight: FontWeight.w900,
-                                            color: isTargetPosition && isFound 
-                                                ? Colors.white 
-                                                : isTargetPosition
-                                                    ? Colors.orange[800]
-                                                    : Colors.purple[700],
-                                            shadows: [
-                                              Shadow(
-                                                color: isTargetPosition ? Colors.orange[300]! : Colors.purple[300]!,
-                                                offset: const Offset(2, 2),
-                                                blurRadius: 6,
-                                              ),
-                                              Shadow(
-                                                color: Colors.white.withValues(alpha: 0.8),
-                                                offset: const Offset(-1, -1),
-                                                blurRadius: 4,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      
-                                      // Celebration effects for found letters
-                                      if (isTargetPosition && isFound)
-                                        Positioned.fill(
-                                          child: Center(
-                                            child: Text(
-                                              '🎉',
-                                              style: TextStyle(
-                                                fontSize: 30 + sparkle * 5,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      
-                                      if (isTargetPosition && isFound)
-                                        Positioned(
-                                          top: 5,
-                                          right: 5,
-                                          child: Container(
-                                            width: 30,
-                                            height: 30,
-                                            decoration: BoxDecoration(
-                                              gradient: RadialGradient(
-                                                colors: [Colors.yellow[300]!, Colors.orange[500]!],
-                                              ),
-                                              shape: BoxShape.circle,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.yellow.withValues(alpha: 0.6),
-                                                  blurRadius: 10,
-                                                  spreadRadius: 2,
-                                                ),
-                                              ],
-                                            ),
-                                            child: const Center(
-                                              child: Text(
-                                                '⭐',
-                                                style: TextStyle(fontSize: 18),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  // Encouragement message
-                  Container(
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.green[200]!, Colors.blue[200]!],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      foundCount == 8 
-                          ? '🎊 ¡INCREÍBLE! ¡Has encontrado todas las letras $targetLetter mágicas! 🏆✨'
-                          : foundCount > 4
-                              ? '🌟 ¡Excelente trabajo, mago de letras! Solo quedan ${8 - foundCount} letras $targetLetter mágicas 🔮'
-                              : '✨ ¡Sigue buscando las letras $targetLetter mágicas escondidas! 🔍💫',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.purple[800],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // New A search game using the generic letter search
-  Widget _buildASearchGame() {
-    return _buildLetterSearchGame('A');
-  }
-
-  // Special search and find game for letter B like the image you showed
-  Widget _buildLetterBSearchAndFindGame() {
-    final allObjects = [..._bObjectsToFind, ..._bDistractorObjects];
-    final foundCount = _bObjectsToFind.where((obj) => obj['found'] == true).length;
-    final isCompleted = foundCount >= _bObjectsToFind.length;
-
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.lightBlue[100]!,
-            Colors.green[100]!,
-            Colors.yellow[100]!,
-          ],
-        ),
-      ),
-      child: Column(
-        children: [
-          // Header with instructions
-          Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.orange[400]!, Colors.red[400]!],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.orange.withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                const Text('🔍', style: TextStyle(fontSize: 40)),
-                const SizedBox(width: 15),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '¡ENCUENTRA TODOS LOS OBJETOS!',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black26,
-                              offset: Offset(1, 1),
-                              blurRadius: 3,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Busca y toca todos los objetos que empiecen con "B"',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // Progress indicator
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(color: Colors.orange[300]!, width: 2),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.star, color: Colors.orange[600], size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'Encontrados: $foundCount / ${_bObjectsToFind.length}',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange[800],
-                  ),
-                ),
-                if (isCompleted) ...[
-                  const SizedBox(width: 10),
-                  const Text('🎉', style: TextStyle(fontSize: 24)),
-                ],
-              ],
-            ),
-          ),
-          
-          // Main search area
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.8),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.brown[300]!, width: 3),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(17),
-                child: Stack(
-                  children: [
-                    // Background pattern to simulate a busy scene
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.lightGreen[100]!,
-                            Colors.lightBlue[100]!,
-                            Colors.yellow[50]!,
-                          ],
-                          stops: const [0.0, 0.5, 1.0],
-                        ),
-                      ),
-                      child: CustomPaint(
-                        painter: _SearchSceneBackgroundPainter(),
-                        size: Size.infinite,
-                      ),
-                    ),
-                    
-                    // Scattered objects to find
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        return Stack(
-                          children: allObjects.map((obj) {
-                            final isTargetObject = _bObjectsToFind.contains(obj);
-                            final isFound = obj['found'] as bool;
-                            final x = obj['x'] as double;
-                            final y = obj['y'] as double;
-                            
-                            return Positioned(
-                              left: x * (constraints.maxWidth - 80),
-                              top: y * (constraints.maxHeight - 80),
-                              child: GestureDetector(
-                                onTap: () {
-                                  // DETENER NARRADOR al buscar objetos
-                                  _audioService.stop();
-                                  _handleSearchObjectTap(obj, isTargetObject, _bObjectsToFind);
-                                },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 300),
-                                  width: 80,
-                                  height: 80,
-                                  decoration: BoxDecoration(
-                                    color: isFound && isTargetObject 
-                                        ? Colors.green.withValues(alpha: 0.3)
-                                        : isFound && !isTargetObject
-                                            ? Colors.red.withValues(alpha: 0.3)
-                                            : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(40),
-                                    border: isFound 
-                                        ? Border.all(
-                                            color: isTargetObject ? Colors.green : Colors.red,
-                                            width: 3,
-                                          )
-                                        : null,
-                                  ),
-                                  child: Stack(
-                                    children: [
-                                      Center(
-                                        child: Text(
-                                          obj['emoji'] as String,
-                                          style: TextStyle(
-                                            fontSize: 45,
-                                            shadows: isFound
-                                                ? []
-                                                : [
-                                                    Shadow(
-                                                      color: Colors.black.withValues(alpha: 0.3),
-                                                      blurRadius: 2,
-                                                      offset: const Offset(1, 1),
-                                                    ),
-                                                  ],
-                                          ),
-                                        ),
-                                      ),
-                                      if (isFound && isTargetObject)
-                                        Positioned(
-                                          top: 5,
-                                          right: 5,
-                                          child: Container(
-                                            width: 20,
-                                            height: 20,
-                                            decoration: const BoxDecoration(
-                                              color: Colors.green,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: const Icon(
-                                              Icons.check,
-                                              color: Colors.white,
-                                              size: 14,
-                                            ),
-                                          ),
-                                        ),
-                                      if (isFound && !isTargetObject)
-                                        Positioned(
-                                          top: 5,
-                                          right: 5,
-                                          child: Container(
-                                            width: 20,
-                                            height: 20,
-                                            decoration: const BoxDecoration(
-                                              color: Colors.red,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: const Icon(
-                                              Icons.close,
-                                              color: Colors.white,
-                                              size: 14,
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          
-          // Completion message
-          if (isCompleted)
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.green[400]!, Colors.blue[400]!],
-                ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.green.withValues(alpha: 0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: const Column(
-                children: [
-                  Text(
-                    '🎉 ¡EXCELENTE! 🎉',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    '¡Encontraste todos los objetos que empiezan con B!',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  void _handleSearchObjectTap(Map<String, dynamic> obj, bool isTargetObject, List<Map<String, dynamic>> objectsToFind) {
-    setState(() {
-      obj['found'] = true;
-    });
-
-    if (isTargetObject) {
-      _audioService.speakText('¡Excelente! ${obj['name']} empieza con B');
-      _showCelebrationStars();
-      context.read<LetterCityProvider>().completeActivity('search_find_${widget.letter.character}', 15);
-      
-      // Check if all objects are found
-      final foundCount = objectsToFind.where((obj) => obj['found'] == true).length;
-      if (foundCount >= objectsToFind.length) {
-        Future.delayed(const Duration(milliseconds: 500), () {
-          _audioService.speakText('¡Increíble! Encontraste todos los objetos que empiezan con B. ¡Eres un verdadero detective!');
-        });
-      }
-    } else {
-      _audioService.speakText('${obj['name']} no empieza con B. ¡Sigue buscando objetos con B!');
-      _showFailureFeedback();
-    }
-  }
-
-  // Helper method for coloring game objects
-  List<Map<String, dynamic>> _getObjectsForColoring(String letter) {
-    switch (letter.toLowerCase()) {
-      case 'a':
-        return [
-          {'emoji': '🚗', 'name': 'Auto', 'correct': true},
-          {'emoji': '🌳', 'name': 'Árbol', 'correct': true},
-          {'emoji': '💍', 'name': 'Anillo', 'correct': true},
-          {'emoji': '✈️', 'name': 'Avión', 'correct': true},
-          {'emoji': '🦅', 'name': 'Águila', 'correct': true},
-          {'emoji': '🍎', 'name': 'Manzana', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-        ];
-      case 'b':
-        return [
-          {'emoji': '🪣', 'name': 'Balde', 'correct': true},
-          {'emoji': '🚢', 'name': 'Barco', 'correct': true},  
-          {'emoji': '🍌', 'name': 'Banana', 'correct': true},
-          {'emoji': '🏀', 'name': 'Balón', 'correct': true},
-          {'emoji': '🚲', 'name': 'Bicicleta', 'correct': true},
-          {'emoji': '💋', 'name': 'Beso', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🐱', 'name': 'Gato', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-        ];
-      case 'v':
-        return [
-          {'emoji': '🌋', 'name': 'Volcán', 'correct': true},
-          {'emoji': '🐄', 'name': 'Vaca', 'correct': true},
-          {'emoji': '🌪️', 'name': 'Viento', 'correct': true},
-          {'emoji': '👗', 'name': 'Vestido', 'correct': true},
-          {'emoji': '🚐', 'name': 'Van', 'correct': true},
-          {'emoji': '🪟', 'name': 'Ventana', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-        ];
-      case 'c':
-        return [
-          {'emoji': '🐱', 'name': 'Gato', 'correct': false},
-          {'emoji': '🚗', 'name': 'Carro', 'correct': true},
-          {'emoji': '🍎', 'name': 'Manzana', 'correct': false},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': true},
-          {'emoji': '🐺', 'name': 'Lobo', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '👔', 'name': 'Camisa', 'correct': true},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🔔', 'name': 'Campana', 'correct': true},
-        ];
-      case 'd':
-        return [
-          {'emoji': '🦷', 'name': 'Diente', 'correct': true},
-          {'emoji': '🍎', 'name': 'Manzana', 'correct': false},
-          {'emoji': '🐉', 'name': 'Dragón', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '💎', 'name': 'Diamante', 'correct': true},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-        ];
-      case 'e':
-        return [
-          {'emoji': '🐘', 'name': 'Elefante', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '⭐', 'name': 'Estrella', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '✉️', 'name': 'Sobre', 'correct': false},
-          {'emoji': '🪜', 'name': 'Escalera', 'correct': true},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌍', 'name': 'Tierra', 'correct': false},
-        ];
-      case 'f':
-        return [
-          {'emoji': '🌸', 'name': 'Flor', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🍓', 'name': 'Fresa', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '💡', 'name': 'Foco', 'correct': true},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🔥', 'name': 'Fuego', 'correct': true},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      case 'g':
-        return [
-          {'emoji': '🐱', 'name': 'Gato', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🧤', 'name': 'Guante', 'correct': true},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🎸', 'name': 'Guitarra', 'correct': true},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      case 'h':
-        return [
-          {'emoji': '🔨', 'name': 'Martillo', 'correct': false},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🍯', 'name': 'Miel', 'correct': false},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '❄️', 'name': 'Hielo', 'correct': true},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🏥', 'name': 'Hospital', 'correct': true},
-        ];
-      case 'i':
-        return [
-          {'emoji': '🏝️', 'name': 'Isla', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🦎', 'name': 'Iguana', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '⛪', 'name': 'Iglesia', 'correct': true},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      case 'j':
-        return [
-          {'emoji': '🧼', 'name': 'Jabón', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🦒', 'name': 'Jirafa', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🧃', 'name': 'Jugo', 'correct': true},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      case 'l':
-        return [
-          {'emoji': '🦁', 'name': 'León', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🌙', 'name': 'Luna', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '📚', 'name': 'Libro', 'correct': true},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🍋', 'name': 'Limón', 'correct': true},
-        ];
-      case 'm':
-        return [
-          {'emoji': '🍎', 'name': 'Manzana', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🦋', 'name': 'Mariposa', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🌎', 'name': 'Mundo', 'correct': true},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🏔️', 'name': 'Montaña', 'correct': true},
-        ];
-      case 'n':
-        return [
-          {'emoji': '☁️', 'name': 'Nube', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🐧', 'name': 'Pingüino', 'correct': false},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '👃', 'name': 'Nariz', 'correct': true},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      case 'ñ':
-        return [
-          {'emoji': '🪆', 'name': 'Muñeca', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🌰', 'name': 'Castaña', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🧸', 'name': 'Oso', 'correct': false},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      case 'o':
-        return [
-          {'emoji': '🐻', 'name': 'Oso', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '👁️', 'name': 'Ojo', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🥚', 'name': 'Huevo', 'correct': false},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🐙', 'name': 'Pulpo', 'correct': false},
-        ];
-      case 'p':
-        return [
-          {'emoji': '🐧', 'name': 'Pingüino', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🍕', 'name': 'Pizza', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🐶', 'name': 'Perro', 'correct': true},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      case 'q':
-        return [
-          {'emoji': '🧀', 'name': 'Queso', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '👑', 'name': 'Corona', 'correct': false},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🔥', 'name': 'Fuego', 'correct': false},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      case 'r':
-        return [
-          {'emoji': '🐭', 'name': 'Ratón', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🌹', 'name': 'Rosa', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '📻', 'name': 'Radio', 'correct': true},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      case 's':
-        return [
-          {'emoji': '🐍', 'name': 'Serpiente', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '☀️', 'name': 'Sol', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🛏️', 'name': 'Cama', 'correct': false},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🪑', 'name': 'Silla', 'correct': true},
-        ];
-      case 't':
-        return [
-          {'emoji': '🐅', 'name': 'Tigre', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '📺', 'name': 'Televisión', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🏆', 'name': 'Trofeo', 'correct': true},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      case 'u':
-        return [
-          {'emoji': '🦄', 'name': 'Unicornio', 'correct': true},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🍇', 'name': 'Uva', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '☂️', 'name': 'Paraguas', 'correct': false},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      case 'k':
-        return [
-          {'emoji': '🥝', 'name': 'Kiwi', 'correct': true},
-          {'emoji': '🥋', 'name': 'Karate', 'correct': true},
-          {'emoji': '🛶', 'name': 'Kayak', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      case 'w':
-        return [
-          {'emoji': '🌐', 'name': 'Web', 'correct': true},
-          {'emoji': '🥃', 'name': 'Whisky', 'correct': true},
-          {'emoji': '🐺', 'name': 'Lobo', 'correct': false},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      case 'x':
-        return [
-          {'emoji': '🎷', 'name': 'Saxofón', 'correct': true},
-          {'emoji': '🛺', 'name': 'Taxi', 'correct': true},
-          {'emoji': '📷', 'name': 'Exposición', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      case 'y':
-        return [
-          {'emoji': '🧘', 'name': 'Yoga', 'correct': true},
-          {'emoji': '🪀', 'name': 'Yoyo', 'correct': true},
-          {'emoji': '🍳', 'name': 'Yema', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      case 'z':
-        return [
-          {'emoji': '🦓', 'name': 'Cebra', 'correct': false},
-          {'emoji': '🚗', 'name': 'Auto', 'correct': false},
-          {'emoji': '👠', 'name': 'Zapato', 'correct': true},
-          {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-          {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-          {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-          {'emoji': '🥕', 'name': 'Zanahoria', 'correct': true},
-          {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
-          {'emoji': '🎯', 'name': 'Diana', 'correct': false},
-        ];
-      default:
-        return [];
-    }
-  }
-
-  // Helper method for word completion objects
-  List<Map<String, dynamic>> _getWordsForCompletion(String letter) {
-    switch (letter.toLowerCase()) {
-      case 'a':
-        return [
-          {'emoji': '🍎', 'word': 'árbol', 'missing': 'a', 'display': '_rbol'},
-          {'emoji': '🚗', 'word': 'auto', 'missing': 'a', 'display': '_uto'},
-          {'emoji': '✈️', 'word': 'avión', 'missing': 'a', 'display': '_vión'},
-        ];
-      case 'b':
-        return [
-          {'emoji': '🎈', 'word': 'barco', 'missing': 'b', 'display': '_arco'},
-          {'emoji': '🏀', 'word': 'bola', 'missing': 'b', 'display': '_ola'},
-          {'emoji': '🐛', 'word': 'bicho', 'missing': 'b', 'display': '_icho'},
-        ];
-      case 'c':
-        return [
-          {'emoji': '🏠', 'word': 'casa', 'missing': 'c', 'display': '_asa'},
-          {'emoji': '🐱', 'word': 'gato', 'missing': 'c', 'display': 'ga_o'},
-          {'emoji': '🚗', 'word': 'carro', 'missing': 'c', 'display': '_arro'},
-        ];
-      case 'd':
-        return [
-          {'emoji': '🦷', 'word': 'diente', 'missing': 'd', 'display': '_iente'},
-          {'emoji': '💰', 'word': 'dinero', 'missing': 'd', 'display': '_inero'},
-          {'emoji': '🐉', 'word': 'dragón', 'missing': 'd', 'display': '_ragón'},
-        ];
-      case 'e':
-        return [
-          {'emoji': '🐘', 'word': 'elefante', 'missing': 'e', 'display': '_lefante'},
-          {'emoji': '⚡', 'word': 'energía', 'missing': 'e', 'display': '_nergía'},
-          {'emoji': '🪜', 'word': 'escalera', 'missing': 'e', 'display': '_scalera'},
-        ];
-      case 'f':
-        return [
-          {'emoji': '🌸', 'word': 'flor', 'missing': 'f', 'display': '_lor'},
-          {'emoji': '🍓', 'word': 'fresa', 'missing': 'f', 'display': '_resa'},
-          {'emoji': '🔥', 'word': 'fuego', 'missing': 'f', 'display': '_uego'},
-        ];
-      case 'g':
-        return [
-          {'emoji': '🐱', 'word': 'gato', 'missing': 'g', 'display': '_ato'},
-          {'emoji': '🎸', 'word': 'guitarra', 'missing': 'g', 'display': '_uitarra'},
-          {'emoji': '👓', 'word': 'gafas', 'missing': 'g', 'display': '_afas'},
-        ];
-      case 'h':
-        return [
-          {'emoji': '🍯', 'word': 'hormiga', 'missing': 'h', 'display': '_ormiga'},
-          {'emoji': '🏨', 'word': 'hotel', 'missing': 'h', 'display': '_otel'},
-          {'emoji': '🌿', 'word': 'hoja', 'missing': 'h', 'display': '_oja'},
-        ];
-      case 'i':
-        return [
-          {'emoji': '🏝️', 'word': 'isla', 'missing': 'i', 'display': '_sla'},
-          {'emoji': '🦎', 'word': 'iguana', 'missing': 'i', 'display': '_guana'},
-          {'emoji': '💡', 'word': 'idea', 'missing': 'i', 'display': '_dea'},
-        ];
-      case 'j':
-        return [
-          {'emoji': '🧸', 'word': 'juguete', 'missing': 'j', 'display': '_uguete'},
-          {'emoji': '🦒', 'word': 'jirafa', 'missing': 'j', 'display': '_irafa'},
-          {'emoji': '🌻', 'word': 'jardín', 'missing': 'j', 'display': '_ardín'},
-        ];
-      case 'k':
-        return [
-          {'emoji': '🥝', 'word': 'kiwi', 'missing': 'k', 'display': '_iwi'},
-          {'emoji': '🥋', 'word': 'karate', 'missing': 'k', 'display': '_arate'},
-          {'emoji': '🛶', 'word': 'kayak', 'missing': 'k', 'display': '_ayak'},
-        ];
-      case 'l':
-        return [
-          {'emoji': '🦁', 'word': 'león', 'missing': 'l', 'display': '_eón'},
-          {'emoji': '🌙', 'word': 'luna', 'missing': 'l', 'display': '_una'},
-          {'emoji': '📚', 'word': 'libro', 'missing': 'l', 'display': '_ibro'},
-        ];
-      case 'm':
-        return [
-          {'emoji': '🐒', 'word': 'mono', 'missing': 'm', 'display': '_ono'},
-          {'emoji': '🍎', 'word': 'manzana', 'missing': 'm', 'display': '_anzana'},
-          {'emoji': '🎵', 'word': 'música', 'missing': 'm', 'display': '_úsica'},
-        ];
-      case 'n':
-        return [
-          {'emoji': '🐧', 'word': 'niño', 'missing': 'n', 'display': '_iño'},
-          {'emoji': '🎄', 'word': 'nieve', 'missing': 'n', 'display': '_ieve'},
-          {'emoji': '🐣', 'word': 'nido', 'missing': 'n', 'display': '_ido'},
-        ];
-      case 'ñ':
-        return [
-          {'emoji': '🥱', 'word': 'ñu', 'missing': 'ñ', 'display': '_u'},
-          {'emoji': '🧄', 'word': 'año', 'missing': 'ñ', 'display': 'a_o'},
-          {'emoji': '🍎', 'word': 'niño', 'missing': 'ñ', 'display': 'ni_o'},
-        ];
-      case 'o':
-        return [
-          {'emoji': '🐻', 'word': 'oso', 'missing': 'o', 'display': '_so'},
-          {'emoji': '👁️', 'word': 'ojo', 'missing': 'o', 'display': '_jo'},
-          {'emoji': '🌊', 'word': 'océano', 'missing': 'o', 'display': '_céano'},
-        ];
-      case 'p':
-        return [
-          {'emoji': '🐧', 'word': 'pájaro', 'missing': 'p', 'display': '_ájaro'},
-          {'emoji': '🍎', 'word': 'pelota', 'missing': 'p', 'display': '_elota'},
-          {'emoji': '🐟', 'word': 'pez', 'missing': 'p', 'display': '_ez'},
-        ];
-      case 'q':
-        return [
-          {'emoji': '🧀', 'word': 'queso', 'missing': 'q', 'display': '_ueso'},
-          {'emoji': '🔥', 'word': 'quemar', 'missing': 'q', 'display': '_uemar'},
-          {'emoji': '💎', 'word': 'quieto', 'missing': 'q', 'display': '_uieto'},
-        ];
-      case 'r':
-        return [
-          {'emoji': '🌹', 'word': 'rosa', 'missing': 'r', 'display': '_osa'},
-          {'emoji': '👑', 'word': 'rey', 'missing': 'r', 'display': '_ey'},
-          {'emoji': '🐭', 'word': 'ratón', 'missing': 'r', 'display': '_atón'},
-        ];
-      case 's':
-        return [
-          {'emoji': '☀️', 'word': 'sol', 'missing': 's', 'display': '_ol'},
-          {'emoji': '🐍', 'word': 'serpiente', 'missing': 's', 'display': '_erpiente'},
-          {'emoji': '💺', 'word': 'silla', 'missing': 's', 'display': '_illa'},
-        ];
-      case 't':
-        return [
-          {'emoji': '🐯', 'word': 'tigre', 'missing': 't', 'display': '_igre'},
-          {'emoji': '📱', 'word': 'teléfono', 'missing': 't', 'display': '_eléfono'},
-          {'emoji': '🏠', 'word': 'techo', 'missing': 't', 'display': '_echo'},
-        ];
-      case 'u':
-        return [
-          {'emoji': '🦄', 'word': 'unicornio', 'missing': 'u', 'display': '_nicornio'},
-          {'emoji': '🍇', 'word': 'uva', 'missing': 'u', 'display': '_va'},
-          {'emoji': '🦉', 'word': 'universo', 'missing': 'u', 'display': '_niverso'},
-        ];
-      case 'v':
-        return [
-          {'emoji': '🐄', 'word': 'vaca', 'missing': 'v', 'display': '_aca'},
-          {'emoji': '🚗', 'word': 'vehículo', 'missing': 'v', 'display': '_ehículo'},
-          {'emoji': '🌋', 'word': 'volcán', 'missing': 'v', 'display': '_olcán'},
-        ];
-      case 'w':
-        return [
-          {'emoji': '🐺', 'word': 'lobo', 'missing': 'w', 'display': 'lo_o'}, // Sonido W en palabras extranjeras
-          {'emoji': '🌐', 'word': 'web', 'missing': 'w', 'display': '_eb'},
-          {'emoji': '🥃', 'word': 'whisky', 'missing': 'w', 'display': '_hisky'},
-        ];
-      case 'x':
-        return [
-          {'emoji': '🎷', 'word': 'saxofón', 'missing': 'x', 'display': 'sa_ofón'},
-          {'emoji': '🥊', 'word': 'boxeo', 'missing': 'x', 'display': 'bo_eo'},
-          {'emoji': '🛺', 'word': 'taxi', 'missing': 'x', 'display': 'ta_i'},
-        ];
-      case 'y':
-        return [
-          {'emoji': '🧘', 'word': 'yoga', 'missing': 'y', 'display': '_oga'},
-          {'emoji': '🪀', 'word': 'yoyo', 'missing': 'y', 'display': '_oyo'},
-          {'emoji': '🍳', 'word': 'yema', 'missing': 'y', 'display': '_ema'},
-        ];
-      case 'z':
-        return [
-          {'emoji': '👞', 'word': 'zapato', 'missing': 'z', 'display': '_apato'},
-          {'emoji': '🥕', 'word': 'zanahoria', 'missing': 'z', 'display': '_anahoria'},
-          {'emoji': '🦓', 'word': 'zebra', 'missing': 'z', 'display': '_ebra'},
-        ];
-      default:
-        return [];
-    }
   }
 }
 
@@ -3823,7 +2468,7 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
                             child: Text(
                               widget.letter,
                               style: TextStyle(
-                                fontSize: isPhone ? drawingSize * 0.75 : drawingSize * 0.8, // Tamaño más grande para trazado
+                                fontSize: isPhone ? drawingSize * 0.65 : drawingSize * 0.7, // Tamaño proporcional optimizado
                                 fontWeight: FontWeight.w200,
                                 color: Colors.grey[200],
                                 fontFamily: 'Arial',
@@ -3847,8 +2492,6 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
                           // Tracing canvas
                           GestureDetector(
                             onPanStart: (details) {
-                              // DETENER NARRADOR cuando el niño empieza a trazar
-                              widget.audioService.stop();
                               setState(() {
                                 _currentStroke = [details.localPosition];
                                 _hasTraced = true;
@@ -3868,23 +2511,24 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
                                   if (_validateStroke(_currentStroke, drawingRect.width, drawingRect.height)) {
                                     _validStrokes++;
                                     
-                                    // Feedback positivo variado y motivador
+                                    // Feedback sutil durante el trazado (sin interrumpir)
                                     final encouragements = [
-                                      '¡Muy bien!', '¡Excelente!', '¡Fantástico!', 
-                                      '¡Genial!', '¡Perfecto!', '¡Increíble!',
-                                      '¡Lo estás haciendo súper bien!', '¡Qué buen trazo!',
-                                      '¡Eres un campeón!', '¡Sigue así!'
+                                      '¡Muy bien!', '¡Genial!', '¡Perfecto!', 
+                                      '¡Qué buen trazo!', '¡Sigue así!'
                                     ];
                                     final randomIndex = DateTime.now().millisecondsSinceEpoch % encouragements.length;
-                                    widget.audioService.speakText(encouragements[randomIndex]);
                                     
-                                    // Celebrar cuando complete suficientes trazos válidos
+                                    // Solo dar feedback en trazos intermedios, no al completar
+                                    if (_validStrokes < _requiredStrokes) {
+                                      widget.audioService.speakText(encouragements[randomIndex]);
+                                    }
+                                    
+                                    // CELEBRACIÓN GRANDE solo cuando la letra esté completamente terminada
                                     if (_validStrokes >= _requiredStrokes) {
-                                      // RESPUESTA INMEDIATA para niños ansiosos - reducido de 100ms a 50ms
-                                      Future.delayed(const Duration(milliseconds: 50), () {
+                                      Future.delayed(const Duration(milliseconds: 500), () {
                                         widget.onCelebrationStars();
                                         widget.onTracingComplete(); // IMPORTANTE: Marcar como completado
-                                        widget.audioService.speakText('¡Has trazado muy bien la letra ${widget.letter}!');
+                                        widget.audioService.speakText('¡EXCELENTE! ¡Has completado la letra ${widget.letter.toUpperCase()} perfectamente!');
                                       });
                                     }
                                     
@@ -4771,44 +3415,31 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
   
   bool _validateSimpleP(List<Offset> stroke, double canvasWidth, double canvasHeight) {
-    // P: Línea vertical izquierda, curva superior o líneas horizontales
-    if (stroke.length < 2) return false;
+    // P: Línea vertical izquierda o curva superior derecha
+    if (stroke.length < 3) return false;
     
+    // ignore: unused_local_variable
     final start = stroke.first;
+    // ignore: unused_local_variable
     final end = stroke.last;
     final startX = start.dx / canvasWidth;
     final endX = end.dx / canvasWidth;
     final startY = start.dy / canvasHeight;
     final endY = end.dy / canvasHeight;
     
-    // Calcular la longitud del trazo
-    final strokeLength = _calculateStrokeLength(stroke);
-    final minLength = math.min(canvasWidth, canvasHeight) * 0.15;
+    // Línea vertical izquierda
+    final isVerticalLeft = (startX < 0.4 && endX < 0.4) && (endY - startY).abs() > 0.3;
     
-    // 1. Línea vertical izquierda (tallo principal de P) - más flexible
-    final avgX = stroke.map((p) => p.dx / canvasWidth).reduce((a, b) => a + b) / stroke.length;
-    final isVerticalLeft = avgX < 0.5 && (endY - startY).abs() > 0.3 && strokeLength > minLength;
+    // Curva superior derecha (parte distintiva de P)
+    final isUpperCurve = (startY < 0.6) && (endX > startX + 0.1) && _hasSignificantCurvature(stroke);
     
-    // 2. Línea horizontal superior (parte superior de P) - más permisiva
-    final avgY = stroke.map((p) => p.dy / canvasHeight).reduce((a, b) => a + b) / stroke.length;
-    final isTopHorizontal = avgY < 0.5 && (startY - endY).abs() < 0.2 && (endX - startX).abs() > 0.15 && strokeLength > minLength;
+    // Línea horizontal superior
+    final isTopHorizontal = (startY < 0.4) && (startY - endY).abs() < 0.2 && (endX - startX).abs() > 0.2;
     
-    // 3. Línea horizontal media (parte media de P) - más permisiva
-    final isMiddleHorizontal = avgY > 0.3 && avgY < 0.7 && (startY - endY).abs() < 0.2 && (endX - startX).abs() > 0.15 && strokeLength > minLength;
+    // Línea horizontal media
+    final isMiddleHorizontal = (startY > 0.4 && startY < 0.6) && (startY - endY).abs() < 0.2 && (endX - startX).abs() > 0.2;
     
-    // 4. Curva derecha superior (arco de P) - más flexible
-    final isRightCurve = avgX > 0.2 && avgY < 0.7 && _hasSignificantCurvature(stroke) && strokeLength > minLength;
-    
-    // 5. Trazo diagonal que podría ser parte de P
-    final isDiagonal = (endX - startX).abs() > 0.1 && (endY - startY).abs() > 0.1 && strokeLength > minLength;
-    
-    // 6. Cualquier trazo razonable en la zona de P
-    final isInPZone = startX < 0.9 && startY < 0.9 && endX < 0.9 && endY < 0.9;
-    
-    // 7. Trazo corto pero en posición correcta (para trazos pequeños de niños)
-    final isShortButValid = strokeLength > minLength * 0.5 && isInPZone;
-    
-    return (isVerticalLeft || isTopHorizontal || isMiddleHorizontal || isRightCurve || isDiagonal || isShortButValid) && isInPZone;
+    return isVerticalLeft || isUpperCurve || isTopHorizontal || isMiddleHorizontal;
   }
   
   bool _validateSimpleQ(List<Offset> stroke, double canvasWidth, double canvasHeight) {
@@ -5043,21 +3674,6 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   }
 
   // Función auxiliar para detectar curvatura significativa
-  double _calculateStrokeLength(List<Offset> stroke) {
-    if (stroke.length < 2) return 0.0;
-    
-    double totalLength = 0.0;
-    for (int i = 1; i < stroke.length; i++) {
-      final prev = stroke[i-1];
-      final curr = stroke[i];
-      final distance = math.sqrt(
-        math.pow(curr.dx - prev.dx, 2) + math.pow(curr.dy - prev.dy, 2)
-      );
-      totalLength += distance;
-    }
-    return totalLength;
-  }
-
   bool _hasSignificantCurvature(List<Offset> stroke) {
     if (stroke.length < 5) return false;
     
@@ -6552,13 +5168,13 @@ class _TracingCanvasState extends State<_TracingCanvas> with TickerProviderState
   String _getFeedbackForLetterP(int attempts) {
     switch (attempts) {
       case 1:
-        return '¡Muy bien! La P tiene una línea vertical y curvas arriba. Puedes hacer cualquier parte de la letra P';
+        return 'La P tiene una línea vertical y una curva arriba. Haz una línea recta hacia abajo';
       case 2:
-        return 'Para la P, haz una línea vertical, una línea horizontal, o una curva. ¡Cualquier trazo cuenta!';
+        return 'Para la P, puedes hacer la línea vertical o la curva/línea horizontal de arriba';
       case 3:
-        return 'La letra P se puede hacer de muchas formas. Haz una línea en cualquier dirección dentro del área';
+        return 'La letra P es una línea vertical con un semicírculo o líneas horizontales arriba';
       default:
-        return '¡Perfecto! Cualquier trazo que hagas para la P está bien. ¡Sigue intentando!';
+        return 'Voy a mostrarte cómo se hace la P';
     }
   }
 
@@ -8208,16 +6824,19 @@ class _LetterDemoPainter extends CustomPainter {
       _drawAnimatedLine(canvas, Offset(leftX, topY), Offset(rightX, topY), stroke2Progress, paint);
     }
     
-    // Línea derecha (75-87.5%)
+    // Línea derecha y curva (75-100%)
     if (progress > 0.75) {
-      final stroke3Progress = math.min((progress - 0.75) * 8, 1.0);
-      _drawAnimatedLine(canvas, Offset(rightX, topY), Offset(rightX, midY), stroke3Progress, paint);
-    }
-    
-    // Línea media horizontal (87.5-100%)
-    if (progress > 0.875) {
-      final stroke4Progress = math.min((progress - 0.875) * 8, 1.0);
-      _drawAnimatedLine(canvas, Offset(rightX, midY), Offset(leftX, midY), stroke4Progress, paint);
+      final stroke3Progress = math.min((progress - 0.75) * 4, 1.0);
+      final path = Path()
+        ..moveTo(rightX, topY)
+        ..lineTo(rightX, midY * 0.9)
+        ..lineTo(leftX, midY);
+      final pathMetrics = path.computeMetrics();
+      if (pathMetrics.isNotEmpty) {
+        final pathMetric = pathMetrics.first;
+        final extractPath = pathMetric.extractPath(0, pathMetric.length * stroke3Progress);
+        canvas.drawPath(extractPath, paint);
+      }
     }
   }
 
@@ -8581,7 +7200,7 @@ class _CelebrationStarsWidgetState extends State<_CelebrationStarsWidget>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 1),
+      duration: const Duration(seconds: 3),
       vsync: this,
     );
     
@@ -8761,7 +7380,7 @@ class _FailureFeedbackWidgetState extends State<_FailureFeedbackWidget>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(seconds: 2),
       vsync: this,
     );
     
@@ -8868,13 +7487,11 @@ class _SuccessMessageWidget extends StatefulWidget {
   final String wordName;
   final String letterName;
   final VoidCallback onComplete;
-  final AudioService audioService;
 
   const _SuccessMessageWidget({
     required this.wordName,
     required this.letterName,
     required this.onComplete,
-    required this.audioService,
   });
 
   @override
@@ -9048,54 +7665,4 @@ class _SuccessMessageWidgetState extends State<_SuccessMessageWidget>
       },
     );
   }
-
-}
-
-// Custom painter for the search and find game background
-class _SearchSceneBackgroundPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..style = PaintingStyle.fill;
-    
-    // Draw some background elements to make it look busy like your image
-    // Add some clouds
-    paint.color = Colors.white.withValues(alpha: 0.6);
-    _drawCloud(canvas, const Offset(50, 30), paint);
-    _drawCloud(canvas, Offset(size.width - 80, 40), paint);
-    _drawCloud(canvas, Offset(size.width * 0.7, 50), paint);
-    
-    // Add some grass areas
-    paint.color = Colors.green.withValues(alpha: 0.3);
-    final grassPath = Path();
-    grassPath.moveTo(0, size.height * 0.8);
-    grassPath.quadraticBezierTo(size.width * 0.3, size.height * 0.75, size.width * 0.6, size.height * 0.8);
-    grassPath.quadraticBezierTo(size.width * 0.8, size.height * 0.85, size.width, size.height * 0.8);
-    grassPath.lineTo(size.width, size.height);
-    grassPath.lineTo(0, size.height);
-    grassPath.close();
-    canvas.drawPath(grassPath, paint);
-    
-    // Add some subtle patterns
-    paint.color = Colors.blue.withValues(alpha: 0.1);
-    for (int i = 0; i < 5; i++) {
-      canvas.drawCircle(
-        Offset(size.width * (0.1 + i * 0.2), size.height * 0.3), 
-        20, 
-        paint,
-      );
-    }
-  }
-  
-  void _drawCloud(Canvas canvas, Offset center, Paint paint) {
-    // Simple cloud shape with multiple circles
-    canvas.drawCircle(center, 15, paint);
-    canvas.drawCircle(center.translate(-12, 0), 12, paint);
-    canvas.drawCircle(center.translate(12, 0), 12, paint);
-    canvas.drawCircle(center.translate(-6, -8), 10, paint);
-    canvas.drawCircle(center.translate(6, -8), 10, paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

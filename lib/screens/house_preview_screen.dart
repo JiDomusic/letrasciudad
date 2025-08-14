@@ -6,8 +6,13 @@ import 'dart:math' as math;
 
 class HousePreviewScreen extends StatefulWidget {
   final Letter letterData;
+  final bool isReturningFromGame;
 
-  const HousePreviewScreen({super.key, required this.letterData});
+  const HousePreviewScreen({
+    super.key, 
+    required this.letterData,
+    this.isReturningFromGame = false,
+  });
 
   @override
   State<HousePreviewScreen> createState() => _HousePreviewScreenState();
@@ -74,12 +79,22 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
 
     try {
       final letter = widget.letterData.character.toUpperCase();
-      await _audioService.speakText(
-        '¡Hola! ¡Bienvenido a mi casa de la letra $letter! '
-        'Te invito a pasar por el caminito de tierra hacia mi puerta. '
-        'Haz clic en cualquier parte de la pantalla para entrar '
-        'y jugar conmigo. ¡Será muy divertido aprender juntos!'
-      );
+      
+      if (widget.isReturningFromGame) {
+        // Mensaje de bienvenida de regreso
+        await _audioService.speakText(
+          '¡Hola otra vez! ¡Qué bueno que regresaste! '
+          'Puedes seguir explorando las otras casas. '
+          'Hay muchas más letras esperándote para jugar.'
+        );
+      } else {
+        // Mensaje de primera visita
+        await _audioService.speakText(
+          '¡Hola! ¡Bienvenido a mi casa de la letra $letter! '
+          'Puedes entrar a mi puerta y jugar en mi casa a juegos divertidos. '
+          'Haz clic en mi puerta para entrar.'
+        );
+      }
     } catch (e) {
       debugPrint('Error playing narration: $e');
     } finally {
@@ -123,6 +138,10 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final isMobile = screenSize.width < 800;
+    final isVerySmallScreen = screenSize.height < 600;
+    
     return Scaffold(
       body: GestureDetector(
         onTap: _stopNarrationAndNavigate,
@@ -139,7 +158,12 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
             ),
           ),
           child: SafeArea(
-            child: Stack(
+            child: isMobile ? SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: SizedBox(
+                height: screenSize.height - MediaQuery.of(context).padding.top + 100, // Extra space for house roof
+                child: Stack(
+                  clipBehavior: Clip.none, // Allow content to overflow if needed
               children: [
               // Sol animado
               _buildAnimatedSun(),
@@ -171,28 +195,39 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
               // Pajaritos volando
               ..._buildFlyingBirds(),
               
-              // Casa principal mejorada
-              Center(
-                child: AnimatedBuilder(
-                  animation: _houseAnimation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _houseAnimation.value * 1.8, // Acercar más la casa (casi doble)
-                      child: _buildEnhancedHouse(),
-                    );
-                  },
+              // Casa principal mejorada - centrada verticalmente
+              Positioned.fill(
+                child: Center(
+                  child: AnimatedBuilder(
+                    animation: _houseAnimation,
+                    builder: (context, child) {
+                      // Responsive scaling based on screen size
+                      final screenWidth = MediaQuery.of(context).size.width;
+                      final isMobile = screenWidth < 600;
+                      final scale = isMobile ? 1.2 : 1.8; // Smaller scale for mobile
+                      
+                      return Transform.scale(
+                        scale: _houseAnimation.value * scale,
+                        child: _buildEnhancedHouse(),
+                      );
+                    },
+                  ),
                 ),
               ),
               
               // Personaje
               Positioned(
-                bottom: 100,
-                right: 80,
+                bottom: MediaQuery.of(context).size.width < 600 ? 80 : 100, // Lower on mobile
+                right: MediaQuery.of(context).size.width < 600 ? 40 : 80, // Closer to center on mobile
                 child: AnimatedBuilder(
                   animation: _characterAnimation,
                   builder: (context, child) {
+                    final screenWidth = MediaQuery.of(context).size.width;
+                    final isMobile = screenWidth < 600;
+                    final scale = isMobile ? 0.8 : 1.0; // Smaller character on mobile
+                    
                     return Transform.scale(
-                      scale: _characterAnimation.value,
+                      scale: _characterAnimation.value * scale,
                       child: _buildCharacter(),
                     );
                   },
@@ -200,16 +235,69 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
               ),
               
               
-              // Botón de regreso
+              // BOTÓN SÚPER DIVERTIDO PARA VOLVER AL PARQUE
               Positioned(
-                top: 20,
-                left: 20,
-                child: IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.black54,
-                    shape: const CircleBorder(),
+                top: 15,
+                left: 15,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF4CAF50),
+                        const Color(0xFF2E7D32),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(25),
+                      onTap: () => Navigator.pop(context),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 30,
+                              height: 30,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Center(
+                                child: Text('🏠', style: TextStyle(fontSize: 16)),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Volver al Parque',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Comic Sans MS',
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 2,
+                                    offset: const Offset(1, 1),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -217,12 +305,16 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
               // Indicador de narración e invitación
               if (_isNarrationPlaying)
                 Positioned(
-                  top: 80,
+                  top: MediaQuery.of(context).size.width < 600 ? 60 : 80, // Higher on mobile
                   left: 0,
                   right: 0,
                   child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    padding: const EdgeInsets.all(20),
+                    margin: EdgeInsets.symmetric(
+                      horizontal: MediaQuery.of(context).size.width < 600 ? 10 : 20, // Less margin on mobile
+                    ),
+                    padding: EdgeInsets.all(
+                      MediaQuery.of(context).size.width < 600 ? 15 : 20, // Less padding on mobile
+                    ),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
@@ -241,13 +333,19 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.volume_up, color: Colors.white, size: 24),
+                            Icon(
+                              widget.isReturningFromGame ? Icons.home : Icons.volume_up, 
+                              color: Colors.white, 
+                              size: 24
+                            ),
                             const SizedBox(width: 10),
                             Text(
-                              '🏠 Casa ${widget.letterData.character.toUpperCase()}',
-                              style: const TextStyle(
+                              widget.isReturningFromGame 
+                                  ? '🎉 ¡Bienvenido de vuelta!' 
+                                  : '🏠 Casa ${widget.letterData.character.toUpperCase()}',
+                              style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 20,
+                                fontSize: MediaQuery.of(context).size.width < 600 ? 18 : 20,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -255,29 +353,341 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          '¡Hola! Te invito a pasar por el caminito de tierra hacia mi puerta.',
-                          style: const TextStyle(
+                          widget.isReturningFromGame
+                              ? 'Puedes seguir explorando las otras casas. Hay muchas más letras esperándote.'
+                              : 'Puedes entrar a mi puerta y jugar en mi casa a juegos divertidos.',
+                          style: TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
+                            fontSize: MediaQuery.of(context).size.width < 600 ? 14 : 16,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: const Text(
-                            '👆 Toca la pantalla para entrar y jugar',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
+                        const SizedBox(height: 12),
+                        if (widget.isReturningFromGame) ...[
+                          // Botón lúdico para volver al home
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).popUntil((route) => route.isFirst);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange[400],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              elevation: 8,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.explore, size: 24),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '🏘️ Ver todas las casas',
+                                  style: TextStyle(
+                                    fontSize: MediaQuery.of(context).size.width < 600 ? 14 : 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Text(
+                              '✨ O puedes entrar otra vez a esta casa',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: MediaQuery.of(context).size.width < 600 ? 12 : 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ] else ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Text(
+                              '👆 Haz clic en mi puerta para entrar',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: MediaQuery.of(context).size.width < 600 ? 12 : 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+                ),
+              ),
+            ) : Stack(
+              clipBehavior: Clip.none, // Allow content to overflow if needed
+              children: [
+              // Sol animado
+              _buildAnimatedSun(),
+              
+              // Colinas de fondo con pasto
+              _buildBackgroundHills(),
+              
+              // Pasto detallado
+              _buildDetailedGrass(),
+              
+              // Tierra extra y vegetación
+              _buildExtraGround(),
+              
+              // Animales de granja
+              ..._buildFarmAnimals(),
+              
+              // Pájaros volando
+              ..._buildFlyingBirds(),
+              
+              // Elementos decorativos (contiene mariposas, rocas, hongos, etc.)
+              ..._buildDecorativeElements(),
+              
+              // Casa principal mejorada - centrada
+              Positioned.fill(
+                child: Center(
+                  child: AnimatedBuilder(
+                    animation: _houseAnimation,
+                    builder: (context, child) {
+                      // Responsive scaling based on screen size
+                      final screenWidth = MediaQuery.of(context).size.width;
+                      final isMobile = screenWidth < 600;
+                      final scale = isMobile ? 1.2 : 1.8; // Smaller scale for mobile
+                      
+                      return Transform.scale(
+                        scale: scale * _houseAnimation.value,
+                        child: _buildEnhancedHouse(),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              
+              // Personaje
+              Positioned(
+                bottom: MediaQuery.of(context).size.width < 600 ? 80 : 100, // Lower on mobile
+                right: MediaQuery.of(context).size.width < 600 ? 40 : 80, // Closer to center on mobile
+                child: AnimatedBuilder(
+                  animation: _characterAnimation,
+                  builder: (context, child) {
+                    final screenWidth = MediaQuery.of(context).size.width;
+                    final isMobile = screenWidth < 600;
+                    final scale = isMobile ? 0.8 : 1.0; // Smaller character on mobile
+                    
+                    return Transform.scale(
+                      scale: scale * _characterAnimation.value,
+                      child: _buildCharacter(),
+                    );
+                  },
+                ),
+              ),
+              
+              
+              // BOTÓN SÚPER DIVERTIDO PARA VOLVER AL PARQUE (DESKTOP)
+              Positioned(
+                top: 15,
+                left: 15,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF4CAF50),
+                        const Color(0xFF2E7D32),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(25),
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 30,
+                              height: 30,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Center(
+                                child: Text('🏠', style: TextStyle(fontSize: 16)),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Volver al Parque',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Comic Sans MS',
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 2,
+                                    offset: const Offset(1, 1),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              
+              // Indicador de narración e invitación
+              if (_isNarrationPlaying)
+                Positioned(
+                  bottom: 30,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    margin: EdgeInsets.symmetric(
+                      horizontal: MediaQuery.of(context).size.width < 600 ? 10 : 20, // Less margin on mobile
+                    ),
+                    padding: EdgeInsets.all(
+                      MediaQuery.of(context).size.width < 600 ? 15 : 20, // Less padding on mobile
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              widget.isReturningFromGame ? Icons.home : Icons.volume_up, 
+                              color: Colors.white, 
+                              size: 24
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              widget.isReturningFromGame 
+                                ? '¡Bienvenido de vuelta!' 
+                                : '¡Hola! Soy la letra ${widget.letterData.character.toUpperCase()}',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: MediaQuery.of(context).size.width < 600 ? 18 : 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          widget.isReturningFromGame
+                            ? '¿Quieres seguir explorando o regresar al parque?'
+                            : '¡Estoy muy emocionado de jugar contigo!',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: MediaQuery.of(context).size.width < 600 ? 14 : 16,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        if (widget.isReturningFromGame) ...[
+                          // Botón lúdico para volver al home
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).popUntil((route) => route.isFirst);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange[600],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              elevation: 8,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.home, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '🏡 Volver al Parque',
+                                  style: TextStyle(
+                                    fontSize: MediaQuery.of(context).size.width < 600 ? 14 : 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Text(
+                              '✨ O puedes entrar otra vez a esta casa',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: MediaQuery.of(context).size.width < 600 ? 12 : 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ] else ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Text(
+                              '👆 Haz clic en mi puerta para entrar',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: MediaQuery.of(context).size.width < 600 ? 12 : 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -299,9 +709,12 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
   }
 
   Widget _buildEnhancedHouse() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    
     return SizedBox(
-      width: 350,
-      height: 280,
+      width: isMobile ? 300 : 350, // Smaller house on mobile
+      height: isMobile ? 240 : 280, // Proportionally smaller height
       child: Stack(
         children: [
           // 0. CAMINO LARGO ADELANTE DE LA PUERTA
@@ -319,7 +732,39 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
             ),
           ),
           
-          // Base de la casa con bordes más redondeados y alegre
+          // LADO DERECHO 3D DE LA CASA (para efecto de profundidad)
+          Positioned(
+            bottom: 28,
+            left: 245,
+            child: Container(
+              width: 50,
+              height: 155,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFFE0E0E0), // Gris claro
+                    const Color(0xFFBDBDBD), // Gris medio
+                    const Color(0xFF9E9E9E), // Gris oscuro
+                  ],
+                ),
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(35),
+                  bottomRight: Radius.circular(35),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    blurRadius: 15,
+                    offset: const Offset(6, 8),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          // Base de la casa con efectos 3D mejorados
           Positioned(
             bottom: 20,
             left: 30,
@@ -327,56 +772,47 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
               width: 220,
               height: 160,
               decoration: BoxDecoration(
-                color: Colors.white, // Blanco pleno
-                borderRadius: BorderRadius.circular(25), // Más redondeado
-                border: Border.all(color: const Color(0xFF9C27B0), width: 4), // Violeta
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white,
+                    const Color(0xFFF8F8F8),
+                    const Color(0xFFF0F0F0),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(45),
+                border: Border.all(color: const Color(0xFF9C27B0), width: 4),
                 boxShadow: [
+                  // Sombra principal profunda
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 20,
-                    offset: const Offset(4, 10),
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 25,
+                    offset: const Offset(8, 12),
                   ),
+                  // Sombra secundaria suave
                   BoxShadow(
-                    color: Colors.orange.withValues(alpha: 0.2),
-                    blurRadius: 30,
-                    offset: const Offset(0, 5),
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 40,
+                    offset: const Offset(12, 16),
+                  ),
+                  // Brillo interior
+                  BoxShadow(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    blurRadius: 8,
+                    offset: const Offset(-3, -3),
+                  ),
+                  // Efecto de color violeta
+                  BoxShadow(
+                    color: const Color(0xFF9C27B0).withValues(alpha: 0.3),
+                    blurRadius: 35,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
             ),
           ),
           
-          // Lado derecho de la casa para efecto 3D (más grande)
-          Positioned(
-            bottom: 20,
-            left: 245,
-            child: Container(
-              width: 40,
-              height: 160,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    const Color(0xFFFF8C42),
-                    const Color(0xFFFF6B35),
-                    const Color(0xFFE55A2B),
-                  ],
-                ),
-                borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(25),
-                  bottomRight: Radius.circular(25),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(3, 6),
-                  ),
-                ],
-              ),
-            ),
-          ),
           
           // Techo mejorado con perspectiva (más grande)
           Positioned(
@@ -426,22 +862,35 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                 builder: (context, child) {
                   return Stack(
                     children: [
-                      // Marco de la puerta (más grande)
+                      // Marco de la puerta 3D con profundidad
                       Container(
-                        width: 80,
-                        height: 100,
+                        width: 85,
+                        height: 105,
                         decoration: BoxDecoration(
-                          color: Colors.brown[600],
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(40),
-                            topRight: Radius.circular(40),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              const Color(0xFF8D6E63), // Marrón marco
+                              const Color(0xFF5D4037),
+                              const Color(0xFF3E2723),
+                            ],
                           ),
-                          border: Border.all(color: Colors.brown[800]!, width: 3),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(42),
+                            topRight: Radius.circular(42),
+                          ),
+                          border: Border.all(color: const Color(0xFF2E1A0F), width: 4),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.4),
-                              blurRadius: 8,
-                              offset: const Offset(3, 5),
+                              color: Colors.black.withValues(alpha: 0.5),
+                              blurRadius: 12,
+                              offset: const Offset(4, 6),
+                            ),
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 20,
+                              offset: const Offset(6, 8),
                             ),
                           ],
                         ),
@@ -453,66 +902,154 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                           ..setEntry(3, 2, 0.001)
                         ..rotateY(-_doorAnimation.value * math.pi * 0.7),
                       child: Container(
-                        width: 76,
-                        height: 96,
+                        width: 80,
+                        height: 100,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                             colors: [
-                              Colors.brown[700]!,
-                              Colors.brown[600]!,
+                              const Color(0xFF6D4C41),
+                              const Color(0xFF5D4037),
+                              const Color(0xFF4E342E),
                             ],
                           ),
                           borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(28),
-                            topRight: Radius.circular(28),
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(30),
+                          ),
+                          border: Border.all(
+                            color: const Color(0xFF3E2723),
+                            width: 2,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 8,
-                              offset: Offset(2 + _doorAnimation.value * 4, 4),
+                              color: Colors.black.withValues(alpha: 0.4),
+                              blurRadius: 10,
+                              offset: Offset(3 + _doorAnimation.value * 5, 5),
+                            ),
+                            BoxShadow(
+                              color: const Color(0xFF8D6E63).withValues(alpha: 0.3),
+                              blurRadius: 15,
+                              offset: Offset(-2, -2),
                             ),
                           ],
                         ),
                         child: Stack(
                           children: [
-                            // Letra GIGANTE en la puerta
-                            Center(
-                              child: Text(
-                                widget.letterData.character.toUpperCase(),
-                                style: const TextStyle(
-                                  fontSize: 56, // Aún más grande
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black54,
-                                      blurRadius: 3,
-                                      offset: Offset(1, 1),
-                                    ),
-                                  ],
+                            // Paneles decorativos de la puerta
+                            Positioned(
+                              top: 10,
+                              left: 10,
+                              child: Container(
+                                width: 60,
+                                height: 25,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.3),
+                                    width: 1,
+                                  ),
                                 ),
                               ),
                             ),
-                            // Picaporte dorado
                             Positioned(
-                              right: 8,
-                              top: 35,
+                              bottom: 20,
+                              left: 10,
                               child: Container(
-                                width: 8,
-                                height: 8,
+                                width: 60,
+                                height: 25,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.3),
+                                    width: 1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            
+                            // Letra prominente en el centro con fondo circular
+                            Center(
+                              child: Container(
+                                width: 50,
+                                height: 50,
                                 decoration: BoxDecoration(
                                   gradient: RadialGradient(
-                                    colors: [Colors.amber[300]!, Colors.amber[700]!],
+                                    colors: [
+                                      Colors.white,
+                                      Colors.white.withValues(alpha: 0.9),
+                                    ],
                                   ),
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.amber.withValues(alpha: 0.5),
-                                      blurRadius: 4,
-                                      spreadRadius: 1,
+                                      color: Colors.black.withValues(alpha: 0.3),
+                                      blurRadius: 6,
+                                      offset: const Offset(2, 2),
                                     ),
                                   ],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    widget.letterData.character.toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 28 : 32,
+                                      fontWeight: FontWeight.w900,
+                                      fontFamily: 'Arial Black',
+                                      color: const Color(0xFF5D4037),
+                                      shadows: const [
+                                        Shadow(
+                                          color: Colors.black26,
+                                          blurRadius: 2,
+                                          offset: Offset(1, 1),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Picaporte dorado 3D mejorado
+                            Positioned(
+                              right: 12,
+                              top: 40,
+                              child: Container(
+                                width: 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  gradient: RadialGradient(
+                                    colors: [
+                                      const Color(0xFFFFE082), // Dorado claro
+                                      const Color(0xFFFFD700), // Dorado medio
+                                      const Color(0xFFFF8F00), // Dorado oscuro
+                                    ],
+                                  ),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.4),
+                                      blurRadius: 4,
+                                      offset: const Offset(2, 2),
+                                    ),
+                                    BoxShadow(
+                                      color: const Color(0xFFFFE082).withValues(alpha: 0.6),
+                                      blurRadius: 6,
+                                      offset: const Offset(-1, -1),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Container(
+                                    width: 4,
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFF8F00),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -569,26 +1106,28 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
         children: [
           // Cabeza
           Container(
-            width: 30,
-            height: 30,
+            width: 32,
+            height: 32,
             decoration: const BoxDecoration(
               color: Color(0xFFFFDBAE), // Color piel
               shape: BoxShape.circle,
             ),
             child: const Center(
-              child: Text('😊', style: TextStyle(fontSize: 20)),
+              child: Text('😊', style: TextStyle(fontSize: 18)),
             ),
           ),
           // Cuerpo
-          Container(
-            width: 40,
-            height: 50,
-            decoration: BoxDecoration(
-              color: Colors.blue[400],
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Center(
-              child: Text('📚', style: TextStyle(fontSize: 16)),
+          Flexible(
+            child: Container(
+              width: 36,
+              margin: const EdgeInsets.only(top: 4),
+              decoration: BoxDecoration(
+                color: Colors.blue[400],
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Center(
+                child: Text('📚', style: TextStyle(fontSize: 14)),
+              ),
             ),
           ),
         ],
@@ -620,7 +1159,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
     await Future.delayed(const Duration(milliseconds: 1200));
     
     if (mounted) {
-      Navigator.push(
+      final result = await Navigator.push(
         context,
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
@@ -631,6 +1170,24 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
           transitionDuration: const Duration(milliseconds: 800),
         ),
       );
+      
+      // Cuando regrese del juego, reemplazar esta pantalla con la versión de "regreso"
+      if (mounted && !widget.isReturningFromGame) {
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                HousePreviewScreen(
+                  letterData: widget.letterData,
+                  isReturningFromGame: true,
+                ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 600),
+          ),
+        );
+      }
     }
   }
 
@@ -1119,7 +1676,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
           left: x,
           bottom: 45 + snort,
           child: Transform.scale(
-            scaleX: progress > 0.5 ? -1 : 1,
+            scaleX: 1, // Siempre hacia adelante
             child: Container(
               width: 50,
               height: 35,
@@ -1160,7 +1717,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
           left: x,
           bottom: 35 + gallop,
           child: Transform.scale(
-            scaleX: -1,
+            scaleX: 1, // Caballo también hacia adelante
             child: Container(
               width: 60,
               height: 50,
@@ -1259,22 +1816,43 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
       ),
       child: Stack(
         children: [
-          // Marco cruzado
-          Center(
+          // Reflejos modernos en el cristal
+          Positioned(
+            top: 3,
+            left: 3,
             child: Container(
-              width: 2,
-              height: 30,
-              color: Colors.brown[600],
+              width: 12,
+              height: 8,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(4),
+              ),
             ),
           ),
-          Center(
+          Positioned(
+            bottom: 8,
+            right: 3,
             child: Container(
-              width: 30,
-              height: 2,
-              color: Colors.brown[600],
+              width: 8,
+              height: 6,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(3),
+              ),
             ),
           ),
-          // Cortinita
+          // Pequeña decoración circular
+          Center(
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.3),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          // Cortinita decorativa (mantener)
           Positioned(
             top: 2,
             left: 2,
@@ -1421,9 +1999,9 @@ class EnhancedRoofPainter extends CustomPainter {
     ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
     Path roof = Path();
-    roof.moveTo(size.width * 0.1, size.height);
-    roof.lineTo(size.width * 0.5, 0);
-    roof.lineTo(size.width * 0.9, size.height);
+    roof.moveTo(size.width * 0.1, size.height * 0.9);
+    roof.lineTo(size.width * 0.5, size.height * 0.1); // Dejar espacio en la parte superior
+    roof.lineTo(size.width * 0.9, size.height * 0.9);
     roof.close();
     canvas.drawPath(roof, paint);
 

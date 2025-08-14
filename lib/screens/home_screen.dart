@@ -247,9 +247,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ? (totalRows * (baseMobileHouseSize + 35)) + baseHeight + extraSpace 
                 : contentHeight;
             
+            // ALTURA MÍNIMA GARANTIZADA PARA EL SCROLL
+            final minContentHeight = math.max(
+              finalHeight, 
+              size.height * 1.5, // Al menos 1.5 veces la altura de pantalla
+            );
+            
             return SizedBox(
               width: size.width,
-              height: finalHeight,
+              height: minContentHeight, // Altura garantizada para el scroll
               child: Stack(
                 children: [
                   // COLINAS Y LOMAS DEL PARQUE
@@ -341,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
                     // VALIDACIÓN FINAL PARA EVITAR CASAS FUERA DEL CONTENEDOR
                     final safeX = (position['x'] ?? 0.0).clamp(0.0, size.width - (position['size'] ?? 55.0));
-                    final safeY = (position['y'] ?? 0.0).clamp(0.0, double.infinity);
+                    final safeY = (position['y'] ?? 0.0).clamp(0.0, minContentHeight - (position['size'] ?? 55.0) * 1.4);
                     
                     return Positioned(
                       left: safeX,
@@ -418,10 +424,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final screenWidth = size.width;
     final screenHeight = size.height;
     
-    // ESPACIADO RESPONSIVO MEJORADO
-    final headerSpace = screenHeight < 600 ? 80.0 : 120.0;
-    // ignore: unused_local_variable
-    final bottomSpace = screenHeight < 600 ? 60.0 : 80.0;
+    // ESPACIADO RESPONSIVO MEJORADO PARA SCROLL
+    final headerSpace = 120.0; // Espacio fijo para el header
     final sideSpace = math.max(screenWidth * 0.05, 15.0); // Mínimo 5% de la pantalla o 15px
     final availableWidth = screenWidth - (sideSpace * 2);
     
@@ -441,7 +445,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final startX = (screenWidth - totalContentWidth) / 2;
     
     final baseX = startX + (col * (houseSize + houseSpacing));
-    final baseY = headerSpace + (row * (houseSize + 30)); // Espaciado vertical más generoso
+    
+    // ESPACIADO VERTICAL MEJORADO PARA SCROLL
+    final verticalSpacing = houseSize * 1.4 + 20; // Más espacio entre filas
+    final baseY = headerSpace + (row * verticalSpacing) + 50; // Empezar más abajo
     
     // VARIACIONES MÍNIMAS PARA MANTENER ORDEN EN MÓVIL
     final letterSeed = index * 89 + 23;
@@ -450,9 +457,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final organicX = ((letterSeed * 37) % 100) / 100 * 8 - 4; // ±4px máximo
     final organicY = ((letterSeed * 59) % 100) / 100 * 8 - 4; // ±4px máximo
     
-    // Sin variaciones adicionales para móvil - mantener orden
-    
-    // POSICIÓN FINAL: CENTRADA Y ORDENADA PARA MÓVIL
+    // POSICIÓN FINAL: CENTRADA Y ORDENADA PARA MÓVIL CON SCROLL
     final naturalX = baseX + organicX;
     final naturalY = baseY + organicY;
     
@@ -460,7 +465,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final minX = sideSpace;
     final maxX = screenWidth - houseSize - sideSpace;
     final finalX = naturalX.clamp(minX, maxX);
-    final finalY = math.max(naturalY, headerSpace); // Asegurar que no estén muy arriba
+    final finalY = math.max(naturalY, headerSpace + 50); // Asegurar que no estén muy arriba
     
     // SIN DETECCIÓN DE COLISIONES EN MÓVIL - USAR POSICIÓN CALCULADA
     final position = {'x': finalX, 'y': finalY};
@@ -870,7 +875,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             left: x,
             top: 400 + bounce,
             child: Transform.scale(
-              scaleX: progress > 0.5 ? -1 : 1,
+              scaleX: 1, // Siempre hacia adelante
               child: Container(
                 width: 60,
                 height: 45,

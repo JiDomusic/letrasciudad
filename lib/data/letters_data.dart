@@ -45,7 +45,7 @@ Activity(
       name: 'b larga',
       phoneme: 'beh',
       syllables: ['ba', 'be', 'bi', 'bo', 'bu'],
-      exampleWords: ['barco', 'botella', 'bebé', 'bicicleta'],
+      exampleWords: ['barco', 'botella', 'oso', 'bicicleta'],
       imagePath: 'assets/letters/b_house.png',
       audioPath: 'assets/audio/letters/b.mp3',
       primaryColor: Colors.blue,

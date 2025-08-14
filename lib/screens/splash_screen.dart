@@ -100,10 +100,15 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF74ACDF), // Celeste argentino
-              Color(0xFFFFDD44), // Amarillo sol
-              Color(0xFF4CAF50), // Verde pampa
+              Color(0xFF1E3A8A), // Azul profundo nocturno (arriba)
+              Color(0xFF3B82F6), // Azul cielo medio
+              Color(0xFF60A5FA), // Azul cielo claro
+              Color(0xFFFBBF24), // Amarillo dorado horizonte
+              Color(0xFFEA580C), // Naranja atardecer
+              Color(0xFFDC2626), // Rojo atardecer intenso
+              Color(0xFF7C2D12), // Marrón rojizo (horizonte bajo)
             ],
+            stops: [0.0, 0.2, 0.4, 0.6, 0.75, 0.85, 1.0], // Distribución de colores
           ),
         ),
         child: Stack(
@@ -155,43 +160,40 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                   child: DefaultTextStyle(
                     style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width < 600 ? 32 : 48,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white, // Color blanco como pediste
-                      letterSpacing: 1.5,
+                      fontSize: MediaQuery.of(context).size.width < 600 ? 36 : 52,
+                      fontWeight: FontWeight.w800,
+                      fontFamily: 'Georgia', // Tipografía elegante y educativa
+                      color: const Color(0xFFFFFFFF), // Blanco puro
+                      letterSpacing: 2.0,
+                      height: 1.2,
                       shadows: [
-                        // Sombras negras fuertes para contraste
+                        // Efecto 3D con gradiente de sombras
                         const Shadow(
-                          blurRadius: 4.0,
-                          color: Colors.black87,
-                          offset: Offset(-2.0, -2.0),
+                          blurRadius: 2.0,
+                          color: Color(0xFF2E7D32), // Verde oscuro
+                          offset: Offset(1.0, 1.0),
                         ),
                         const Shadow(
                           blurRadius: 4.0,
-                          color: Colors.black87,
-                          offset: Offset(2.0, -2.0),
-                        ),
-                        const Shadow(
-                          blurRadius: 4.0,
-                          color: Colors.black87,
-                          offset: Offset(-2.0, 2.0),
-                        ),
-                        const Shadow(
-                          blurRadius: 4.0,
-                          color: Colors.black87,
+                          color: Color(0xFF1B5E20), // Verde más oscuro
                           offset: Offset(2.0, 2.0),
                         ),
-                        // Sombra negra principal más gruesa
                         const Shadow(
-                          blurRadius: 8.0,
-                          color: Colors.black,
+                          blurRadius: 6.0,
+                          color: Color(0xFF0D3D14), // Verde muy oscuro
                           offset: Offset(3.0, 3.0),
                         ),
-                        // Sombra difusa negra para mayor profundidad
+                        // Contorno dorado
                         const Shadow(
-                          blurRadius: 12.0,
-                          color: Colors.black54,
-                          offset: Offset(0, 4.0),
+                          blurRadius: 1.0,
+                          color: Color(0xFFFFD700), // Dorado
+                          offset: Offset(0.5, 0.5),
+                        ),
+                        // Brillo sutil
+                        const Shadow(
+                          blurRadius: 8.0,
+                          color: Color(0x40FFFFFF), // Blanco transparente
+                          offset: Offset(0, 0),
                         ),
                       ],
                     ),
@@ -210,33 +212,50 @@ class _SplashScreenState extends State<SplashScreen>
               const SizedBox(height: 20),
               FadeTransition(
                 opacity: _fadeAnimation,
-                child: Text(
-                  '¡A aprender che!',
-                  style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width < 600 ? 20 : 26, // Responsivo
-                    color: const Color(0xFFFF9800), // Naranja principal
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 2.5,
-                    shadows: [
-                      // Sombra naranja principal
-                      const Shadow(
-                        blurRadius: 6.0,
-                        color: Color(0xFFE65100), // Naranja oscuro
-                        offset: Offset(3.0, 3.0),
-                      ),
-                      // Sombra negra para mayor contraste
-                      const Shadow(
-                        blurRadius: 10.0,
-                        color: Colors.black87,
-                        offset: Offset(1.5, 1.5),
-                      ),
-                      // Contorno adicional rojo
-                      const Shadow(
-                        blurRadius: 15.0,
-                        color: Color(0xFFD32F2F), // Rojo
-                        offset: Offset(4.0, 4.0),
-                      ),
-                    ],
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                        const Color(0xFF2E7D32).withValues(alpha: 0.3),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(25),
+                    border: Border.all(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                      width: 2,
+                    ),
+                  ),
+                  child: Text(
+                    '¡A aprender che!',
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width < 600 ? 22 : 28,
+                      fontFamily: 'Comic Sans MS', // Fuente divertida y educativa
+                      color: const Color(0xFFFFFFFF), // Blanco puro
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.8,
+                      height: 1.1,
+                      shadows: [
+                        // Efecto de profundidad argentino
+                        const Shadow(
+                          blurRadius: 2.0,
+                          color: Color(0xFF0277BD), // Azul cielo argentino
+                          offset: Offset(1.0, 1.0),
+                        ),
+                        const Shadow(
+                          blurRadius: 4.0,
+                          color: Color(0xFF01579B), // Azul más profundo
+                          offset: Offset(2.0, 2.0),
+                        ),
+                        // Brillo dorado sutil
+                        const Shadow(
+                          blurRadius: 6.0,
+                          color: Color(0x60FFD700), // Dorado transparente
+                          offset: Offset(0, 0),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

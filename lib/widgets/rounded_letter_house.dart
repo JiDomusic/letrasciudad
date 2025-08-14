@@ -77,25 +77,77 @@ class RoundedLetterHouse extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // Casa blanca con bordes redondeados
+            // LADO DERECHO 3D DE LA CASA (para efecto de profundidad)
+            Positioned(
+              bottom: 8,
+              right: -size * 0.05,
+              child: Container(
+                width: size * 0.25,
+                height: size * 0.95,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      const Color(0xFFE0E0E0), // Gris claro
+                      const Color(0xFFBDBDBD), // Gris medio
+                      const Color(0xFF9E9E9E), // Gris oscuro
+                    ],
+                  ),
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(size * 0.08),
+                    bottomRight: Radius.circular(size * 0.08),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(4, 6),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            // CASA PRINCIPAL CON EFECTOS 3D MEJORADOS
             Positioned(
               bottom: 0,
               child: Container(
                 width: size * 0.9,
                 height: size * 1.0,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white,
+                      const Color(0xFFF8F8F8),
+                      const Color(0xFFF0F0F0),
+                    ],
+                  ),
                   borderRadius: BorderRadius.circular(size * 0.12),
+                  border: Border.all(
+                    color: const Color(0xFFE0E0E0),
+                    width: 2,
+                  ),
                   boxShadow: [
+                    // Sombra principal profunda
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.25),
+                      blurRadius: 15,
+                      offset: const Offset(5, 8),
+                    ),
+                    // Sombra secundaria suave
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+                      blurRadius: 25,
+                      offset: const Offset(8, 12),
                     ),
+                    // Brillo interior
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 16,
-                      offset: const Offset(0, 8),
+                      color: Colors.white.withValues(alpha: 0.8),
+                      blurRadius: 5,
+                      offset: const Offset(-2, -2),
                     ),
                   ],
                 ),
@@ -113,93 +165,296 @@ class RoundedLetterHouse extends StatelessWidget {
               ),
             ),
             
-            // Puerta azul redondeada MÁS GRANDE con letra prominente
+            // PUERTA 3D REALISTA CON EFECTO DE PROFUNDIDAD
             Positioned(
               bottom: size * 0.02,
-              child: Container(
-                width: size * 0.45, // Puerta MUCHO más ancha
-                height: size * 0.6, // Puerta MUCHO más alta
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1565C0),
-                  borderRadius: BorderRadius.circular(size * 0.06),
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 2,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    letter.toUpperCase(),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: size * 0.35, // Letra SÚPER GRANDE en la puerta
-                      fontWeight: FontWeight.w900,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withValues(alpha: 0.7),
-                          offset: const Offset(1, 1),
-                          blurRadius: 2,
-                        ),
-                        Shadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          offset: const Offset(2, 2),
-                          blurRadius: 4,
+              child: Stack(
+                children: [
+                  // Marco de la puerta (fondo con profundidad)
+                  Container(
+                    width: size * 0.48,
+                    height: size * 0.63,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          const Color(0xFF8D6E63), // Marrón marco
+                          const Color(0xFF5D4037),
+                          const Color(0xFF3E2723),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(size * 0.08),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 8,
+                          offset: const Offset(3, 4),
                         ),
                       ],
                     ),
                   ),
-                ),
-              ),
-            ),
-            
-            // Manija dorada de la puerta (ajustada para puerta más grande)
-            Positioned(
-              bottom: size * 0.28,
-              right: size * 0.25,
-              child: Container(
-                width: size * 0.04,
-                height: size * 0.04,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFFD700),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            
-            // Ventana redondeada
-            Positioned(
-              bottom: size * 0.5,
-              right: size * 0.15,
-              child: Container(
-                width: size * 0.22,
-                height: size * 0.22,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF87CEEB),
-                  borderRadius: BorderRadius.circular(size * 0.04),
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 2,
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    // Cruz de la ventana
-                    Center(
-                      child: Container(
-                        width: 1,
-                        height: size * 0.18,
-                        color: Colors.white,
+                  
+                  // Puerta principal con efecto 3D
+                  Positioned(
+                    left: size * 0.015,
+                    top: size * 0.015,
+                    child: Container(
+                      width: size * 0.45,
+                      height: size * 0.6,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            _getLetterColor(letter),
+                            _getLetterColor(letter).withOpacity(0.8),
+                            _getLetterColor(letter).withOpacity(0.6),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(size * 0.06),
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          // Sombra interna para efecto cóncavo
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 4,
+                            offset: const Offset(1, 1),
+                          ),
+                        ],
+                      ),
+                      child: Stack(
+                        children: [
+                          // Paneles de la puerta
+                          Positioned(
+                            top: size * 0.05,
+                            left: size * 0.05,
+                            child: Container(
+                              width: size * 0.35,
+                              height: size * 0.2,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(size * 0.02),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: size * 0.15,
+                            left: size * 0.05,
+                            child: Container(
+                              width: size * 0.35,
+                              height: size * 0.2,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(size * 0.02),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                          
+                          // Letra prominente en el centro
+                          Center(
+                            child: Container(
+                              width: size * 0.25,
+                              height: size * 0.25,
+                              decoration: BoxDecoration(
+                                gradient: RadialGradient(
+                                  colors: [
+                                    Colors.white,
+                                    Colors.white.withValues(alpha: 0.9),
+                                  ],
+                                ),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.2),
+                                    blurRadius: 4,
+                                    offset: const Offset(1, 1),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  letter.toUpperCase(),
+                                  style: TextStyle(
+                                    color: _getLetterColor(letter),
+                                    fontSize: size * 0.18,
+                                    fontWeight: FontWeight.w900,
+                                    fontFamily: 'Arial Black',
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black.withValues(alpha: 0.3),
+                                        offset: const Offset(1, 1),
+                                        blurRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Center(
-                      child: Container(
-                        width: size * 0.18,
-                        height: 1,
-                        color: Colors.white,
-                      ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // MANIJA DORADA 3D REALISTA
+            Positioned(
+              bottom: size * 0.32,
+              right: size * 0.22,
+              child: Container(
+                width: size * 0.06,
+                height: size * 0.06,
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    colors: [
+                      const Color(0xFFFFE082), // Dorado claro
+                      const Color(0xFFFFD700), // Dorado medio
+                      const Color(0xFFFF8F00), // Dorado oscuro
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 4,
+                      offset: const Offset(2, 2),
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFFFFE082).withValues(alpha: 0.6),
+                      blurRadius: 6,
+                      offset: const Offset(-1, -1),
                     ),
                   ],
                 ),
+                child: Center(
+                  child: Container(
+                    width: size * 0.02,
+                    height: size * 0.02,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF8F00),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            
+            // VENTANA 3D REALISTA CON CRISTAL
+            Positioned(
+              bottom: size * 0.52,
+              right: size * 0.12,
+              child: Stack(
+                children: [
+                  // Marco de la ventana (profundidad)
+                  Container(
+                    width: size * 0.26,
+                    height: size * 0.26,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF6D4C41), // Marrón marco
+                          const Color(0xFF5D4037),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(size * 0.06),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 6,
+                          offset: const Offset(2, 3),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  // Cristal de la ventana
+                  Positioned(
+                    left: size * 0.015,
+                    top: size * 0.015,
+                    child: Container(
+                      width: size * 0.23,
+                      height: size * 0.23,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            const Color(0xFFE3F2FD), // Azul cristal claro
+                            const Color(0xFFBBDEFB),
+                            const Color(0xFF90CAF9),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(size * 0.04),
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          // Reflejos en el cristal
+                          BoxShadow(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            blurRadius: 2,
+                            offset: const Offset(-1, -1),
+                          ),
+                        ],
+                      ),
+                      child: Stack(
+                        children: [
+                          // Reflejos modernos en el cristal
+                          Positioned(
+                            top: size * 0.02,
+                            left: size * 0.02,
+                            child: Container(
+                              width: size * 0.08,
+                              height: size * 0.04,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                borderRadius: BorderRadius.circular(size * 0.02),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: size * 0.02,
+                            right: size * 0.02,
+                            child: Container(
+                              width: size * 0.05,
+                              height: size * 0.03,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(size * 0.015),
+                              ),
+                            ),
+                          ),
+                          // Pequeña decoración circular
+                          Center(
+                            child: Container(
+                              width: size * 0.04,
+                              height: size * 0.04,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.3),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             
@@ -294,8 +549,37 @@ class ChineseRoofPainter extends CustomPainter {
     final baseY = size.height * 0.8;
     final roofTop = size.height * 0.2;
 
-    // Techo base con curvatura china
-    paint.color = const Color(0xFF8B0000); // Rojo oscuro tradicional chino
+    // LADO DERECHO DEL TECHO 3D (efecto de profundidad)
+    paint.shader = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        const Color(0xFF5D1A1A), // Rojo muy oscuro
+        const Color(0xFF4A0C0C), // Rojo casi negro
+        const Color(0xFF2D0707), // Rojo negro
+      ],
+    ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    
+    final sideRoofPath = Path();
+    sideRoofPath.moveTo(centerX, roofTop);
+    sideRoofPath.lineTo(centerX + size.width/2 - 10, baseY);
+    sideRoofPath.lineTo(centerX + size.width/2 + 15, baseY + 15);
+    sideRoofPath.lineTo(centerX + 8, roofTop + 8);
+    sideRoofPath.close();
+    
+    canvas.drawPath(sideRoofPath, paint);
+
+    // TECHO PRINCIPAL CON GRADIENTE 3D
+    paint.shader = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        const Color(0xFFD32F2F), // Rojo brillante
+        const Color(0xFFB71C1C), // Rojo medio
+        const Color(0xFF8B0000), // Rojo oscuro
+      ],
+    ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    
     final roofPath = Path();
     roofPath.moveTo(centerX - size.width/2 + 10, baseY);
     roofPath.quadraticBezierTo(centerX, roofTop - 15, centerX + size.width/2 - 10, baseY);
@@ -305,33 +589,64 @@ class ChineseRoofPainter extends CustomPainter {
     
     canvas.drawPath(roofPath, paint);
     
-    // Tejas triangulares superpuestas
-    paint.color = const Color(0xFFB71C1C); // Rojo más brillante para tejas
-    final tileCount = 10;
+    // TEJAS 3D CON EFECTOS DE PROFUNDIDAD
+    paint.shader = null;
+    final tileCount = 12;
     final tileWidth = size.width / tileCount;
-    final tileHeight = size.height * 0.15;
+    final tileHeight = size.height * 0.12;
     
     for (int i = 0; i < tileCount; i++) {
       final tileX = (i * tileWidth);
-      final tileY = baseY - (i * 3) + 5;
+      final tileY = baseY - (i * 2) + 3;
+      
+      // Teja principal con gradiente
+      paint.shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color.lerp(const Color(0xFFE57373), const Color(0xFFB71C1C), i / tileCount)!,
+          Color.lerp(const Color(0xFFB71C1C), const Color(0xFF8B0000), i / tileCount)!,
+        ],
+      ).createShader(Rect.fromLTWH(tileX, tileY - tileHeight, tileWidth, tileHeight));
       
       final tilePath = Path();
-      tilePath.moveTo(tileX, tileY);
-      tilePath.lineTo(tileX + tileWidth/2, tileY - tileHeight);
-      tilePath.lineTo(tileX + tileWidth, tileY);
+      tilePath.moveTo(tileX + 2, tileY);
+      tilePath.quadraticBezierTo(tileX + tileWidth/2, tileY - tileHeight - 3, tileX + tileWidth - 2, tileY);
+      tilePath.lineTo(tileX + tileWidth - 4, tileY + 3);
+      tilePath.quadraticBezierTo(tileX + tileWidth/2, tileY - tileHeight, tileX + 4, tileY + 3);
       tilePath.close();
       
       canvas.drawPath(tilePath, paint);
       
-      // Contorno blanco de cada teja
+      // Sombra de la teja
+      paint.shader = null;
+      paint.color = Colors.black.withValues(alpha: 0.2);
+      final shadowPath = Path();
+      shadowPath.moveTo(tileX + 1, tileY + 1);
+      shadowPath.quadraticBezierTo(tileX + tileWidth/2 + 1, tileY - tileHeight - 2, tileX + tileWidth - 1, tileY + 1);
+      shadowPath.lineTo(tileX + tileWidth - 3, tileY + 4);
+      shadowPath.quadraticBezierTo(tileX + tileWidth/2 + 1, tileY - tileHeight + 1, tileX + 5, tileY + 4);
+      shadowPath.close();
+      canvas.drawPath(shadowPath, paint);
+      
+      // Brillo en la teja
       strokePaint.strokeWidth = 1;
-      strokePaint.color = Colors.white;
-      canvas.drawPath(tilePath, strokePaint);
+      strokePaint.color = Colors.white.withValues(alpha: 0.3);
+      final tileBorder = Path();
+      tileBorder.moveTo(tileX + 2, tileY - 1);
+      tileBorder.quadraticBezierTo(tileX + tileWidth/2, tileY - tileHeight - 4, tileX + tileWidth - 2, tileY - 1);
+      canvas.drawPath(tileBorder, strokePaint);
     }
     
-    // Borde decorativo del techo estilo chino
-    strokePaint.strokeWidth = 3;
-    strokePaint.color = const Color(0xFFFFD700); // Dorado
+    // BORDE DECORATIVO 3D CON EFECTO METÁLICO
+    strokePaint.strokeWidth = 4;
+    strokePaint.shader = LinearGradient(
+      colors: [
+        const Color(0xFFFFE082), // Dorado claro
+        const Color(0xFFFFD700), // Dorado
+        const Color(0xFFFF8F00), // Dorado oscuro
+      ],
+    ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawPath(roofPath, strokePaint);
     
     // Chimenea con color único
