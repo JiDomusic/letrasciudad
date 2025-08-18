@@ -114,6 +114,42 @@ Activity(
           difficulty: DifficultyLevel.beginner,
           instruction: 'Encuentra todas las letras B en la pantalla',
         ),
+        Activity(
+          id: 'b_sound_recognition',
+          name: 'Reconoce el sonido de B',
+          description: 'Escucha palabras y identifica cuáles empiezan con B',
+          type: ActivityType.pronunciation,
+          difficulty: DifficultyLevel.intermediate,
+          instruction: 'Escucha cada palabra y toca las que empiecen con B',
+          data: {
+            'words': [
+              {
+                'word': 'bicicleta',
+                'correct': true,
+                'audioUrl': 'assets/audio/words/bicicleta.mp3',
+                'imageUrl': 'assets/images/bicicleta.png',
+              },
+              {
+                'word': 'perro',
+                'correct': false,
+                'audioUrl': 'assets/audio/words/perro.mp3',
+                'imageUrl': 'assets/images/perro.png',
+              },
+              {
+                'word': 'botella',
+                'correct': true,
+                'audioUrl': 'assets/audio/words/botella.mp3',
+                'imageUrl': 'assets/images/botella.png',
+              },
+              {
+                'word': 'gato',
+                'correct': false,
+                'audioUrl': 'assets/audio/words/gato.mp3',
+                'imageUrl': 'assets/images/gato.png',
+              },
+            ]
+          },
+        ),
       ],
     ),
     Letter(
@@ -460,6 +496,38 @@ Activity(
           type: ActivityType.wordReading,
           difficulty: DifficultyLevel.beginner,
           instruction: 'Encuentra todas las letras K en la pantalla',
+        ),
+        Activity(
+          id: 'k_memory_game',
+          name: 'Memoria de objetos con K',
+          description: 'Memoriza y encuentra las parejas de objetos con K',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.intermediate,
+          instruction: 'Toca las cartas para encontrar las parejas de objetos que empiecen con K',
+          data: {
+            'pairs': [
+              {
+                'word': 'koala',
+                'imageUrl': 'assets/images/koala.png',
+                'audioUrl': 'assets/audio/words/koala.mp3',
+              },
+              {
+                'word': 'kiwi',
+                'imageUrl': 'assets/images/kiwi.png',
+                'audioUrl': 'assets/audio/words/kiwi.mp3',
+              },
+              {
+                'word': 'kayak',
+                'imageUrl': 'assets/images/kayak.png',
+                'audioUrl': 'assets/audio/words/kayak.mp3',
+              },
+              {
+                'word': 'kimono',
+                'imageUrl': 'assets/images/kimono.png',
+                'audioUrl': 'assets/audio/words/kimono.mp3',
+              },
+            ]
+          },
         ),
 
       ],
@@ -925,6 +993,36 @@ Activity(
           difficulty: DifficultyLevel.beginner,
           instruction: 'Encuentra todas las letras V en la pantalla',
         ),
+        Activity(
+          id: 'v_syllable_formation',
+          name: 'Forma palabras con sílabas de V',
+          description: 'Arrastra las sílabas para formar diferentes palabras',
+          type: ActivityType.dragDrop,
+          difficulty: DifficultyLevel.intermediate,
+          instruction: 'Arrastra las sílabas para formar las palabras correctas',
+          data: {
+            'words': [
+              {
+                'availableSyllables': ['va', 'ca'],
+                'targetWord': 'vaca',
+                'imageUrl': 'assets/images/vaca.png',
+                'audioUrl': 'assets/audio/words/vaca.mp3',
+              },
+              {
+                'availableSyllables': ['va', 'so'],
+                'targetWord': 'vaso',
+                'imageUrl': 'assets/images/vaso.png',
+                'audioUrl': 'assets/audio/words/vaso.mp3',
+              },
+              {
+                'availableSyllables': ['ve', 'le', 'ro'],
+                'targetWord': 'velero',
+                'imageUrl': 'assets/images/velero.png',
+                'audioUrl': 'assets/audio/words/velero.mp3',
+              },
+            ]
+          },
+        ),
 
       ],
     ),
@@ -960,6 +1058,36 @@ Activity(
           type: ActivityType.wordReading,
           difficulty: DifficultyLevel.beginner,
           instruction: 'Encuentra todas las letras W en la pantalla',
+        ),
+        Activity(
+          id: 'w_technology_words',
+          name: 'Palabras tecnológicas con W',
+          description: 'Aprende palabras modernas que empiezan con W',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.advanced,
+          instruction: 'Toca cada palabra para escuchar su pronunciación y significado',
+          data: {
+            'words': [
+              {
+                'word': 'wifi',
+                'definition': 'Internet sin cables',
+                'imageUrl': 'assets/images/wifi.png',
+                'audioUrl': 'assets/audio/words/wifi.mp3',
+              },
+              {
+                'word': 'web',
+                'definition': 'Páginas en internet',
+                'imageUrl': 'assets/images/web.png',
+                'audioUrl': 'assets/audio/words/web.mp3',
+              },
+              {
+                'word': 'walkman',
+                'definition': 'Reproductor de música portátil',
+                'imageUrl': 'assets/images/walkman.png',
+                'audioUrl': 'assets/audio/words/walkman.mp3',
+              },
+            ]
+          },
         ),
 
       ],
@@ -1013,6 +1141,30 @@ Activity(
           difficulty: DifficultyLevel.beginner,
           instruction: 'Encuentra todas las letras X en la pantalla',
         ),
+        Activity(
+          id: 'x_word_puzzle',
+          name: 'Rompecabezas de palabras con X',
+          description: 'Ordena las letras para formar palabras con X',
+          type: ActivityType.dragDrop,
+          difficulty: DifficultyLevel.advanced,
+          instruction: 'Arrastra las letras para formar palabras que contengan X',
+          data: {
+            'words': [
+              {
+                'availableLetters': ['x', 'i', 'l', 'ó', 'f', 'o', 'n', 'o'],
+                'targetWord': 'xilófono',
+                'imageUrl': 'assets/images/xilofono.png',
+                'audioUrl': 'assets/audio/words/xilofono.mp3',
+              },
+              {
+                'availableLetters': ['e', 'x', 'a', 'm', 'e', 'n'],
+                'targetWord': 'examen',
+                'imageUrl': 'assets/images/examen.png',
+                'audioUrl': 'assets/audio/words/examen.mp3',
+              },
+            ]
+          },
+        ),
 
       ],
     ),
@@ -1064,6 +1216,32 @@ Activity(
           type: ActivityType.wordReading,
           difficulty: DifficultyLevel.beginner,
           instruction: 'Encuentra todas las letras Y en la pantalla',
+        ),
+        Activity(
+          id: 'y_rhyme_game',
+          name: 'Rimas con Y',
+          description: 'Encuentra palabras que rimen con palabras que empiecen con Y',
+          type: ActivityType.wordReading,
+          difficulty: DifficultyLevel.intermediate,
+          instruction: 'Escucha la palabra y encuentra otra que rime con ella',
+          data: {
+            'rhymes': [
+              {
+                'word': 'yate',
+                'rhymeOptions': ['mate', 'gato', 'casa'],
+                'correctRhyme': 'mate',
+                'imageUrl': 'assets/images/yate.png',
+                'audioUrl': 'assets/audio/words/yate.mp3',
+              },
+              {
+                'word': 'yoga',
+                'rhymeOptions': ['goga', 'pelota', 'mesa'],
+                'correctRhyme': 'goga',
+                'imageUrl': 'assets/images/yoga.png',
+                'audioUrl': 'assets/audio/words/yoga.mp3',
+              },
+            ]
+          },
         ),
 
       ],

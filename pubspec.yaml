@@ -45,6 +45,13 @@ dependencies:
   # State management
   provider: ^6.1.2
 
+  # Google AI/Gemini
+  google_generative_ai: ^0.4.6
+  http: ^1.2.0
+  
+  # Seguridad y filtros
+  profanity_filter: ^2.0.0
+
   audioplayers: any
 dev_dependencies:
   flutter_test:
