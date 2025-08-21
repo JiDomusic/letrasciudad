@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/kids_ai_service.dart';
 import '../services/audio_service.dart';
+import '../services/speech_recognition_service.dart';
 
 /// Widget de chat IA especializado para niños
 /// Con interfaz simple y segura
@@ -22,11 +23,19 @@ class _KidsAIChatState extends State<KidsAIChat>
     with TickerProviderStateMixin {
   final KidsAIService _aiService = KidsAIService();
   final AudioService _audioService = AudioService();
+  late SpeechRecognitionService _speechService;
   final List<ChatMessage> _messages = [];
   bool _isLoading = false;
   bool _isExpanded = false;
+  bool _isListening = false;
+  bool _isProcessingVoice = false;
+  String _recognizedText = '';
+  List<String> _recognizedWords = [];
+  
   late AnimationController _animationController;
+  late AnimationController _micController;
   late Animation<double> _animation;
+  late Animation<double> _micAnimation;
 
   @override
   void initState() {
@@ -35,23 +44,184 @@ class _KidsAIChatState extends State<KidsAIChat>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
+    _micController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    
+    // IA COMPLETAMENTE DESHABILITADA - Solo mensaje simple
+    _showSimpleMessage();
+    return;
+
+    // CÓDIGO DESHABILITADO - NO SE EJECUTA
+    /*
     _animation = CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeInOut,
     );
+    _micAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
+      CurvedAnimation(parent: _micController, curve: Curves.easeInOut),
+    );
+    
+    _speechService = SpeechRecognitionService();
+    _setupSpeechCallbacks();
     _sendWelcomeMessage();
+    */
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _micController.dispose();
+    // _speechService.dispose(); // DESHABILITADO
     super.dispose();
   }
 
-  void _sendWelcomeMessage() {
+  void _setupSpeechCallbacks() {
+    _speechService.onResult = (recognizedText) {
+      setState(() {
+        _recognizedText = recognizedText;
+        _recognizedWords = _speechService.analyzeWordsForLetter(
+          recognizedText, 
+          widget.currentLetter
+        );
+      });
+    };
+
+    _speechService.onError = (error) {
+      setState(() {
+        _isListening = false;
+        _isProcessingVoice = false;
+      });
+      _micController.stop();
+      _addMessage(ChatMessage(
+        text: 'No pude escucharte bien. ¿Podés intentar de nuevo?',
+        isUser: false,
+        timestamp: DateTime.now(),
+      ));
+    };
+
+    _speechService.onListeningChanged = (listening) {
+      setState(() {
+        _isListening = listening;
+      });
+      
+      if (listening) {
+        _micController.repeat(reverse: true);
+      } else {
+        _micController.stop();
+        if (_recognizedWords.isNotEmpty) {
+          _processVoiceResponse();
+        }
+      }
+    };
+  }
+
+  Future<void> _startVoiceInteraction() async {
+    setState(() {
+      _isProcessingVoice = true;
+    });
+
+    // Respuesta rápida y simple para niños
+    final gameProposal = '¡Hola! Soy tu amigo virtual. La letra ${widget.currentLetter} es muy importante para aprender.';
+    _addMessage(ChatMessage(
+      text: gameProposal,
+      isUser: false,
+      timestamp: DateTime.now(),
+    ));
+    
+    await _audioService.speakText(gameProposal);
+    
+    // RECONOCIMIENTO DE VOZ DESHABILITADO
+    setState(() {
+      _isProcessingVoice = false;
+    });
+    _addMessage(ChatMessage(
+      text: 'Reconocimiento de voz no disponible. ¡Pero podés seguir jugando con las letras!',
+      isUser: false,
+      timestamp: DateTime.now(),
+    ));
+  }
+
+  Future<void> _processVoiceResponse() async {
+    // FUNCIONALIDAD DESHABILITADA - EVITA PENSAMIENTO INFINITO
+    return;
+    if (_isProcessingVoice) return;
+    
+    setState(() {
+      _isProcessingVoice = true;
+    });
+
+    // Mostrar lo que el niño dijo
+    if (_recognizedText.isNotEmpty) {
+      _addMessage(ChatMessage(
+        text: _recognizedText,
+        isUser: true,
+        timestamp: DateTime.now(),
+      ));
+    }
+
+    // Respuesta rápida y simple sin llamar a IA externa
+    String evaluation;
+    if (_recognizedWords.isNotEmpty) {
+      evaluation = '¡Muy bien! Dijiste "${_recognizedWords.join(', ')}" que empieza con ${widget.currentLetter}. ¡Sos genial!';
+    } else {
+      evaluation = '¡Intentá de nuevo! Decime una palabra que empiece con ${widget.currentLetter}.';
+    }
+    
+    _addMessage(ChatMessage(
+      text: evaluation,
+      isUser: false,
+      timestamp: DateTime.now(),
+    ));
+    
+    await _audioService.speakText(evaluation);
+
+    // Preguntar si quiere continuar - respuesta simple
+    await Future.delayed(const Duration(milliseconds: 500)); // Reducido de 2 segundos
+    final continuePrompt = '¿Querés decir otra palabra con ${widget.currentLetter}?';
+    _addMessage(ChatMessage(
+      text: continuePrompt,
+      isUser: false,
+      timestamp: DateTime.now(),
+    ));
+    
+    await _audioService.speakText(continuePrompt);
+
+    setState(() {
+      _isProcessingVoice = false;
+      _recognizedText = '';
+      _recognizedWords.clear();
+    });
+  }
+
+  void _addMessage(ChatMessage message) {
+    setState(() {
+      _messages.add(message);
+    });
+  }
+
+  void _showSimpleMessage() {
     setState(() {
       _messages.add(ChatMessage(
-        text: '¡Hola! Soy tu amigo virtual 🤖\n¿Quieres aprender sobre la letra ${widget.currentLetter}?',
+        text: 'La letra ${widget.currentLetter} es muy importante para aprender a leer y escribir. ¡Sigue practicando!',
+        isFromAI: true,
+        timestamp: DateTime.now(),
+      ));
+    });
+    
+    _audioService.speakText(
+      'La letra ${widget.currentLetter} es muy importante para aprender a leer y escribir. ¡Sigue practicando!'
+    );
+  }
+
+  void _sendWelcomeMessage() {
+    // FUNCIONALIDAD DESHABILITADA
+    return;
+    
+    setState(() {
+      _messages.add(ChatMessage(
+        text: '¡Hola! Soy tu amigo virtual 🤖\n¡Aprendamos la letra ${widget.currentLetter}! Tocá HABLAR y decime palabras.',
         isFromAI: true,
         timestamp: DateTime.now(),
       ));
@@ -344,26 +514,105 @@ class _KidsAIChatState extends State<KidsAIChat>
             ),
           ),
           const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          Column(
             children: [
-              _buildQuickActionButton(
-                '📖 Info de la letra',
-                () => _sendMessage('Cuéntame sobre la letra ${widget.currentLetter}'),
-              ),
-              _buildQuickActionButton(
-                '📝 Palabras',
-                () => _sendMessage('Dame palabras con ${widget.currentLetter}'),
-              ),
-              _buildQuickActionButton(
-                '📚 Historia',
-                () => _sendMessage('Cuéntame una historia con ${widget.currentLetter}'),
+              // Botón de hablar grande y prominente
+              _buildVoiceActionButton(),
+              const SizedBox(height: 16),
+              // Botones más pequeños y simples
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildQuickActionButton(
+                    '📝 Palabras',
+                    () => _sendMessage('Dame palabras con ${widget.currentLetter}'),
+                  ),
+                  _buildQuickActionButton(
+                    '📚 Cuento',
+                    () => _sendMessage('Cuéntame una historia con ${widget.currentLetter}'),
+                  ),
+                ],
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildVoiceActionButton() {
+    return AnimatedBuilder(
+      animation: _micAnimation,
+      builder: (context, child) {
+        return GestureDetector(
+          onTap: _isListening || _isProcessingVoice ? null : _startVoiceInteraction,
+          child: Transform.scale(
+            scale: _isListening ? _micAnimation.value : 1.0,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16), // Más grande para niños
+              decoration: BoxDecoration(
+                color: _isListening 
+                  ? Colors.red[100] 
+                  : _isProcessingVoice 
+                    ? Colors.orange[100]
+                    : Colors.green[100],
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(
+                  color: _isListening 
+                    ? Colors.red[400]! 
+                    : _isProcessingVoice 
+                      ? Colors.orange[400]!
+                      : Colors.green[400]!,
+                  width: 3, // Borde más grueso
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _isListening 
+                      ? Icons.mic 
+                      : _isProcessingVoice 
+                        ? Icons.psychology
+                        : Icons.mic,
+                    size: 32, // Icono más grande
+                    color: _isListening 
+                      ? Colors.red[700] 
+                      : _isProcessingVoice 
+                        ? Colors.orange[700]
+                        : Colors.green[700],
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    _isListening 
+                      ? 'Te escucho' 
+                      : _isProcessingVoice 
+                        ? 'Pensando...'
+                        : 'HABLAR',
+                    style: TextStyle(
+                      fontSize: 18, // Texto más grande
+                      color: _isListening 
+                        ? Colors.red[800] 
+                        : _isProcessingVoice 
+                          ? Colors.orange[800]
+                          : Colors.green[800],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -394,11 +643,13 @@ class _KidsAIChatState extends State<KidsAIChat>
 class ChatMessage {
   final String text;
   final bool isFromAI;
+  final bool isUser;
   final DateTime timestamp;
 
   ChatMessage({
     required this.text,
-    required this.isFromAI,
+    this.isFromAI = false,
+    this.isUser = false,
     required this.timestamp,
   });
 }

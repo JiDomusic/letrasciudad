@@ -51,6 +51,10 @@ dependencies:
   
   # Seguridad y filtros
   profanity_filter: ^2.0.0
+  
+  # Reconocimiento de voz para IA interactiva
+  # speech_to_text: ^6.6.0  # DESHABILITADO - Causa errores de compilación
+  permission_handler: ^11.0.1
 
   audioplayers: any
 dev_dependencies:

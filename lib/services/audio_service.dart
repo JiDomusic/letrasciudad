@@ -348,20 +348,71 @@ class AudioService {
       _flutterTts.setPitch(1.5); // Voz de niña
       _flutterTts.setVolume(1.0);
       
+      // Procesar el texto para evitar que los nombres se deletreen
+      String processedText = _processTextForNaturalSpeech(text);
+      
       // COMANDO INMEDIATO sin await para no bloquear la UI
-      _flutterTts.speak(text);
-      debugPrint('✅ Audio INMEDIATO enviado: "$text"');
+      _flutterTts.speak(processedText);
+      debugPrint('✅ Audio INMEDIATO enviado: "$processedText"');
       
     } catch (e) {
       debugPrint('❌ Error audio inmediato: $e');
       // Reintentar con método simplificado
       try {
         await _flutterTts.stop();
-        _flutterTts.speak(text);
+        String processedText = _processTextForNaturalSpeech(text);
+        _flutterTts.speak(processedText);
       } catch (retryError) {
         debugPrint('❌ Error en reintento inmediato: $retryError');
       }
     }
+  }
+  
+  // Procesar texto para evitar que los nombres se pronuncien letra por letra
+  String _processTextForNaturalSpeech(String text) {
+    String processedText = text;
+    
+    // SOLUCIÓN DIRECTA: Proteger nombres específicos conocidos
+    final knownNames = ['Jido', 'jido', 'JIDO', 'Ana', 'ana', 'Luis', 'luis', 'María', 'maría', 'Carlos', 'carlos', 'Sofia', 'sofia', 'Diego', 'diego'];
+    
+    // Para cada nombre conocido, asegurar que esté protegido con marcadores especiales
+    for (String name in knownNames) {
+      // Buscar patrones como "J I D O" o "j-i-d-o" y reemplazarlos
+      String spacedPattern = name.split('').join('[ -]*').toLowerCase();
+      RegExp spacedRegex = RegExp(spacedPattern, caseSensitive: false);
+      processedText = processedText.replaceAll(spacedRegex, ' <<$name>> ');
+      
+      // También proteger el nombre normal con marcadores
+      processedText = processedText.replaceAll(RegExp('\\b$name\\b', caseSensitive: false), ' <<$name>> ');
+    }
+    
+    // MÉTODO ALTERNATIVO: Forzar pronunciación silábica para nombres
+    // Detectar palabras que podrían ser nombres (empiezan con mayúscula, 3+ caracteres)
+    final nameIndicators = ['Hola ', 'hola ', 'nombre ', 'llamo ', 'soy ', 'Soy ', '¡Hola ', 'Bienvenido ', 'bienvenido '];
+    
+    for (String indicator in nameIndicators) {
+      if (processedText.toLowerCase().contains(indicator.toLowerCase())) {
+        // Encontrar nombres después del indicador
+        RegExp nameAfterIndicator = RegExp('${RegExp.escape(indicator)}([A-Za-z]{3,})', caseSensitive: false);
+        processedText = processedText.replaceAllMapped(nameAfterIndicator, (match) {
+          String fullMatch = match.group(0)!;
+          String nameOnly = match.group(1)!;
+          return '${indicator}<<$nameOnly>>';
+        });
+      }
+    }
+    
+    // Convertir marcadores a formato que TTS no deletree
+    processedText = processedText.replaceAllMapped(RegExp(r'<<([^>]+)>>'), (match) {
+      String name = match.group(1)!;
+      // Usar separación silábica suave para nombres
+      return ' $name. '; // El punto fuerza pausa y pronunciación natural
+    });
+    
+    // Limpiar espacios extras
+    processedText = processedText.replaceAll(RegExp(r'\s+'), ' ').trim();
+    
+    return processedText;
   }
 
   Future<void> _ensureChildVoiceSettings() async {

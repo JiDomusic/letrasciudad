@@ -6,7 +6,7 @@ import '../providers/letter_city_provider.dart';
 import '../services/audio_service.dart';
 import '../models/letter.dart';
 import '../widgets/mini_tracing_canvas.dart';
-import '../widgets/kids_ai_chat.dart';
+// import '../widgets/kids_ai_chat.dart'; // Removed to fix errors
 import '../widgets/letter_tracing_widget.dart';
 
 class InteractiveLetterGamesScreen extends StatefulWidget {
@@ -31,6 +31,9 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   final Set<String> _usedWords = {};
   final Set<String> _usedDistractors = {};
   
+  // Contador específico para letra Ñ
+  int _nAttempts = 0;
+  
   // Letters grid for find game
   List<Map<String, dynamic>>? _lettersGrid;
 
@@ -45,15 +48,26 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     // Ensure used words lists start fresh
     _usedWords.clear();
     _usedDistractors.clear();
+    _nAttempts = 0; // Reset counter for Ñ
+    
+    // Inicializar AudioService para mensajes de voz
+    _audioService.initialize();
+    
     _playWelcomeMessage();
   }
 
   void _playWelcomeMessage() async {
     await Future.delayed(const Duration(milliseconds: 500));
     // El niño puede interrumpir tocando la pantalla
-    _audioService.speakText(
-      '¡Bienvenido a la casa de la letra ${widget.letter.character}!'
-    );
+    if (widget.letter.character.toUpperCase() == 'Ñ') {
+      _audioService.speakText(
+        '¡Bienvenido a la casa de la letra ${widget.letter.character}! Aquí hay pocas palabras que empiezan con Ñ. A todo esto, ¿has encontrado el Ñandú?'
+      );
+    } else {
+      _audioService.speakText(
+        '¡Bienvenido a la casa de la letra ${widget.letter.character}!'
+      );
+    }
   }
 
   void _skipNarration() {
@@ -524,7 +538,16 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       
     } else {
       // FEEDBACK PARA RESPUESTA INCORRECTA
-      _audioService.speakText('¡Inténtalo de nuevo! Busca palabras que empiecen con ${widget.letter.character.toUpperCase()}');
+      if (widget.letter.character.toUpperCase() == 'Ñ') {
+        _nAttempts++;
+        if (_nAttempts >= 3) {
+          _audioService.speakText('¡Muy bien! La letra Ñ no tiene muchas palabras. Toca el ícono de la estrella para jugar a trazar la letra Ñ.');
+        } else {
+          _audioService.speakText('¡Sigue buscando! ¿Puedes encontrar el Ñandú?');
+        }
+      } else {
+        _audioService.speakText('¡Inténtalo de nuevo! Busca palabras que empiecen con ${widget.letter.character.toUpperCase()}');
+      }
       
       // ELIMINACIÓN PERMANENTE: Marcar como usado y refrescar UI
       setState(() {
@@ -627,6 +650,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
             child: LetterTracingWidget(
               letter: widget.letter.character.toUpperCase(),
               audioService: _audioService,
+              playerName: context.read<LetterCityProvider>().playerName,
+              isSpecialLetter: false, // Regular letters get normal feedback
               onTracingComplete: () {
                 // Completar actividad y mostrar celebración
                 final provider = context.read<LetterCityProvider>();
@@ -738,7 +763,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     switch (letter) {
       case 'A':
         return [
-          {'emoji': '🐸', 'name': 'Abeja', 'correct': true, 'found': false},
+          {'emoji': '🐝', 'name': 'Abeja', 'correct': true, 'found': false},
           {'emoji': '🎨', 'name': 'Arte', 'correct': true, 'found': false}, 
           {'emoji': '🏠', 'name': 'Casa', 'correct': false, 'found': false},
           {'emoji': '🌳', 'name': 'Árbol', 'correct': true, 'found': false},
@@ -850,7 +875,16 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       _showCelebrationStars();
       context.read<LetterCityProvider>().completeActivity('magical_search_${widget.letter.character}', 10);
     } else {
-      _audioService.speakText('¡Inténtalo de nuevo! ${obj['name']} no empieza con ${widget.letter.character.toUpperCase()}');
+      if (widget.letter.character.toUpperCase() == 'Ñ') {
+        _nAttempts++;
+        if (_nAttempts >= 3) {
+          _audioService.speakText('${obj['name']} no empieza con Ñ. Toca el ícono de la estrella para jugar a trazar la letra Ñ.');
+        } else {
+          _audioService.speakText('${obj['name']} no empieza con Ñ. ¡Sigue intentando!');
+        }
+      } else {
+        _audioService.speakText('¡Inténtalo de nuevo! ${obj['name']} no empieza con ${widget.letter.character.toUpperCase()}');
+      }
     }
   }
 
@@ -1779,56 +1813,33 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   Widget _buildLetterSoundGame() {
-    return Stack(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.volume_up, color: Colors.orange[600], size: 24),
-                    const SizedBox(width: 8),
-                    const Expanded(
-                      child: Text(
-                        '¡Escucha y aprende con tu amigo virtual!',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFE65100),
-                        ),
-                      ),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.volume_up, color: Colors.orange[600], size: 24),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    '¡Escucha y aprende los sonidos!',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFE65100),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.green[100],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.green[300]!),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '🤖 IA',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green[700],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
+            ),
+          ),
           const SizedBox(height: 40),
           Expanded(
             child: Column(
@@ -1905,12 +1916,6 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
           ),
         ],
       ),
-        ),
-        // Chat de IA superpuesto
-        KidsAIChat(
-          currentLetter: widget.letter.character.toUpperCase(),
-        ),
-      ],
     );
   }
 
@@ -1943,8 +1948,9 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '✈️', 'name': 'Avión', 'correct': true},
         {'emoji': '🧄', 'name': 'Ajo', 'correct': true},
         {'emoji': '🧮', 'name': 'Ábaco', 'correct': true},
+        {'emoji': '🚗', 'name': 'Auto', 'correct': true},
         {'emoji': '🏠', 'name': 'Armario', 'correct': true},
-        {'emoji': '🐛', 'name': 'Abeja', 'correct': true},
+        {'emoji': '🐝', 'name': 'Abeja', 'correct': true},
         // Palabras distractoras que NO empiezan con A
         {'emoji': '🐕', 'name': 'Perro', 'correct': false},
         {'emoji': '🐱', 'name': 'Gato', 'correct': false},
@@ -1968,7 +1974,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '🎺', 'name': 'Bocina', 'correct': true},
       ],
       'C': [
-        {'emoji': '🚗', 'name': 'Carro', 'correct': true},
+        {'emoji': '🥕', 'name': 'Cebolla', 'correct': true},
         {'emoji': '🎂', 'name': 'Cumpleaños', 'correct': true},
         {'emoji': '🏠', 'name': 'Casa', 'correct': true},
         {'emoji': '🛏️', 'name': 'Cama', 'correct': true},
@@ -2043,7 +2049,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '🌿', 'name': 'Hoja', 'correct': true},
         {'emoji': '🍄', 'name': 'Hongo', 'correct': true},
         {'emoji': '🔨', 'name': 'Herramienta', 'correct': true},
-        {'emoji': '🦔', 'name': 'Hámster', 'correct': true},
+        {'emoji': '🐹', 'name': 'Hámster', 'correct': true},
         {'emoji': '🧊', 'name': 'Hielo', 'correct': true},
         {'emoji': '🌻', 'name': 'Harina', 'correct': true},
         {'emoji': '🏥', 'name': 'Hospital', 'correct': true},
@@ -2113,6 +2119,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '🦋', 'name': 'Mariposa', 'correct': true},
         {'emoji': '🍯', 'name': 'Miel', 'correct': true},
         {'emoji': '🥭', 'name': 'Mango', 'correct': true},
+        {'emoji': '🧉', 'name': 'Mate', 'correct': true},
         {'emoji': '🪑', 'name': 'Mesa', 'correct': true},
         {'emoji': '🐭', 'name': 'Ratón', 'correct': false},
         {'emoji': '🏠', 'name': 'Casa', 'correct': false},
@@ -2250,10 +2257,9 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '📶', 'name': 'WiFi', 'correct': true},
         {'emoji': '🥃', 'name': 'Whisky', 'correct': true},
         {'emoji': '🪄', 'name': 'Wok', 'correct': true},
-        {'emoji': '🦅', 'name': 'Walabi', 'correct': true},
         {'emoji': '⌚', 'name': 'Watch', 'correct': false},
         {'emoji': '💻', 'name': 'Windows', 'correct': false},
-        {'emoji': '🌍', 'name': 'World', 'correct': false},
+        {'emoji': '🌍', 'name': 'Mundo', 'correct': false},
         {'emoji': '🎮', 'name': 'Wii', 'correct': false},
         {'emoji': '🔧', 'name': 'Workshop', 'correct': false},
         {'emoji': '🏆', 'name': 'Winner', 'correct': false},
@@ -2300,7 +2306,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         {'emoji': '🐸', 'name': 'Rana', 'correct': false},
       ],
       'N_TILDE': [
-        {'emoji': '🥘', 'name': 'Ñoquis', 'correct': true},
+        {'emoji': '🍲', 'name': 'Ñoquis', 'correct': true},
         {'emoji': '😴', 'name': 'Sueño', 'correct': true},
         {'emoji': '👦', 'name': 'Niño', 'correct': true},
         {'emoji': '🤏', 'name': 'Pequeño', 'correct': true},
@@ -2337,7 +2343,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
       {'emoji': '🌸', 'name': 'Flor', 'correct': false},
       {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-      {'emoji': '🚗', 'name': 'Carro', 'correct': false},
+      {'emoji': '🚗', 'name': 'Auto', 'correct': false},
       {'emoji': '🏠', 'name': 'Casa', 'correct': false},
       {'emoji': '🌙', 'name': 'Luna', 'correct': false},
       {'emoji': '☀️', 'name': 'Sol', 'correct': false},
@@ -2719,13 +2725,16 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Icono o emoji grande representativo
-          Text(
-            _getWordIcon(completeWord),
-            style: TextStyle(fontSize: isPhone ? 40 : 60),
+          Flexible(
+            child: Text(
+              _getWordIcon(completeWord),
+              style: TextStyle(fontSize: isPhone ? 32 : 48),
+            ),
           ),
-          SizedBox(height: isPhone ? 8 : 12),
+          SizedBox(height: isPhone ? 4 : 6),
           // Palabra a completar con área de trazado para la letra B
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -2894,13 +2903,16 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Icono o emoji grande representativo
-          Text(
-            _getWordIconV(completeWord),
-            style: TextStyle(fontSize: isPhone ? 40 : 60),
+          Flexible(
+            child: Text(
+              _getWordIconV(completeWord),
+              style: TextStyle(fontSize: isPhone ? 32 : 48),
+            ),
           ),
-          SizedBox(height: isPhone ? 8 : 12),
+          SizedBox(height: isPhone ? 4 : 6),
           // Palabra a completar con área de trazado para la letra V
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -3023,8 +3035,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   Widget _WordTracingGameK({required bool isPhone}) {
-    final words = ['_IWI', '_ARATE', '_OALA', '_AYAK', '_IOSCO'];
-    final completedWords = ['KIWI', 'KARATE', 'KOALA', 'KAYAK', 'KIOSCO'];
+    final words = ['_IWI', '_ARATE', '_OALA', '_IOSCO'];
+    final completedWords = ['KIWI', 'KARATE', 'KOALA',  'KIOSCO'];
     
     return Container(
       padding: EdgeInsets.all(isPhone ? 12 : 20),
@@ -3069,13 +3081,16 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Icono o emoji grande representativo
-          Text(
-            _getWordIconK(completeWord),
-            style: TextStyle(fontSize: isPhone ? 40 : 60),
+          Flexible(
+            child: Text(
+              _getWordIconK(completeWord),
+              style: TextStyle(fontSize: isPhone ? 32 : 48),
+            ),
           ),
-          SizedBox(height: isPhone ? 8 : 12),
+          SizedBox(height: isPhone ? 4 : 6),
           // Palabra a completar con área de trazado para la letra K
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -3116,7 +3131,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       case 'KIWI': return '🥝';
       case 'KARATE': return '🥋';
       case 'KOALA': return '🐨';
-      case 'KAYAK': return '🛶';
+
       case 'KIOSCO': return '🏪';
       default: return '📝';
     }
@@ -3198,8 +3213,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   Widget _WordTracingGameY({required bool isPhone}) {
-    final words = ['_ATE', '_OGUR', '_ERBA', '_EMA', '_ERNO'];
-    final completedWords = ['YATE', 'YOGUR', 'YERBA', 'YEMA', 'YERNO'];
+    final words = ['_ATE', '_OGUR', '_ERBA', '_EMA', ];
+    final completedWords = ['YATE', 'YOGUR', 'YERBA', 'YEMA', ];
     
     return Container(
       padding: EdgeInsets.all(isPhone ? 12 : 20),
@@ -3244,13 +3259,16 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Icono o emoji grande representativo
-          Text(
-            _getWordIconY(completeWord),
-            style: TextStyle(fontSize: isPhone ? 40 : 60),
+          Flexible(
+            child: Text(
+              _getWordIconY(completeWord),
+              style: TextStyle(fontSize: isPhone ? 32 : 48),
+            ),
           ),
-          SizedBox(height: isPhone ? 8 : 12),
+          SizedBox(height: isPhone ? 4 : 6),
           // Palabra a completar con área de trazado para la letra Y
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -3292,7 +3310,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       case 'YOGUR': return '🍦';
       case 'YERBA': return '🧉';
       case 'YEMA': return '🥚';
-      case 'YERNO': return '👨';
+
       default: return '📝';
     }
   }
@@ -3373,9 +3391,9 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   Widget _WordTracingGameN({required bool isPhone}) {
-    final words = ['A_O', 'BA_O', 'NI_O', 'SO_AR', 'UE_O'];
+    final words = ['A_O', 'BA_O', 'NI_O', 'SO_AR', 'SUE_O'];
     final completedWords = ['AÑO', 'BAÑO', 'NIÑO', 'SOÑAR', 'SUEÑO'];
-    final positions = [1, 2, 2, 2, 1]; // Posición de la Ñ en cada palabra
+    final positions = [1, 2, 2, 2, 3]; // Posición de la Ñ en cada palabra
     
     return Container(
       padding: EdgeInsets.all(isPhone ? 12 : 20),
@@ -3421,13 +3439,16 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Icono o emoji grande representativo
-          Text(
-            _getWordIconN(completeWord),
-            style: TextStyle(fontSize: isPhone ? 40 : 60),
+          Flexible(
+            child: Text(
+              _getWordIconN(completeWord),
+              style: TextStyle(fontSize: isPhone ? 32 : 48),
+            ),
           ),
-          SizedBox(height: isPhone ? 8 : 12),
+          SizedBox(height: isPhone ? 4 : 6),
           // Palabra a completar con área de trazado para la letra Ñ
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -3552,7 +3573,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Expanded(
             child: _WordTracingGameW(isPhone: isPhone),
           ),
@@ -3608,13 +3629,16 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Icono o emoji grande representativo
-          Text(
-            _getWordIconW(completeWord),
-            style: TextStyle(fontSize: isPhone ? 40 : 60),
+          Flexible(
+            child: Text(
+              _getWordIconW(completeWord),
+              style: TextStyle(fontSize: isPhone ? 32 : 48),
+            ),
           ),
-          SizedBox(height: isPhone ? 8 : 12),
+          SizedBox(height: isPhone ? 4 : 6),
           // Palabra a completar con área de trazado para la letra W
           Row(
             mainAxisAlignment: MainAxisAlignment.center,

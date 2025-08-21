@@ -59,7 +59,7 @@ class LetterCityProvider extends ChangeNotifier {
   void _enableDemoMode() {
     // Modo demo: desbloquear todas las letras automáticamente
     _letters = _letters.map((letter) => letter.copyWith(isUnlocked: true)).toList();
-    _playerName = 'Pequeño Explorador';
+    _playerName = ''; // Start with empty name to trigger name input dialog
     debugPrint('Demo Mode: Cargadas ${_letters.length} letras');
     for (var letter in _letters) {
       debugPrint('Letra: ${letter.character} - Desbloqueada: ${letter.isUnlocked}');

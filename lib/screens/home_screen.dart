@@ -10,6 +10,7 @@ import 'house_preview_screen.dart';
 import '../widgets/progress_header.dart';
 import '../widgets/rounded_letter_house.dart';
 import '../widgets/rolling_hills_terrain.dart';
+import 'alphabet_main_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -50,7 +51,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _playWelcomeMessage() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    await _audioService.speakText('¡Hola pequeño explorador! Soy Luna, tu guía en este parque mágico de letras. ¿Estás listo para descubrir todas las aventuras que tengo preparadas?');
+    final provider = context.read<LetterCityProvider>();
+    
+    // Check if player name needs to be set
+    if (provider.playerName.isEmpty || provider.playerName == 'Pequeño Explorador') {
+      _showNameInputDialog();
+    } else {
+      // Asegurar que se pronuncie el nombre completo, no letra por letra
+      await _audioService.speakText('¡Hola ${provider.playerName}! Soy Luna, tu guía en este parque mágico de letras. ¿Estás listo para descubrir todas las aventuras que tengo preparadas?');
+    }
   }
 
   @override
@@ -198,6 +207,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     label: const Text('Parque 3D'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF8B5CF6),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _navigateToAlphabetGame(),
+                    icon: const Icon(Icons.abc),
+                    label: const Text('Alfabeto Completo A-Z'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF6B6B),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
@@ -1001,6 +1027,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  void _navigateToAlphabetGame() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AlphabetMainScreen(
+          audioService: _audioService,
+        ),
+      ),
+    );
+  }
+
   void _showAvatarModeDialog() {
     showDialog(
       context: context,
@@ -1114,6 +1151,72 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+
+  void _showNameInputDialog() {
+    final controller = TextEditingController();
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.child_care, color: Colors.blue[600], size: 28),
+            const SizedBox(width: 8),
+            const Text('¡Hola! ¿Cómo te llamas?'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Soy Luna, tu guía mágica. Me gustaría conocer tu nombre para poder llamarte por él durante nuestras aventuras.',
+              style: TextStyle(fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: controller,
+              decoration: InputDecoration(
+                hintText: 'Escribe tu nombre aquí',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                prefixIcon: Icon(Icons.person, color: Colors.blue[600]),
+              ),
+              maxLength: 20,
+              textCapitalization: TextCapitalization.words,
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton.icon(
+            onPressed: () {
+              final name = controller.text.trim();
+              if (name.isNotEmpty) {
+                context.read<LetterCityProvider>().setPlayerName(name);
+                Navigator.of(context).pop();
+                // Asegurar que se pronuncie el nombre completo, no letra por letra
+                _audioService.speakText('¡Hola ${name}! Qué nombre tan bonito. Soy Luna, tu guía en este parque mágico de letras. ¿Estás listo para descubrir todas las aventuras que tengo preparadas?');
+              } else {
+                context.read<LetterCityProvider>().setPlayerName('Pequeño Explorador');
+                Navigator.of(context).pop();
+                _audioService.speakText('¡Hola pequeño explorador! Soy Luna, tu guía en este parque mágico de letras. ¿Estás listo para descubrir todas las aventuras que tengo preparadas?');
+              }
+            },
+            icon: const Icon(Icons.check),
+            label: const Text('¡Empezar a Jugar!'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   // ignore: unused_element
   void _showNameDialog() {

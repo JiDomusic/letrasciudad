@@ -27,9 +27,12 @@ class AIConfig {
     'N', 'Ñ', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
   ];
   
-  // Verificar si la API está configurada
-  static bool get isConfigured => googleAIApiKey != 'YOUR_GOOGLE_AI_API_KEY';
+  // Verificar si la API está configurada - SIEMPRE FALSO
+  static bool get isConfigured => false;
   
-  // Modo de demostración (respuestas de respaldo si no hay API key)
-  static const bool enableDemoMode = true;
+  // Modo de demostración completamente DESHABILITADO
+  static const bool enableDemoMode = false;
+  
+  // IA completamente deshabilitada
+  static const bool aiEnabled = false;
 }

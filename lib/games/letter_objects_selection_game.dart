@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:math' as math;
 import '../models/letter.dart';
 import '../services/audio_service.dart';
 import '../providers/letter_city_provider.dart';
@@ -34,12 +35,12 @@ class _LetterObjectsSelectionGameState extends State<LetterObjectsSelectionGame>
   void _generateObjects() {
     final correctObjects = _getObjectsForLetter(widget.letter.character.toUpperCase())
         .where((obj) => obj['correct'] == true && !_usedWords.contains(obj['name']))
-        .take(2)
+        .take(3)
         .toList();
     
     final incorrectObjects = _getObjectsForLetter(widget.letter.character.toUpperCase())
         .where((obj) => obj['correct'] == false && !_usedDistractors.contains(obj['name']))
-        .take(2)
+        .take(1)
         .toList();
 
     // Agregar a las palabras usadas
@@ -74,7 +75,12 @@ class _LetterObjectsSelectionGameState extends State<LetterObjectsSelectionGame>
         }
       });
     } else {
-      widget.audioService.speakText('¡Inténtalo de nuevo! $wordName no empieza con ${widget.letter.character.toUpperCase()}');
+      final messages = [
+        '¡Muy bien! Pero busca algo que empiece con ${widget.letter.character.toUpperCase()}',
+        '¡Sigue intentando! ¿Qué empieza con ${widget.letter.character.toUpperCase()}?',
+        '¡Casi! Busca una palabra con ${widget.letter.character.toUpperCase()}',
+      ];
+      widget.audioService.speakText(messages[math.Random().nextInt(messages.length)]);
       _showFailureFeedback();
     }
   }
@@ -111,7 +117,7 @@ class _LetterObjectsSelectionGameState extends State<LetterObjectsSelectionGame>
         {'emoji': '🪡', 'name': 'Aguja', 'correct': true},
         {'emoji': '👵', 'name': 'Abuela', 'correct': true},
         {'emoji': '⚓', 'name': 'Ancla', 'correct': true},
-        {'emoji': '🌳', 'name': 'Árbol', 'correct': true},
+        {'emoji': '🍎', 'name': 'Azúcar', 'correct': true},
         {'emoji': '💍', 'name': 'Anillo', 'correct': true},
         {'emoji': '🟫', 'name': 'Alfombra', 'correct': true},
         {'emoji': '🛏️', 'name': 'Almohada', 'correct': true},
@@ -119,7 +125,7 @@ class _LetterObjectsSelectionGameState extends State<LetterObjectsSelectionGame>
         {'emoji': '🧄', 'name': 'Ajo', 'correct': true},
         {'emoji': '🧮', 'name': 'Ábaco', 'correct': true},
         {'emoji': '🏠', 'name': 'Armario', 'correct': true},
-        {'emoji': '🐛', 'name': 'Abeja', 'correct': true},
+        {'emoji': '🐝', 'name': 'Abeja', 'correct': true},
         // Palabras distractoras
         {'emoji': '🐕', 'name': 'Perro', 'correct': false},
         {'emoji': '🐱', 'name': 'Gato', 'correct': false},
@@ -370,9 +376,10 @@ class _LetterObjectsSelectionGameState extends State<LetterObjectsSelectionGame>
             ),
           ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+        child: Flexible(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
             // Emoji grande
             Text(
               obj['emoji'] as String,
@@ -402,6 +409,7 @@ class _LetterObjectsSelectionGameState extends State<LetterObjectsSelectionGame>
               ),
             ),
           ],
+          ),
         ),
       ),
     );

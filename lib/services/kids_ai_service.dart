@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:profanity_filter/profanity_filter.dart';
@@ -10,44 +11,32 @@ class KidsAIService {
   final ProfanityFilter _profanityFilter = ProfanityFilter();
 
   KidsAIService() {
-    _initializeModel();
+    // IA COMPLETAMENTE DESHABILITADA
+    // No inicializar modelo para evitar errores
   }
 
   void _initializeModel() {
-    _model = GenerativeModel(
-      model: 'gemini-1.5-flash',
-      apiKey: AIConfig.googleAIApiKey,
-      safetySettings: [
-        SafetySetting(HarmCategory.harassment, HarmBlockThreshold.medium),
-        SafetySetting(HarmCategory.hateSpeech, HarmBlockThreshold.medium),
-        SafetySetting(HarmCategory.sexuallyExplicit, HarmBlockThreshold.low),
-        SafetySetting(HarmCategory.dangerousContent, HarmBlockThreshold.medium),
-      ],
-      generationConfig: GenerationConfig(
-        temperature: 0.3, // Más conservador para niños
-        topK: 20,
-        topP: 0.8,
-        maxOutputTokens: 200, // Respuestas cortas
-      ),
-    );
+    // IA DESHABILITADA - No inicializar nada
+    return;
   }
 
   /// Obtiene información educativa sobre una letra específica
   Future<String> getLetterInfo(String letter) async {
+    // IA DESHABILITADA - Solo respuestas simples
     if (!AIConfig.argentineAlphabet.contains(letter.toUpperCase())) {
       return 'Lo siento, esa no es una letra válida del alfabeto argentino.';
     }
     
-    // Si no está configurada la API, usar modo demo
-    if (!AIConfig.isConfigured && AIConfig.enableDemoMode) {
-      return _getFallbackResponse(letter);
-    }
+    return 'La letra ${letter.toUpperCase()} es muy importante para aprender a leer y escribir.';
 
     final prompt = _createLetterPrompt(letter.toUpperCase());
     
     try {
       final content = [Content.text(prompt)];
-      final response = await _model.generateContent(content);
+      final response = await _model.generateContent(content).timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => throw TimeoutException('AI service timeout', const Duration(seconds: 5)),
+      );
       
       if (response.text == null || response.text!.isEmpty) {
         return _getFallbackResponse(letter);
@@ -65,6 +54,9 @@ class KidsAIService {
 
   /// Genera palabras argentinas que empiecen con la letra
   Future<List<String>> getArgentineWords(String letter) async {
+    // IA DESHABILITADA - Solo palabras básicas
+    return ['${letter.toLowerCase()}uto', '${letter.toLowerCase()}asa'];
+
     final prompt = '''
 Eres un asistente educativo para niños argentinos de 4-8 años.
 Lista 8 palabras argentinas que empiecen con la letra "${letter.toUpperCase()}".
@@ -80,7 +72,10 @@ Ejemplo: CASA, COCHE, CAMA, CANTO
 
     try {
       final content = [Content.text(prompt)];
-      final response = await _model.generateContent(content);
+      final response = await _model.generateContent(content).timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => throw TimeoutException('AI service timeout', const Duration(seconds: 5)),
+      );
       
       if (response.text != null) {
         final words = response.text!
@@ -102,6 +97,9 @@ Ejemplo: CASA, COCHE, CAMA, CANTO
 
   /// Cuenta una historia corta con la letra
   Future<String> tellLetterStory(String letter) async {
+    // IA DESHABILITADA - Solo historia simple
+    return 'La letra ${letter.toUpperCase()} tiene muchas aventuras que contar. ¡Sigamos aprendiendo!';
+
     final prompt = '''
 Eres un cuentacuentos para niños argentinos de 4-8 años.
 Cuenta una historia MUY CORTA (máximo 3 oraciones) sobre la letra "${letter.toUpperCase()}".
@@ -116,7 +114,10 @@ Ejemplo para "M": "Marta la mariposa vive en Mendoza. Le gusta comer miel y mira
 
     try {
       final content = [Content.text(prompt)];
-      final response = await _model.generateContent(content);
+      final response = await _model.generateContent(content).timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => throw TimeoutException('AI service timeout', const Duration(seconds: 5)),
+      );
       
       if (response.text != null) {
         final story = _applySafetyFilters(response.text!);
@@ -128,6 +129,143 @@ Ejemplo para "M": "Marta la mariposa vive en Mendoza. Le gusta comer miel y mira
     }
     
     return _getFallbackStory(letter);
+  }
+
+  /// Respuesta de respaldo para juego de letras
+  String _getFallbackLetterGame(String letter) {
+    final games = {
+      'A': '¡Hola! Tocaste la letra A que suena "ah". ¿Podés decirme palabras que empiecen con A? Como AUTO. ¡Dale que podés!',
+      'B': '¡Genial! Tocaste la B que hace "beh". ¿Sabés palabras con B? Como BANANA. ¡Vamos que sos increíble!',
+      'C': '¡Excelente! La C suena "ce". ¿Qué palabras conocés con C? Como CASA. ¡Dale que lo hacés súper bien!',
+      'D': '¡Muy bien! La D hace "de". ¿Podés decir palabras con D? Como DULCE. ¡Sos genial!',
+      'E': '¡Fantástico! La E suena "eh". ¿Conocés palabras con E? Como ELEFANTE. ¡Dale!',
+    };
+    
+    return games[letter] ?? '¡Hola! Tocaste la letra $letter. ¿Podés decirme palabras que empiecen con $letter? ¡Sos increíble!';
+  }
+
+  /// Respuesta cuando no se detectan palabras
+  String _getFallbackNoWords(String letter) {
+    return '¡No escuché bien! ¿Podés repetir alguna palabra que empiece con $letter? ¡Dale que lo podés hacer!';
+  }
+
+  /// Evaluación de respaldo
+  String _getFallbackEvaluation(List<String> words, String letter) {
+    if (words.isEmpty) {
+      return '¡Intentalo de nuevo! Decí una palabra que empiece con $letter. ¡Vos podés!';
+    }
+    
+    return '¡Muy bien! Escuché: ${words.join(', ')}. ¡Sos increíble! ¿Querés seguir jugando con $letter o elegir otra letra?';
+  }
+
+  /// Respuesta para continuar juego
+  String _getFallbackContinue(String letter) {
+    return '¿Querés seguir jugando con la letra $letter o elegir otra letra? ¡Las dos opciones están geniales!';
+  }
+
+  /// Inicia un juego de voz cuando el niño toca una letra
+  Future<String> speakLetterAndProposeGame(String letter) async {
+    try {
+      letter = letter.toUpperCase();
+      
+      final prompt = '''
+Eres una maestra argentina súper divertida hablando con un niño de 4-7 años.
+El niño acaba de tocar la letra "$letter".
+
+Responde de forma muy entusiasta:
+1. ¡Hola! Tocaste la letra $letter
+2. Su sonido correcto en argentino
+3. Propone un juego: "¿Podés decirme palabras que empiecen con $letter?"
+4. Da 1 ejemplo fácil para ayudar
+
+Máximo 80 palabras.
+Tono: Muy alegre, entusiasta, maternal, usando "vos".
+Incluí exclamaciones como ¡Genial!, ¡Dale!, ¡Vamos!
+''';
+
+      final content = [Content.text(prompt)];
+      final response = await _model.generateContent(content);
+      
+      if (response.text != null) {
+        return _applySafetyFilters(response.text!);
+      }
+      
+    } catch (e) {
+      print('Error en speakLetterAndProposeGame: $e');
+    }
+    
+    return _getFallbackLetterGame(letter);
+  }
+
+  /// Evalúa la respuesta de voz del niño en el juego de letras
+  Future<String> evaluateGameResponse(String letter, List<String> spokenWords) async {
+    try {
+      letter = letter.toUpperCase();
+      
+      if (spokenWords.isEmpty) {
+        return _getFallbackNoWords(letter);
+      }
+
+      final wordsText = spokenWords.join(', ');
+      
+      final prompt = '''
+Eres una maestra argentina evaluando a un niño de 4-7 años.
+El niño dijo estas palabras para la letra "$letter": $wordsText
+
+Responde de forma súper positiva:
+1. Felicita TODAS las palabras correctas que dijo
+2. Si hay incorrectas, corrige gentilmente
+3. Pregunta si quiere seguir jugando o cambiar de letra
+4. Usa muchas felicitaciones
+
+Máximo 100 palabras.
+Tono: Muy alegre, orgullosa, maternal, usando "vos".
+''';
+
+      final content = [Content.text(prompt)];
+      final response = await _model.generateContent(content);
+      
+      if (response.text != null) {
+        return _applySafetyFilters(response.text!);
+      }
+      
+    } catch (e) {
+      print('Error en evaluateGameResponse: $e');
+    }
+    
+    return _getFallbackEvaluation(spokenWords, letter);
+  }
+
+  /// Propone continuar el juego o cambiar de letra
+  Future<String> proposeContinueGame(String currentLetter) async {
+    try {
+      currentLetter = currentLetter.toUpperCase();
+      
+      final prompt = '''
+Eres una maestra argentina hablando con un niño de 4-7 años.
+Están jugando con la letra "$currentLetter".
+
+Pregunta de forma divertida:
+1. Si quiere seguir con la letra $currentLetter
+2. O si quiere jugar con otra letra
+3. Dale opciones emocionantes
+
+Máximo 60 palabras.
+Tono: Entusiasta, divertida, usando "vos".
+''';
+
+      final content = [Content.text(prompt)];
+      final response = await _model.generateContent(content);
+      
+      if (response.text != null) {
+        return _applySafetyFilters(response.text!);
+      }
+      
+    } catch (e) {
+      print('Error en proposeContinueGame: $e');
+    }
+    
+    return _getFallbackContinue(currentLetter);
   }
 
   /// Crea el prompt principal para información de letras
