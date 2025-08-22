@@ -10,7 +10,7 @@
 - **Modo demo** funciona sin API key
 
 ### 🛡️ **Seguridad Implementada:**
-- ✅ Google AI Safety Settings configurados
+- ✅ Google AI Safety Settings configuradosfirebase
 - ✅ Filtro de profanidad incluido
 - ✅ Límites de longitud de respuesta
 - ✅ Prompts específicos para educación infantil

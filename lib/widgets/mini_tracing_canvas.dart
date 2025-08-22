@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Para haptic feedback
 import 'dart:math' as math;
 import '../services/audio_service.dart';
 
@@ -25,7 +26,7 @@ class _MiniTracingCanvasState extends State<MiniTracingCanvas> {
   bool _isCompleted = false;
   double _completionPercentage = 0.0;
   double _accuracyScore = 0.0;
-  Size _canvasSize = const Size(80, 100); // Tamaño por defecto
+  Size _canvasSize = const Size(120, 140); // Tamaño más grande para móviles
   
   // Variables para feedback inmediato y continuo
   DateTime _lastFeedbackTime = DateTime.now();
@@ -36,8 +37,10 @@ class _MiniTracingCanvasState extends State<MiniTracingCanvas> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque, // Mejor detección táctil en móviles
       onPanStart: (details) {
         if (!_isCompleted) {
+          HapticFeedback.lightImpact(); // Haptic feedback al iniciar trazo
           _currentStroke = [details.localPosition];
         }
       },
@@ -60,6 +63,7 @@ class _MiniTracingCanvasState extends State<MiniTracingCanvas> {
             _updateCompletionPercentage();
             if (_completionPercentage > 0.75 && _accuracyScore > 0.7) {
               _isCompleted = true;
+              HapticFeedback.heavyImpact(); // Haptic feedback para celebrar éxito
               // Mensaje más entusiasta cuando completa
               final celebrations = [
                 '¡EXCELENTE! Trazaste perfectamente la letra ${widget.letter}',

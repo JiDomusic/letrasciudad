@@ -298,12 +298,12 @@ class LetterCityApp extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 4,
         titleTextStyle: TextStyle(
-          fontSize: 24,
+          fontSize: 18, // Texto más pequeño para AppBar compacto
           fontWeight: FontWeight.bold,
           color: Colors.white,
           letterSpacing: 0.5,
         ),
-        toolbarHeight: 64, // Más alto para mejor touch
+        toolbarHeight: 48, // Más pequeño para dar más espacio a los juegos
       ),
       
       // FAB optimizado

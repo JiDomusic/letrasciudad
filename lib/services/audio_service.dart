@@ -9,8 +9,8 @@ class AudioService {
   final FlutterTts _flutterTts = FlutterTts();
   bool _isInitialized = false;
   double _volume = 1.0;
-  double _speechRate = 0.8; // Velocidad más rápida y activa para personaje animado
-  double _speechPitch = 1.3; // Pitch femenino animado como dibujito
+  double _speechRate = 0.6; // Velocidad más lenta y clara para una mujer educadora
+  double _speechPitch = 1.4; // Pitch claramente femenino para voz de mujer
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -39,11 +39,11 @@ class AudioService {
         await _configureMobileTTS();
       }
       
-      // Configuración universal con voz argentina
+      // Configuración universal con voz argentina femenina
       await _flutterTts.setLanguage("es-AR");
-      await _flutterTts.setSpeechRate(0.7);
+      await _flutterTts.setSpeechRate(0.6); // Más lenta para claridad
       await _flutterTts.setVolume(1.0);
-      await _flutterTts.setPitch(1.2);
+      await _flutterTts.setPitch(1.4); // Más agudo para voz femenina
       
       debugPrint('🧪 TTS configurado con voz argentina');
       
@@ -216,12 +216,12 @@ class AudioService {
       }
       
       await _flutterTts.stop();
-      await Future.delayed(const Duration(milliseconds: 200));
+      await Future.delayed(const Duration(milliseconds: 300)); // Más tiempo para evitar cortes
       
-      // Configuración argentina simple
+      // Configuración argentina simple con voz femenina
       await _flutterTts.setLanguage("es-AR");
-      await _flutterTts.setSpeechRate(0.7);
-      await _flutterTts.setPitch(1.2);
+      await _flutterTts.setSpeechRate(0.6); // Más lenta y clara
+      await _flutterTts.setPitch(1.4); // Claramente femenino
       await _flutterTts.setVolume(1.0);
       await _flutterTts.awaitSpeakCompletion(false);
       
@@ -231,6 +231,12 @@ class AudioService {
       
       // Sin procesamiento complejo del texto - usar directamente
       await _flutterTts.speak(text);
+      
+      // Esperar que termine completamente antes de continuar
+      if (kIsWeb) {
+        await Future.delayed(Duration(milliseconds: (text.length * 100).clamp(500, 3000)));
+      }
+      
       debugPrint('✅ Audio completado: "$text"');
       
     } catch (e) {
@@ -249,12 +255,12 @@ class AudioService {
   Future<void> _ensureArgentineVoiceSettings() async {
     try {
       await _flutterTts.setLanguage("es-AR");
-      await _flutterTts.setSpeechRate(0.7);
-      await _flutterTts.setPitch(1.2);
+      await _flutterTts.setSpeechRate(0.6);
+      await _flutterTts.setPitch(1.4);
       await _flutterTts.setVolume(1.0);
       
-      _speechRate = 0.7;
-      _speechPitch = 1.2;
+      _speechRate = 0.6;
+      _speechPitch = 1.4;
       _volume = 1.0;
       
     } catch (e) {
@@ -430,5 +436,41 @@ class AudioService {
     
     final random = DateTime.now().millisecondsSinceEpoch % tryAgainPhrases.length;
     await speakText(tryAgainPhrases[random]);
+  }
+
+  // Método para llamar al niño por su nombre cuando complete su nombre
+  Future<void> speakNameCompletion(String childName) async {
+    if (childName.isEmpty) return;
+    
+    final nameCompletionPhrases = [
+      '¡Muy bien, $childName! ¡Has escrito tu nombre correctamente!',
+      '¡Excelente trabajo, $childName! ¡Tu nombre se ve hermoso!',
+      '¡Fantástico, $childName! ¡Qué bien escribes tu nombre!',
+      '¡Bravo, $childName! ¡Me encanta como escribes!',
+      '¡Perfecto, $childName! ¡Tu nombre está muy bien escrito!',
+      '¡Qué inteligente eres, $childName! ¡Lo has hecho genial!',
+    ];
+    
+    final random = DateTime.now().millisecondsSinceEpoch % nameCompletionPhrases.length;
+    await speakText(nameCompletionPhrases[random]);
+  }
+
+  // Método para saludar al niño por su nombre al iniciar
+  Future<void> speakWelcomeWithName(String childName) async {
+    if (childName.isEmpty) {
+      await speakText('¡Hola! ¡Qué gusto verte aquí para aprender!');
+      return;
+    }
+    
+    final welcomePhrases = [
+      '¡Hola, $childName! ¡Qué alegría verte de nuevo!',
+      '¡Buenos días, $childName! ¿Listos para aprender juntos?',
+      '¡Hola, mi querido $childName! ¡Vamos a divertirnos aprendiendo!',
+      '¡Qué bueno verte, $childName! ¡Hoy será un día genial!',
+      '¡Hola, $childName! ¡Estoy muy feliz de estar contigo!',
+    ];
+    
+    final random = DateTime.now().millisecondsSinceEpoch % welcomePhrases.length;
+    await speakText(welcomePhrases[random]);
   }
 }

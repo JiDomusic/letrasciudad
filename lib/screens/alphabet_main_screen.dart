@@ -417,9 +417,10 @@ class _AlphabetMainScreenState extends State<AlphabetMainScreen> {
       appBar: AppBar(
         backgroundColor: Colors.blue[600],
         foregroundColor: Colors.white,
+        toolbarHeight: 48, // AppBar más pequeño para más espacio de juego
         title: const Text(
           'Alfabeto Argentino',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Para haptic feedback
 import 'dart:math' as math;
 import '../services/audio_service.dart';
 
@@ -143,6 +144,9 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
   
   void _onPointerDown(PointerDownEvent event) {
     if (_isCompleted) return;
+    
+    // Haptic feedback para mejor experiencia en móvil
+    HapticFeedback.lightImpact();
     
     setState(() {
       _isTracing = true;
@@ -503,6 +507,9 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
       setState(() {
         _isCompleted = true;
       });
+      
+      // Haptic feedback para celebrar el éxito
+      HapticFeedback.heavyImpact();
       
       _celebrationController.forward();
       _hintController.stop();
@@ -1461,7 +1468,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
   List<Offset> _getStartPointsForLetter(String letter, Size size) {
     final centerX = size.width / 2;
     final centerY = size.height / 2;
-    final scale = math.min(size.width, size.height) / 300;
+    final scale = math.min(size.width, size.height) / 250; // Más grande para móviles
     
     switch (letter.toUpperCase()) {
       case 'A':
@@ -1759,7 +1766,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
 
   Widget _buildTracingArea(bool isPhone) {
     return Container(
-      margin: EdgeInsets.all(isPhone ? 8 : 24),
+      margin: EdgeInsets.all(isPhone ? 4 : 24), // Menos margen en móvil para más espacio
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -1779,6 +1786,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
           onPointerMove: _onPointerMove,
           onPointerUp: _onPointerUp,
           child: GestureDetector(
+            behavior: HitTestBehavior.opaque, // Mejor detección en móviles
             onPanStart: _onPanStart,
             onPanUpdate: _onPanUpdate,
             onPanEnd: _onPanEnd,
@@ -2317,7 +2325,7 @@ class _LetterTracingPainter extends CustomPainter {
     final path = Path();
     final centerX = size.width / 2;
     final centerY = size.height / 2;
-    final scale = math.min(size.width, size.height) / 300; // Escalar apropiadamente
+    final scale = math.min(size.width, size.height) / 250; // Más grande para móviles // Escalar apropiadamente
     
     switch (letter.toUpperCase()) {
       case 'A':
@@ -2558,7 +2566,7 @@ class _LetterTracingPainter extends CustomPainter {
   List<Offset> _getLetterStartPoints(Size size) {
     final centerX = size.width / 2;
     final centerY = size.height / 2;
-    final scale = math.min(size.width, size.height) / 300;
+    final scale = math.min(size.width, size.height) / 250; // Más grande para móviles
     
     switch (letter.toUpperCase()) {
       case 'A':
