@@ -1195,7 +1195,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Reducir padding
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -1203,17 +1203,17 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                   Colors.orange[300]!,
                 ],
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12), // Reducir radio
             ),
             child: Row(
               children: [
-                Icon(Icons.search, color: Colors.white, size: 24),
-                const SizedBox(width: 8),
+                Icon(Icons.search, color: Colors.white, size: 20), // Reducir icono
+                const SizedBox(width: 6), // Reducir espacio
                 Expanded(
                   child: Text(
                     'Busca y marca todas las letras "${widget.letter.character.toUpperCase()}"',
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 16, // Reducir fuente
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -1222,12 +1222,12 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4), // Reducir espacio entre contenedores
           
           // Casillero de progreso compacto con 8 círculos
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            margin: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), // Reducir padding
+            margin: const EdgeInsets.symmetric(horizontal: 8), // Reducir margen
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -1236,16 +1236,16 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                   Colors.orange[100]!,
                 ],
               ),
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(10), // Reducir radio
               border: Border.all(
                 color: Colors.purple[300]!,
-                width: 2,
+                width: 1, // Reducir borde
               ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.purple.withValues(alpha: 0.2),
-                  blurRadius: 6,
-                  offset: const Offset(0, 3),
+                  blurRadius: 4, // Reducir blur
+                  offset: const Offset(0, 2), // Reducir offset
                 ),
               ],
             ),
@@ -1254,18 +1254,18 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                 Text(
                   'Busca y marca todas las ${widget.letter.character.toUpperCase()}',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14, // Reducir fuente
                     fontWeight: FontWeight.bold,
                     color: Colors.purple[800],
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4), // Reducir espacio
                 // Casillero compacto con 8 círculos
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3), // Reducir padding
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8), // Reducir radio
                     border: Border.all(
                       color: Colors.purple[200]!,
                       width: 1,
@@ -1279,9 +1279,9 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                         int foundCount = _lettersGrid?.where((l) => l['isTarget'] == true && l['found'] == true).length ?? 0;
                         bool isCompleted = index < foundCount;
                             return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 3),
-                              width: 28,
-                              height: 28,
+                              margin: const EdgeInsets.symmetric(horizontal: 2), // Reducir margen
+                              width: 24, // Reducir tamaño
+                              height: 24, // Reducir tamaño
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: isCompleted 

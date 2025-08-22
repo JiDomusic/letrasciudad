@@ -382,7 +382,7 @@ class _ScatteredObjectsGameState extends State<ScatteredObjectsGame>
 
   Widget _buildHeader(bool isCompleted) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), // Reducir padding
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Aumentar padding para móvil
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.orange[400]!, Colors.red[400]!],
@@ -391,12 +391,12 @@ class _ScatteredObjectsGameState extends State<ScatteredObjectsGame>
         ),
       ),
       child: SafeArea(
-        bottom: false, // No reservar espacio inferior en SafeArea
+        bottom: false,
         child: Row(
           children: [
             Container(
-              width: 35, // Reducir tamaño
-              height: 35,
+              width: 40, // Tamaño adecuado para móvil
+              height: 40,
               decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
@@ -406,25 +406,25 @@ class _ScatteredObjectsGameState extends State<ScatteredObjectsGame>
                   _currentLetter,
                   style: TextStyle(
                     color: Colors.orange[600],
-                    fontSize: 18, // Reducir tamaño fuente
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 8), // Reducir espacio
+            const SizedBox(width: 12), // Mejor espacio
             Expanded(
               child: Text(
                 'Encontrá objetos con $_currentLetter',
                 style: const TextStyle(
-                  fontSize: 14, // Reducir tamaño fuente
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), // Reducir padding
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(12),
@@ -432,7 +432,7 @@ class _ScatteredObjectsGameState extends State<ScatteredObjectsGame>
               child: Text(
                 '${_foundObjects.length}/${_totalTargets}',
                 style: TextStyle(
-                  fontSize: 12, // Reducir tamaño fuente
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: Colors.orange[700],
                 ),
@@ -445,37 +445,37 @@ class _ScatteredObjectsGameState extends State<ScatteredObjectsGame>
   }
 
   Widget _buildScatteredObjectsArea(Size screenSize) {
-    // Reducir drasticamente las áreas reservadas para maximizar espacio de juego
+    // Aumentar márgenes para evitar que los objetos toquen los bordes
     final safeAreaTop = MediaQuery.of(context).padding.top;
-    final reducedHeaderSpace = 10.0; // Reducir espacio del header
-    final reducedBottomSpace = 20.0; // Reducir espacio inferior
-    final reducedMargin = 10.0; // Reducir márgenes laterales
+    final headerSpace = 25.0; // Más espacio del header
+    final bottomSpace = 100.0; // Más espacio inferior para la barra del alfabeto
+    final sideMargin = 20.0; // Más márgenes laterales
     
-    // Área de juego disponible (máximo espacio posible)
-    final gameAreaTop = safeAreaTop + reducedHeaderSpace;
-    final gameAreaBottom = screenSize.height - reducedBottomSpace;
-    final gameAreaLeft = reducedMargin;
-    final gameAreaRight = screenSize.width - reducedMargin;
+    // Área de juego disponible con márgenes seguros
+    final gameAreaTop = safeAreaTop + headerSpace;
+    final gameAreaBottom = screenSize.height - bottomSpace;
+    final gameAreaLeft = sideMargin;
+    final gameAreaRight = screenSize.width - sideMargin;
     
     final gameWidth = gameAreaRight - gameAreaLeft;
     final gameHeight = gameAreaBottom - gameAreaTop;
     
-    // Redistribución optimizada con más espacio y mejor accesibilidad táctil
+    // Redistribución con mejor separación y alejados de los bordes
     final positions = [
-      const Offset(0.15, 0.12),  // Objeto 1 - más cerca del borde
-      const Offset(0.5, 0.08),   // Objeto 2 - parte superior central
-      const Offset(0.85, 0.12),  // Objeto 3 - más cerca del borde derecho
-      const Offset(0.25, 0.32),  // Objeto 4 - izquierda centro, más separado
-      const Offset(0.75, 0.32),  // Objeto 5 - derecha centro, más separado
-      const Offset(0.15, 0.55),  // Objeto 6 - izquierda inferior
+      const Offset(0.20, 0.15),  // Objeto 1 - alejado del borde superior izquierdo
+      const Offset(0.50, 0.12),  // Objeto 2 - parte superior central
+      const Offset(0.80, 0.15),  // Objeto 3 - alejado del borde superior derecho
+      const Offset(0.25, 0.35),  // Objeto 4 - izquierda centro, mejor separado
+      const Offset(0.75, 0.35),  // Objeto 5 - derecha centro, mejor separado
+      const Offset(0.20, 0.55),  // Objeto 6 - izquierda inferior, alejado del borde
       
-      // Distractores con mejor distribución y separación
-      const Offset(0.5, 0.32),   // Distractor 1 - centro
-      const Offset(0.5, 0.55),   // Distractor 2 - centro inferior
-      const Offset(0.85, 0.55),  // Distractor 3 - derecha inferior
-      const Offset(0.35, 0.75),  // Distractor 4 - centro-izquierda muy inferior
-      const Offset(0.65, 0.75),  // Distractor 5 - centro-derecha muy inferior
-      const Offset(0.5, 0.90),   // Distractor 6 - centro muy inferior
+      // Distractores con mejor distribución y alejados de bordes
+      const Offset(0.50, 0.35),  // Distractor 1 - centro
+      const Offset(0.50, 0.55),  // Distractor 2 - centro inferior
+      const Offset(0.80, 0.55),  // Distractor 3 - derecha inferior, alejado del borde
+      const Offset(0.35, 0.75),  // Distractor 4 - centro-izquierda inferior
+      const Offset(0.65, 0.75),  // Distractor 5 - centro-derecha inferior
+      const Offset(0.50, 0.85),  // Distractor 6 - centro inferior, alejado del borde
     ];
 
     return Stack(
