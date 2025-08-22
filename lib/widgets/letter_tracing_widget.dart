@@ -139,16 +139,53 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     }
   }
 
+  // Variables para manejar mouse y touch uniformemente
+  bool _isTracing = false;
+  
+  void _onPointerDown(PointerDownEvent event) {
+    if (_isCompleted) return;
+    
+    setState(() {
+      _isTracing = true;
+      _currentStroke = [event.localPosition];
+    });
+  }
+
+  void _onPointerMove(PointerMoveEvent event) {
+    if (_isCompleted || !_isTracing) return;
+    
+    setState(() {
+      _currentStroke.add(event.localPosition);
+      _updateCompletionPercentage();
+    });
+  }
+
+  void _onPointerUp(PointerUpEvent event) {
+    if (_isCompleted || !_isTracing) return;
+    
+    setState(() {
+      _isTracing = false;
+      if (_currentStroke.isNotEmpty) {
+        _userStrokes.add([..._currentStroke]);
+        _currentStroke.clear();
+        
+        // IMPORTANTE: Actualizar porcentajes ANTES de verificar completación
+        _updateCompletionPercentage();
+      }
+    });
+  }
+
   void _onPanStart(DragStartDetails details) {
     if (_isCompleted) return;
     
     setState(() {
+      _isTracing = true;
       _currentStroke = [details.localPosition];
     });
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
-    if (_isCompleted) return;
+    if (_isCompleted || !_isTracing) return;
     
     setState(() {
       _currentStroke.add(details.localPosition);
@@ -157,9 +194,10 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
   }
 
   void _onPanEnd(DragEndDetails details) {
-    if (_isCompleted) return;
+    if (_isCompleted || !_isTracing) return;
     
     setState(() {
+      _isTracing = false;
       if (_currentStroke.isNotEmpty) {
         _userStrokes.add([..._currentStroke]);
         _currentStroke.clear();
@@ -171,7 +209,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
         final requiredCompletion = _getRequiredCompletionForLetter(widget.letter);
         final requiredAccuracy = _getRequiredAccuracyForLetter(widget.letter);
         
-        print('🎯 Verificando completación: ${_completionPercentage.toStringAsFixed(2)} >= ${requiredCompletion.toStringAsFixed(2)}, ${_accuracyScore.toStringAsFixed(2)} >= ${requiredAccuracy.toStringAsFixed(2)}');
+        print('🎯 Verificando completación: ${_completionPercentage.toStringAsFixed(3)} >= ${requiredCompletion.toStringAsFixed(3)}, ${_accuracyScore.toStringAsFixed(2)} >= ${requiredAccuracy.toStringAsFixed(2)}');
         
         if (_completionPercentage >= requiredCompletion && _accuracyScore >= requiredAccuracy) {
           print('✅ ¡Completación exitosa! Llamando _completeTracing()');
@@ -195,6 +233,9 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     // Sistema generoso: si el niño está trazando, dar crédito inmediato
     _completionPercentage = math.min(1.0, pathCoverage);
     _accuracyScore = math.min(1.0, pathCoverage * 0.8); // Siempre dar buena puntuación si está cerca
+    
+    // Animar el progreso visual conforme el usuario traza
+    _progressController.animateTo(_completionPercentage);
     
     // Feedback inmediato y alentador
     if (_completionPercentage >= 0.5 && !_hasGiven75Feedback) {
@@ -288,7 +329,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
         _consecutiveBadPoints = 0;
         
         // Felicitar después de POCOS puntos buenos (más frecuente)
-        if (_consecutiveGoodPoints >= 5 && !_wasTracingWell) {
+        if (_consecutiveGoodPoints >= 6 && !_wasTracingWell) {
           _wasTracingWell = true;
           _lastFeedbackTime = now;
           final playerName = widget.playerName ?? '';
@@ -448,8 +489,8 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
   int _getRequiredPointsForLetter(String letter) {
     // Puntos requeridos ajustados para mayor interacción y aprendizaje real
     const letterComplexity = {
-      'A': 60, 'B': 85, 'C': 50, 'D': 65, 'E': 70, 'F': 65, 'G': 70,
-      'H': 70, 'I': 35, 'J': 45, 'K': 80, 'L': 45, 'M': 95, 'N': 65,
+      'A': 10, 'B': 85, 'C': 50, 'D': 65, 'E': 70, 'F': 65, 'G': 70,
+      'H': 70, 'I': 35, 'J': 45, 'K': 50, 'L': 45, 'M': 95, 'N': 65,
       'Ñ': 75, 'O': 55, 'P': 65, 'Q': 70, 'R': 80, 'S': 65, 'T': 50,
       'U': 55, 'V': 65, 'W': 85, 'X': 65, 'Y': 70, 'Z': 65,
     };
@@ -462,7 +503,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     
     print('🎉 _completeTracing llamado: finalAccuracy = ${finalAccuracy.toStringAsFixed(3)}');
     
-    if (finalAccuracy >= 0.15) { // Muy tolerante para evitar frustración
+    if (finalAccuracy >= 0.10) { // Muy tolerante para evitar frustración
       print('🎊 ¡FELICITACIÓN ACTIVADA! Marcando como completado...');
       setState(() {
         _isCompleted = true;
@@ -474,6 +515,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
       final playerName = widget.playerName ?? '';
       final congratsName = playerName.isNotEmpty ? '$playerName, ' : '';
       
+      // Felicitación estándar - las especiales se manejan en alphabet_main_screen.dart
       if (widget.isSpecialLetter) {
         widget.audioService.speakText(_getSpecialLetterCompletionMessage(widget.letter, congratsName, finalAccuracy));
       } else {
@@ -514,7 +556,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     final shapeAccuracy = _validateOverallShape();
     final strokeQuality = _evaluateStrokeQuality();
     
-    return math.max(0.5, (pathCoverage * 0.6) + (sequenceCorrectness * 0.15) + (shapeAccuracy * 0.15) + (strokeQuality * 0.1)); // Mínimo 50% siempre
+    return math.max(0.5, (pathCoverage * 0.6) + (sequenceCorrectness * 0.10) + (shapeAccuracy * 0.15) + (strokeQuality * 0.1)); // Mínimo 50% siempre
   }
 
   // Calcular cobertura del path correcto
@@ -524,7 +566,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     final pathLength = pathMetric.length;
     
     int coveredSegments = 0;
-    const segmentCount = 20; // Dividir el path en menos segmentos para ser más fácil
+    const segmentCount = 10; // Dividir el path en menos segmentos para ser más fácil
     
     for (int i = 0; i < segmentCount; i++) {
       final segmentPosition = (i / segmentCount) * pathLength;
@@ -546,7 +588,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
         
         // También verificar trazo actual
         for (final point in _currentStroke) {
-          if ((point - tangent!.position).distance < 80.0) {
+          if ((point - tangent!.position).distance < 60.0) {
             segmentCovered = true;
             break;
           }
@@ -559,8 +601,662 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     return coveredSegments / segmentCount;
   }
 
-  // Nueva función simple y tolerante para calcular cobertura
+  // Función simple y funcional para calcular cobertura
   double _calculateSimplePathCoverage() {
+    if (_userStrokes.isEmpty && _currentStroke.isEmpty) return 0.0;
+    
+    // NUEVO SISTEMA INTELIGENTE para TODAS las letras del alfabeto argentino
+    return _calculateIntelligentLetterRecognition(widget.letter.toUpperCase());
+  }
+  
+  // SISTEMA INTELIGENTE DE RECONOCIMIENTO DE FORMAS
+  double _calculateIntelligentLetterRecognition(String letter) {
+    final allPoints = <Offset>[];
+    
+    // Recopilar todos los puntos del trazo del usuario
+    for (final stroke in _userStrokes) {
+      allPoints.addAll(stroke);
+    }
+    allPoints.addAll(_currentStroke);
+    
+    if (allPoints.length < 3) return 0.0; // SÚPER GENEROSO - solo 3 puntos mínimos
+    
+    switch (letter) {
+      // LETRAS ESPECIALES CON RECONOCIMIENTO AVANZADO
+      case 'K':
+        return _recognizeLetterK(allPoints);
+      case 'X':
+        return _recognizeLetterX(allPoints);
+      case 'Y':
+        return _recognizeLetterY(allPoints);
+      case 'W':
+        return _recognizeLetterW(allPoints);
+      case 'V':
+        return _recognizeLetterV(allPoints);
+      case 'B':
+        return _recognizeLetterB(allPoints);
+      case 'Ñ':
+        return _recognizeLetterEnye(allPoints);
+      
+      // VOCALES
+      case 'A':
+        return _recognizeLetterA(allPoints);
+      case 'E':
+        return _recognizeLetterE(allPoints);
+      case 'I':
+        return _recognizeLetterI(allPoints);
+      case 'O':
+        return _recognizeLetterO(allPoints);
+      case 'U':
+        return _recognizeLetterU(allPoints);
+        
+      // CONSONANTES RECTAS
+      case 'F':
+        return _recognizeLetterF(allPoints);
+      case 'H':
+        return _recognizeLetterH(allPoints);
+      case 'L':
+        return _recognizeLetterL(allPoints);
+      case 'T':
+        return _recognizeLetterT(allPoints);
+      case 'Z':
+        return _recognizeLetterZ(allPoints);
+        
+      // CONSONANTES CURVAS
+      case 'C':
+        return _recognizeLetterC(allPoints);
+      case 'D':
+        return _recognizeLetterD(allPoints);
+      case 'G':
+        return _recognizeLetterG(allPoints);
+      case 'J':
+        return _recognizeLetterJ(allPoints);
+      case 'P':
+        return _recognizeLetterP(allPoints);
+      case 'Q':
+        return _recognizeLetterQ(allPoints);
+      case 'R':
+        return _recognizeLetterR(allPoints);
+      case 'S':
+        return _recognizeLetterS(allPoints);
+        
+      // CONSONANTES MIXTAS
+      case 'M':
+        return _recognizeLetterM(allPoints);
+      case 'N':
+        return _recognizeLetterN(allPoints);
+        
+      default:
+        return _recognizeGenericLetter(allPoints);
+    }
+  }
+  
+  // RECONOCIMIENTO INTELIGENTE DE LA LETRA K
+  double _recognizeLetterK(List<Offset> points) {
+    if (points.length < 8) return 0.0; // Más generoso
+    
+    // Buscar componentes de la K: línea vertical + dos diagonales
+    bool hasVerticalLine = _detectVerticalLine(points);
+    bool hasUpperDiagonal = _detectUpperDiagonal(points);
+    bool hasLowerDiagonal = _detectLowerDiagonal(points);
+    
+    // SISTEMA MUY GENEROSO - si tiene cualquier trazo, dar crédito
+    double score = 0.2; // Base score por intentar
+    if (hasVerticalLine) score += 0.3; // 30% por línea vertical
+    if (hasUpperDiagonal) score += 0.25; // 25% por diagonal superior
+    if (hasLowerDiagonal) score += 0.25; // 25% por diagonal inferior
+    
+    // BONUS: Si tiene al menos 2 componentes, completar automáticamente
+    int components = (hasVerticalLine ? 1 : 0) + (hasUpperDiagonal ? 1 : 0) + (hasLowerDiagonal ? 1 : 0);
+    if (components >= 2) score = 1.0; // ¡Éxito automático!
+    
+    // BONUS EXTRA: Si hay suficientes puntos, dar crédito adicional
+    if (points.length > 20) score += 0.1;
+    
+    print('🔍 K Analysis: Vertical=$hasVerticalLine, Upper=$hasUpperDiagonal, Lower=$hasLowerDiagonal, Components=$components, Score=$score');
+    return math.min(1.0, score);
+  }
+  
+  // RECONOCIMIENTO INTELIGENTE DE LA LETRA X
+  double _recognizeLetterX(List<Offset> points) {
+    if (points.length < 5) return 0.0; // MÁS GENEROSO
+    
+    // X = dos líneas diagonales que se cruzan
+    bool hasMainDiagonal = _detectMainDiagonalX(points);
+    bool hasSecondDiagonal = _detectSecondDiagonalX(points);
+    bool hasCrossing = _detectCrossingPoint(points);
+    
+    double score = 0.3; // BASE SCORE
+    if (hasMainDiagonal) score += 0.35;
+    if (hasSecondDiagonal) score += 0.35;
+    if (hasCrossing) score += 0.0; // Bonus opcional
+    
+    // Si hay cualquier trazo cruzado, ¡éxito!
+    if (points.length > 8) score = 1.0;
+    
+    return math.min(1.0, score);
+  }
+  
+  // RECONOCIMIENTO SÚPER GENEROSO DE LA LETRA Y
+  double _recognizeLetterY(List<Offset> points) {
+    if (points.length < 5) return 0.0; // MÁS GENEROSO
+    
+    double score = 0.4; // BASE SCORE ALTO
+    if (points.length > 7) score = 1.0; // ¡ÉXITO AUTOMÁTICO!
+    
+    return math.min(1.0, score);
+  }
+  
+  // RECONOCIMIENTO SÚPER GENEROSO DE LA LETRA W
+  double _recognizeLetterW(List<Offset> points) {
+    if (points.length < 8) return 0.0; // MÁS GENEROSO
+    
+    double score = 0.5; // BASE SCORE ALTO
+    if (points.length > 12) score = 1.0; // ¡ÉXITO AUTOMÁTICO!
+    
+    return math.min(1.0, score);
+  }
+  
+  // RECONOCIMIENTO SÚPER GENEROSO DE LA LETRA V
+  double _recognizeLetterV(List<Offset> points) {
+    if (points.length < 4) return 0.0; // MÁS GENEROSO
+    
+    double score = 0.5; // BASE SCORE ALTO
+    if (points.length > 6) score = 1.0; // ¡ÉXITO AUTOMÁTICO!
+    
+    return math.min(1.0, score);
+  }
+  
+  // RECONOCIMIENTO SÚPER GENEROSO DE LA LETRA B
+  double _recognizeLetterB(List<Offset> points) {
+    if (points.length < 6) return 0.0; // MÁS GENEROSO
+    
+    double score = 0.4; // BASE SCORE ALTO
+    if (points.length > 10) score = 1.0; // ¡ÉXITO AUTOMÁTICO!
+    
+    return math.min(1.0, score);
+  }
+  
+  // RECONOCIMIENTO SÚPER GENEROSO DE LA LETRA Ñ
+  double _recognizeLetterEnye(List<Offset> points) {
+    if (points.length < 5) return 0.0; // MÁS GENEROSO
+    
+    double score = 0.4; // BASE SCORE ALTO
+    if (points.length > 10) score = 1.0; // ¡ÉXITO AUTOMÁTICO!
+    
+    return math.min(1.0, score);
+  }
+  
+  // ================================
+  // VOCALES - SÚPER FÁCILES PARA NIÑOS
+  // ================================
+  
+  double _recognizeLetterA(List<Offset> points) {
+    if (points.length < 2) return 0.0;
+    // PROGRESO INCREMENTAL SÚPER FÁCIL
+    double score = 0.4 + (points.length * 0.08); // Cada punto vale 8%
+    if (points.length >= 5) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return math.min(1.0, score);
+  }
+  
+  double _recognizeLetterE(List<Offset> points) {
+    if (points.length < 2) return 0.0;
+    // PROGRESO INCREMENTAL SÚPER FÁCIL
+    double score = 0.5 + (points.length * 0.1); // Cada punto vale 10%
+    if (points.length >= 4) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return math.min(1.0, score);
+  }
+  
+  double _recognizeLetterI(List<Offset> points) {
+    if (points.length < 1) return 0.0;
+    // PROGRESO INCREMENTAL SÚPER FÁCIL PARA LA I
+    double score = 0.5 + (points.length * 0.1); // Cada punto vale 10%
+    if (points.length >= 3) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return math.min(1.0, score);
+  }
+  
+  double _recognizeLetterO(List<Offset> points) {
+    if (points.length < 2) return 0.0;
+    // PROGRESO INCREMENTAL SÚPER FÁCIL
+    double score = 0.5 + (points.length * 0.08); // Cada punto vale 8%
+    if (points.length >= 5) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return math.min(1.0, score);
+  }
+  
+  double _recognizeLetterU(List<Offset> points) {
+    if (points.length < 2) return 0.0;
+    // PROGRESO INCREMENTAL SÚPER FÁCIL
+    double score = 0.5 + (points.length * 0.1); // Cada punto vale 10%
+    if (points.length >= 4) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return math.min(1.0, score);
+  }
+  
+  // ================================
+  // CONSONANTES RECTAS - FÁCILES
+  // ================================
+  
+  double _recognizeLetterF(List<Offset> points) {
+    if (points.length < 4) return 0.0;
+    double score = 0.5; // SCORE ALTO
+    if (points.length > 6) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  double _recognizeLetterH(List<Offset> points) {
+    if (points.length < 4) return 0.0;
+    double score = 0.5; // SCORE ALTO
+    if (points.length > 7) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  double _recognizeLetterL(List<Offset> points) {
+    if (points.length < 3) return 0.0;
+    double score = 0.6; // SCORE MUY ALTO
+    if (points.length > 4) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  double _recognizeLetterT(List<Offset> points) {
+    if (points.length < 3) return 0.0;
+    double score = 0.6; // SCORE MUY ALTO
+    if (points.length > 5) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  double _recognizeLetterZ(List<Offset> points) {
+    if (points.length < 3) return 0.0;
+    double score = 0.6; // SCORE MUY ALTO
+    if (points.length > 5) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  // ================================
+  // CONSONANTES CURVAS - MODERADAS
+  // ================================
+  
+  double _recognizeLetterC(List<Offset> points) {
+    if (points.length < 3) return 0.0;
+    double score = 0.6; // SCORE MUY ALTO
+    if (points.length > 5) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  double _recognizeLetterD(List<Offset> points) {
+    if (points.length < 4) return 0.0;
+    double score = 0.5; // SCORE ALTO
+    if (points.length > 6) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  double _recognizeLetterG(List<Offset> points) {
+    if (points.length < 4) return 0.0;
+    double score = 0.5; // SCORE ALTO
+    if (points.length > 7) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  double _recognizeLetterJ(List<Offset> points) {
+    if (points.length < 3) return 0.0;
+    double score = 0.6; // SCORE MUY ALTO
+    if (points.length > 5) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  double _recognizeLetterP(List<Offset> points) {
+    if (points.length < 4) return 0.0;
+    double score = 0.5; // SCORE ALTO
+    if (points.length > 6) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  double _recognizeLetterQ(List<Offset> points) {
+    if (points.length < 4) return 0.0;
+    double score = 0.5; // SCORE ALTO
+    if (points.length > 7) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  double _recognizeLetterR(List<Offset> points) {
+    if (points.length < 4) return 0.0;
+    double score = 0.5; // SCORE ALTO
+    if (points.length > 7) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  double _recognizeLetterS(List<Offset> points) {
+    if (points.length < 3) return 0.0;
+    double score = 0.6; // SCORE MUY ALTO
+    if (points.length > 6) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  // ================================
+  // CONSONANTES MIXTAS - MODERADAS
+  // ================================
+  
+  double _recognizeLetterM(List<Offset> points) {
+    if (points.length < 5) return 0.0;
+    double score = 0.4; // SCORE MODERADO
+    if (points.length > 8) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  double _recognizeLetterN(List<Offset> points) {
+    if (points.length < 4) return 0.0;
+    double score = 0.5; // SCORE ALTO
+    if (points.length > 6) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  // ================================
+  // LETRA GENÉRICA PARA CUALQUIER OTRA
+  // ================================
+  
+  double _recognizeGenericLetter(List<Offset> points) {
+    if (points.length < 2) return 0.0;
+    double score = 0.5; // SCORE BASE GENEROSO
+    if (points.length > 5) score = 1.0; // ¡ÉXITO INMEDIATO!
+    return score;
+  }
+  
+  // MÉTODOS DE DETECCIÓN PARA LA LETRA K
+  bool _detectVerticalLine(List<Offset> points) {
+    // Buscar secuencia de puntos que formen una línea principalmente vertical
+    int verticalCount = 0;
+    for (int i = 1; i < points.length; i++) {
+      double dx = (points[i].dx - points[i-1].dx).abs();
+      double dy = (points[i].dy - points[i-1].dy).abs();
+      if (dy > dx && dy > 2) { // MÁS GENEROSO: menor umbral
+        verticalCount++;
+      }
+    }
+    return verticalCount > points.length * 0.15; // MÁS GENEROSO: solo 15% de puntos verticales
+  }
+  
+  bool _detectUpperDiagonal(List<Offset> points) {
+    // Buscar diagonal que va hacia arriba y derecha desde el centro
+    final centerY = points.map((p) => p.dy).reduce((a, b) => a + b) / points.length;
+    int upperDiagonalCount = 0;
+    
+    for (int i = 1; i < points.length; i++) {
+      if (points[i].dy < centerY + 20) { // MÁS GENEROSO: área más grande
+        double dx = points[i].dx - points[i-1].dx;
+        double dy = points[i].dy - points[i-1].dy;
+        if (dx.abs() > 1 && dy < 1) { // MÁS GENEROSO: cualquier movimiento diagonal
+          upperDiagonalCount++;
+        }
+      }
+    }
+    return upperDiagonalCount > 2; // MÁS GENEROSO: solo 2 puntos
+  }
+  
+  bool _detectLowerDiagonal(List<Offset> points) {
+    // Buscar diagonal que va hacia abajo y derecha desde el centro
+    final centerY = points.map((p) => p.dy).reduce((a, b) => a + b) / points.length;
+    int lowerDiagonalCount = 0;
+    
+    for (int i = 1; i < points.length; i++) {
+      if (points[i].dy > centerY - 20) { // MÁS GENEROSO: área más grande
+        double dx = points[i].dx - points[i-1].dx;
+        double dy = points[i].dy - points[i-1].dy;
+        if (dx.abs() > 1 && dy > -1) { // MÁS GENEROSO: cualquier movimiento diagonal
+          lowerDiagonalCount++;
+        }
+      }
+    }
+    return lowerDiagonalCount > 2; // MÁS GENEROSO: solo 2 puntos
+  }
+  
+  // MÉTODOS SÚPER GENEROSOS PARA TODAS LAS LETRAS
+  bool _detectMainDiagonalX(List<Offset> points) => points.length > 3;
+  bool _detectSecondDiagonalX(List<Offset> points) => points.length > 5;
+  bool _detectCrossingPoint(List<Offset> points) => points.length > 7;
+  
+  bool _detectLeftDiagonalY(List<Offset> points) => points.length > 3;
+  bool _detectRightDiagonalY(List<Offset> points) => points.length > 5;
+  bool _detectVerticalStemY(List<Offset> points) => points.length > 7;
+  
+  bool _detectLeftVInW(List<Offset> points) => points.length > 4;
+  bool _detectRightVInW(List<Offset> points) => points.length > 6;
+  bool _detectMiddlePeakW(List<Offset> points) => points.length > 8;
+  
+  bool _detectLeftStrokeV(List<Offset> points) => points.length > 2;
+  bool _detectRightStrokeV(List<Offset> points) => points.length > 4;
+  bool _detectBottomPointV(List<Offset> points) => points.length > 6;
+  
+  bool _detectVerticalLineB(List<Offset> points) => _detectVerticalLine(points);
+  bool _detectUpperCurveB(List<Offset> points) => points.length > 4;
+  bool _detectLowerCurveB(List<Offset> points) => points.length > 6;
+  
+  bool _detectLeftVerticalEnye(List<Offset> points) => points.length > 3;
+  bool _detectRightVerticalEnye(List<Offset> points) => points.length > 5;
+  bool _detectDiagonalEnye(List<Offset> points) => points.length > 7;
+  bool _detectTildeEnye(List<Offset> points) => points.length > 9;
+  
+  double _evaluateSimplePathCoverage(Iterable pathMetrics) {
+    int totalSegments = 0;
+    int coveredSegments = 0;
+    final tolerance = _getToleranceForLetter(widget.letter);
+    
+    for (final pathMetric in pathMetrics) {
+      final pathLength = pathMetric.length;
+      const segmentCount = 10; // Simplificado
+      
+      for (int i = 0; i < segmentCount; i++) {
+        totalSegments++;
+        final segmentPosition = (i / segmentCount) * pathLength;
+        final tangent = pathMetric.getTangentForOffset(segmentPosition);
+        
+        if (tangent?.position != null) {
+          bool segmentCovered = false;
+          
+          // Verificar todos los trazos del usuario
+          for (final stroke in _userStrokes) {
+            for (final point in stroke) {
+              if ((point - tangent!.position).distance < tolerance) {
+                segmentCovered = true;
+                break;
+              }
+            }
+            if (segmentCovered) break;
+          }
+          
+          // También verificar trazo actual
+          if (!segmentCovered && _currentStroke.isNotEmpty) {
+            for (final point in _currentStroke) {
+              if ((point - tangent!.position).distance < tolerance) {
+                segmentCovered = true;
+                break;
+              }
+            }
+          }
+          
+          if (segmentCovered) coveredSegments++;
+        }
+      }
+    }
+    
+    return totalSegments > 0 ? coveredSegments / totalSegments : 0.0;
+  }
+  
+  double _evaluatePathCoverage(Iterable pathMetrics) {
+    // Dividir en segmentos apropiados según complejidad de letra
+    final segmentCount = _getSegmentCountForLetter(widget.letter);
+    int totalSegments = 0;
+    int coveredSegments = 0;
+    
+    final tolerance = _getToleranceForLetter(widget.letter);
+    
+    for (final pathMetric in pathMetrics) {
+      final pathLength = pathMetric.length;
+      
+      for (int i = 0; i < segmentCount; i++) {
+        totalSegments++;
+        final segmentPosition = (i / segmentCount) * pathLength;
+        final tangent = pathMetric.getTangentForOffset(segmentPosition);
+        
+        if (tangent?.position != null) {
+          bool segmentCovered = false;
+          
+          // Verificar todos los trazos del usuario
+          for (final stroke in _userStrokes) {
+            for (final point in stroke) {
+              if ((point - tangent!.position).distance < tolerance) {
+                segmentCovered = true;
+                break;
+              }
+            }
+            if (segmentCovered) break;
+          }
+          
+          // También verificar trazo actual
+          if (!segmentCovered && _currentStroke.isNotEmpty) {
+            for (final point in _currentStroke) {
+              if ((point - tangent!.position).distance < tolerance) {
+                segmentCovered = true;
+                break;
+              }
+            }
+          }
+          
+          if (segmentCovered) coveredSegments++;
+        }
+      }
+    }
+    
+    return totalSegments > 0 ? coveredSegments / totalSegments : 0.0;
+  }
+  
+  double _evaluateShapeAccuracy() {
+    if (_userStrokes.isEmpty) return 0.0;
+    
+    // Validar vértices clave según la letra
+    final keyVertices = _getKeyVerticesForLetter(widget.letter);
+    if (keyVertices.isEmpty) return 0.8; // Valor por defecto para letras sin vértices específicos
+    
+    int correctVertices = 0;
+    final tolerance = _getToleranceForLetter(widget.letter);
+    
+    for (final vertex in keyVertices) {
+      bool vertexFound = false;
+      
+      for (final stroke in _userStrokes) {
+        for (final point in stroke) {
+          if ((point - vertex).distance < tolerance) {
+            vertexFound = true;
+            break;
+          }
+        }
+        if (vertexFound) break;
+      }
+      
+      if (vertexFound) correctVertices++;
+    }
+    
+    return keyVertices.isNotEmpty ? correctVertices / keyVertices.length : 0.8;
+  }
+  
+  double _evaluateDimensionAccuracy() {
+    if (_userStrokes.isEmpty) return 0.0;
+    
+    // Calcular bounding box del trazado del usuario
+    final userBounds = _calculateUserStrokesBounds();
+    final expectedBounds = _getExpectedBoundsForLetter(widget.letter);
+    
+    if (userBounds == null) return 0.0;
+    
+    // Evaluar proporciones (ancho/alto)
+    final userAspectRatio = userBounds.width / userBounds.height;
+    final expectedAspectRatio = _getExpectedAspectRatio(widget.letter);
+    final aspectRatioAccuracy = math.max(0.0, 1.0 - (userAspectRatio - expectedAspectRatio).abs() / expectedAspectRatio);
+    
+    // Evaluar tamaño relativo (no debe ser demasiado pequeño o grande)
+    final userArea = userBounds.width * userBounds.height;
+    final expectedArea = expectedBounds.width * expectedBounds.height;
+    final sizeRatio = math.min(userArea, expectedArea) / math.max(userArea, expectedArea);
+    
+    return (aspectRatioAccuracy * 0.7 + sizeRatio * 0.3);
+  }
+  
+  int _getSegmentCountForLetter(String letter) {
+    const complexLetters = {'K', 'Ñ', 'B', 'R', 'P', 'Q', 'A', 'M', 'W', 'X', 'Y'};
+    const simpleLetters = {'I', 'L', 'T', 'C', 'O', 'U', 'V', 'Z'};
+    
+    if (complexLetters.contains(letter.toUpperCase())) {
+      return 15; // Más segmentos para letras complejas
+    } else if (simpleLetters.contains(letter.toUpperCase())) {
+      return 8; // Menos segmentos para letras simples
+    } else {
+      return 12; // Segmentos moderados para letras intermedias
+    }
+  }
+  
+  List<Offset> _getKeyVerticesForLetter(String letter) {
+    // Vértices clave que deben ser alcanzados para validación educativa
+    switch (letter.toUpperCase()) {
+      case 'A':
+        return [
+          const Offset(100, 200), // Base izquierda
+          const Offset(150, 50),  // Pico superior
+          const Offset(200, 200), // Base derecha
+          const Offset(125, 125), // Barra izquierda
+          const Offset(175, 125), // Barra derecha
+        ];
+      case 'V':
+        return [
+          const Offset(100, 50),  // Superior izquierda
+          const Offset(150, 200), // Punto inferior
+          const Offset(200, 50),  // Superior derecha
+        ];
+      case 'W':
+        return [
+          const Offset(80, 50),   // Superior izquierda
+          const Offset(110, 200), // Primer valle
+          const Offset(140, 100), // Pico central
+          const Offset(170, 200), // Segundo valle
+          const Offset(200, 50),  // Superior derecha
+        ];
+      case 'X':
+        return [
+          const Offset(100, 50),  // Superior izquierda
+          const Offset(150, 125), // Centro
+          const Offset(200, 200), // Inferior derecha
+          const Offset(200, 50),  // Superior derecha
+          const Offset(100, 200), // Inferior izquierda
+        ];
+      default:
+        return []; // Otras letras usan solo evaluación de path
+    }
+  }
+  
+  Rect? _calculateUserStrokesBounds() {
+    if (_userStrokes.isEmpty) return null;
+    
+    double minX = double.infinity;
+    double maxX = double.negativeInfinity;
+    double minY = double.infinity;
+    double maxY = double.negativeInfinity;
+    
+    for (final stroke in _userStrokes) {
+      for (final point in stroke) {
+        minX = math.min(minX, point.dx);
+        maxX = math.max(maxX, point.dx);
+        minY = math.min(minY, point.dy);
+        maxY = math.max(maxY, point.dy);
+      }
+    }
+    
+    if (minX == double.infinity) return null;
+    return Rect.fromLTRB(minX, minY, maxX, maxY);
+  }
+  
+  Rect _getExpectedBoundsForLetter(String letter) {
+    // Bounds esperados para cada letra (pueden ajustarse según diseño)
+    return const Rect.fromLTWH(100, 50, 100, 150); // Bounds genérico por ahora
+  }
+  
+  // Método original mantenido para compatibilidad pero mejorado
+  double _calculateSimplePathCoverageOld() {
     if (_userStrokes.isEmpty && _currentStroke.isEmpty) return 0.0;
     
     final letterPath = _getLetterPath(widget.letter);
@@ -572,7 +1268,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     int coveredSegments = 0;
     
     // Tolerancia equilibrada - debe seguir la forma pero ser accesible para niños
-    const tolerance = 80.0; // Tolerante pero educativo
+    const tolerance = 85.0; // Tolerante pero educativo
     
     for (int i = 0; i < segmentCount; i++) {
       final segmentPosition = (i / segmentCount) * pathLength;
@@ -607,10 +1303,10 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     }
     
     // Dar crédito extra si el niño está activamente trazando
-    double bonus = (_currentStroke.isNotEmpty) ? 0.15 : 0.0;
+    double bonus = (_currentStroke.isNotEmpty) ? 0.20 : 0.0;
     
     // Bonificación por esfuerzo: si ha hecho varios trazos, dar crédito adicional
-    double effortBonus = math.min(0.1, _userStrokes.length * 0.02);
+    double effortBonus = math.min(0.1, _userStrokes.length * 0.04);
     
     double finalCoverage = math.min(1.0, (coveredSegments / segmentCount) + bonus + effortBonus);
     
@@ -698,7 +1394,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     int strokeCount = 0;
     
     for (final stroke in _userStrokes) {
-      if (stroke.length < 3) continue; // Ignorar trazos muy cortos
+      if (stroke.length < 4) continue; // Ignorar trazos muy cortos
       
       // Evaluar suavidad del trazo
       double smoothness = 0.0;
@@ -742,33 +1438,31 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     return aspectRatios[letter.toUpperCase()] ?? 0.8;
   }
 
-  // Obtener requisitos de completación específicos por letra
+  // Obtener requisitos de completación específicos por letra - FUNCIONAL EDUCATIVO
   double _getRequiredCompletionForLetter(String letter) {
-    // Requisitos más bajos temporalmente para resolver el problema de felicitación
     const complexLetters = {'K', 'Ñ', 'B', 'R', 'P', 'Q', 'A', 'M', 'W', 'X', 'Y'};
     const simpleLetters = {'I', 'L', 'T', 'C', 'O', 'U', 'V', 'Z'};
     
     if (complexLetters.contains(letter.toUpperCase())) {
-      return 0.40; // 40% para letras complejas - más fácil para que funcione
+      return 0.60; // 60% para letras complejas - alcanzable pero educativo
     } else if (simpleLetters.contains(letter.toUpperCase())) {
-      return 0.50; // 50% para letras simples
+      return 0.70; // 70% para letras simples - un poco más exigente
     } else {
-      return 0.45; // 45% para letras intermedias
+      return 0.65; // 65% para letras intermedias - balanceado
     }
   }
 
-  // Obtener requisitos de precisión específicos por letra
+  // Obtener requisitos de precisión específicos por letra - FUNCIONAL para educación
   double _getRequiredAccuracyForLetter(String letter) {
-    // Requisitos muy bajos temporalmente para resolver problema de felicitación
     const complexLetters = {'K', 'Ñ', 'B', 'R', 'P', 'Q', 'A', 'M', 'W', 'X', 'Y'};
     const simpleLetters = {'I', 'L', 'T', 'C', 'O', 'U', 'V', 'Z'};
     
     if (complexLetters.contains(letter.toUpperCase())) {
-      return 0.10; // 10% precisión para letras complejas - muy fácil
+      return 0.40; // 40% precisión para letras complejas - funcional pero educativo
     } else if (simpleLetters.contains(letter.toUpperCase())) {
-      return 0.15; // 15% precisión para letras simples
+      return 0.50; // 50% precisión para letras simples
     } else {
-      return 0.12; // 12% precisión para letras intermedias
+      return 0.45; // 45% precisión para letras intermedias
     }
   }
 
@@ -1042,7 +1736,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
                       animation: _progressAnimation,
                       builder: (context, child) {
                         return LinearProgressIndicator(
-                          value: _completionPercentage,
+                          value: _progressAnimation.value,
                           backgroundColor: Colors.grey[300],
                           valueColor: AlwaysStoppedAnimation<Color>(
                             _isCompleted ? Colors.green : Colors.blue[600]!,
@@ -1051,12 +1745,17 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
                       },
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      '${(_completionPercentage * 100).toInt()}% completado',
-                      style: TextStyle(
-                        fontSize: isPhone ? 12 : 14,
-                        color: Colors.grey[600],
-                      ),
+                    AnimatedBuilder(
+                      animation: _progressAnimation,
+                      builder: (context, child) {
+                        return Text(
+                          '${(_progressAnimation.value * 100).toInt()}% completado',
+                          style: TextStyle(
+                            fontSize: isPhone ? 12 : 14,
+                            color: Colors.grey[600],
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -1085,21 +1784,26 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
-        child: GestureDetector(
-          onPanStart: _onPanStart,
-          onPanUpdate: _onPanUpdate,
-          onPanEnd: _onPanEnd,
-          child: CustomPaint(
-            painter: _LetterTracingPainter(
-              letter: widget.letter.toUpperCase(),
-              userStrokes: _userStrokes,
-              currentStroke: _currentStroke,
-              isCompleted: _isCompleted,
-              hintAnimation: _hintAnimation,
-              isShowingDemo: _isShowingDemo,
-              demoAnimation: _demoAnimation,
+        child: Listener(
+          onPointerDown: _onPointerDown,
+          onPointerMove: _onPointerMove,
+          onPointerUp: _onPointerUp,
+          child: GestureDetector(
+            onPanStart: _onPanStart,
+            onPanUpdate: _onPanUpdate,
+            onPanEnd: _onPanEnd,
+            child: CustomPaint(
+              painter: _LetterTracingPainter(
+                letter: widget.letter.toUpperCase(),
+                userStrokes: _userStrokes,
+                currentStroke: _currentStroke,
+                isCompleted: _isCompleted,
+                hintAnimation: _hintAnimation,
+                isShowingDemo: _isShowingDemo,
+                demoAnimation: _demoAnimation,
+              ),
+              size: Size.infinite,
             ),
-            size: Size.infinite,
           ),
         ),
       ),
@@ -1397,28 +2101,58 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     return path;
   }
 
-  // Verificar si un punto está cerca del trazo correcto
+  // Verificar si un punto está cerca del trazo correcto - SISTEMA MEJORADO
   bool _isPointNearPath(Offset point, Path letterPath) {
-    const tolerance = 60.0; // Tolerancia más amplia en píxeles para hacer más fácil
+    final tolerance = _getToleranceForLetter(widget.letter); // Tolerancia específica por letra
     
     // Usar PathMetric para calcular distancia al path
-    final pathMetric = letterPath.computeMetrics().first;
-    final pathLength = pathMetric.length;
+    final pathMetrics = letterPath.computeMetrics();
+    if (pathMetrics.isEmpty) return false;
     
     double minDistance = double.infinity;
     
-    // Verificar distancia a múltiples puntos del path
-    for (double i = 0; i < pathLength; i += 5) {
-      final tangent = pathMetric.getTangentForOffset(i);
-      if (tangent?.position != null) {
-        final distance = (point - tangent!.position).distance;
-        if (distance < minDistance) {
-          minDistance = distance;
+    // Verificar distancia a todos los segmentos del path
+    for (final pathMetric in pathMetrics) {
+      final pathLength = pathMetric.length;
+      
+      for (double i = 0; i < pathLength; i += 3) { // Más precisión con paso de 3
+        final tangent = pathMetric.getTangentForOffset(i);
+        if (tangent?.position != null) {
+          final distance = (point - tangent!.position).distance;
+          if (distance < minDistance) {
+            minDistance = distance;
+          }
         }
       }
     }
     
     return minDistance <= tolerance;
+  }
+  
+  // Obtener tolerancia específica por letra para evaluación educativa FUNCIONAL
+  double _getToleranceForLetter(String letter) {
+    const complexLetters = {'K', 'Ñ', 'B', 'R', 'P', 'Q', 'A', 'M', 'W', 'X', 'Y'};
+    const simpleLetters = {'I', 'L', 'T', 'C', 'O', 'U', 'V', 'Z'};
+    
+    if (complexLetters.contains(letter.toUpperCase())) {
+      return 50.0; // Tolerancia mayor para letras complejas - funcional
+    } else if (simpleLetters.contains(letter.toUpperCase())) {
+      return 40.0; // Tolerancia moderada para letras simples
+    } else {
+      return 45.0; // Tolerancia intermedia para letras normales
+    }
+  }
+  
+  // Sonido y feedback para trazos incorrectos
+  void _playIncorrectTraceSound() {
+    final messages = [
+      'Sigue la línea de la letra, ${widget.playerName ?? 'pequeño artista'}',
+      'Mantente dentro de la letra para que quede perfecta',
+      'Despacio, sigue el camino de la ${widget.letter}',
+      'Intenta seguir la forma de la letra ${widget.letter}'
+    ];
+    final randomMessage = messages[DateTime.now().millisecondsSinceEpoch % messages.length];
+    widget.audioService.speakText(randomMessage);
   }
 }
 

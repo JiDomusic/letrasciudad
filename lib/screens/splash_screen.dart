@@ -641,43 +641,142 @@ class PampaPainter extends CustomPainter {
     
     final horizonY = size.height * 0.5; // Línea del horizonte
     
-    // Dibujar muchos árboles en el horizonte
-    for (int i = 0; i < 15; i++) {
-      final x = (size.width / 14) * i;
-      final treeHeight = 40.0 + (i % 3) * 20; // Árboles de diferentes alturas
-      final treeWidth = 25.0 + (i % 2) * 15;
+    // Dibujar muchos árboles en el horizonte con FRUTAS Y VERDURAS intercaladas
+    for (int i = 0; i < 20; i++) { // Aumentamos a 20 elementos
+      final x = (size.width / 19) * i;
       
-      // Tronco del árbol
-      final trunkPaint = Paint()..color = Color(0xFF8B4513); // Marrón
-      canvas.drawRect(
-        Rect.fromLTWH(x - 3, horizonY - 15, 6, 15),
-        trunkPaint,
-      );
-      
-      // Copa del árbol (forma ovalada)
-      canvas.drawOval(
-        Rect.fromLTWH(
-          x - treeWidth / 2, 
-          horizonY - treeHeight, 
-          treeWidth, 
-          treeHeight * 0.8
-        ),
-        treePaint,
-      );
-      
-      // Segundo nivel de copa (más pequeño)
-      if (i % 3 == 0) {
-        canvas.drawOval(
-          Rect.fromLTWH(
-            x - treeWidth / 3, 
-            horizonY - treeHeight * 0.7, 
-            treeWidth * 0.6, 
-            treeHeight * 0.5
-          ),
-          treePaint,
-        );
+      // Alternamos entre árboles frutales y cultivos de verduras
+      if (i % 4 == 0) {
+        _paintFruitTree(canvas, x, horizonY, i);
+      } else if (i % 4 == 1) {
+        _paintVegetableField(canvas, x, horizonY, i);
+      } else if (i % 4 == 2) {
+        _paintRegularTree(canvas, x, horizonY, i);
+      } else {
+        _paintBerryBush(canvas, x, horizonY, i);
       }
     }
+  }
+  
+  void _paintFruitTree(Canvas canvas, double x, double horizonY, int index) {
+    // Árboles frutales (manzanos, naranjos, etc.)
+    final trunkPaint = Paint()..color = Color(0xFF8B4513);
+    canvas.drawRect(
+      Rect.fromLTWH(x - 4, horizonY - 20, 8, 20),
+      trunkPaint,
+    );
+    
+    // Copa verde
+    final leafPaint = Paint()..color = Color(0xFF228B22);
+    canvas.drawOval(
+      Rect.fromLTWH(x - 20, horizonY - 50, 40, 35),
+      leafPaint,
+    );
+    
+    // Frutas colgando (manzanas rojas, naranjas, etc.)
+    final fruitColors = [Color(0xFFFF4444), Color(0xFFFF8800), Color(0xFFFFDD00)];
+    final fruitPaint = Paint()..color = fruitColors[index % 3];
+    
+    // Varias frutas en el árbol
+    canvas.drawCircle(Offset(x - 8, horizonY - 35), 3, fruitPaint);
+    canvas.drawCircle(Offset(x + 6, horizonY - 40), 3, fruitPaint);
+    canvas.drawCircle(Offset(x - 2, horizonY - 45), 3, fruitPaint);
+    canvas.drawCircle(Offset(x + 12, horizonY - 30), 3, fruitPaint);
+  }
+  
+  void _paintVegetableField(Canvas canvas, double x, double horizonY, int index) {
+    // Campos de verduras (zanahorias, lechugas, tomates)
+    final soilPaint = Paint()..color = Color(0xFF8B4513);
+    canvas.drawRect(
+      Rect.fromLTWH(x - 15, horizonY - 8, 30, 8),
+      soilPaint,
+    );
+    
+    // Diferentes tipos de verduras
+    if (index % 3 == 0) {
+      // Zanahorias (hojas verdes)
+      final leafPaint = Paint()..color = Color(0xFF32CD32);
+      for (int j = 0; j < 4; j++) {
+        final carrotX = x - 12 + (j * 8);
+        canvas.drawRect(
+          Rect.fromLTWH(carrotX - 1, horizonY - 15, 2, 8),
+          leafPaint,
+        );
+        // Parte naranja de la zanahoria (underground)
+        final carrotPaint = Paint()..color = Color(0xFFFF8C00);
+        canvas.drawCircle(Offset(carrotX, horizonY - 3), 2, carrotPaint);
+      }
+    } else if (index % 3 == 1) {
+      // Lechugas
+      final lettucePaint = Paint()..color = Color(0xFF90EE90);
+      for (int j = 0; j < 3; j++) {
+        final lettuceX = x - 10 + (j * 10);
+        canvas.drawOval(
+          Rect.fromLTWH(lettuceX - 4, horizonY - 12, 8, 8),
+          lettucePaint,
+        );
+      }
+    } else {
+      // Tomateras
+      final stemPaint = Paint()..color = Color(0xFF228B22);
+      final tomatoPaint = Paint()..color = Color(0xFFFF6347);
+      for (int j = 0; j < 3; j++) {
+        final tomatoX = x - 8 + (j * 8);
+        // Tallo
+        canvas.drawRect(
+          Rect.fromLTWH(tomatoX - 1, horizonY - 20, 2, 15),
+          stemPaint,
+        );
+        // Tomates
+        canvas.drawCircle(Offset(tomatoX - 3, horizonY - 15), 2.5, tomatoPaint);
+        canvas.drawCircle(Offset(tomatoX + 3, horizonY - 12), 2.5, tomatoPaint);
+      }
+    }
+  }
+  
+  void _paintRegularTree(Canvas canvas, double x, double horizonY, int index) {
+    // Árboles regulares (como el código original)
+    final treeHeight = 40.0 + (index % 3) * 20;
+    final treeWidth = 25.0 + (index % 2) * 15;
+    
+    final trunkPaint = Paint()..color = Color(0xFF8B4513);
+    canvas.drawRect(
+      Rect.fromLTWH(x - 3, horizonY - 15, 6, 15),
+      trunkPaint,
+    );
+    
+    final treePaint = Paint()..color = Color(0xFF228B22);
+    canvas.drawOval(
+      Rect.fromLTWH(
+        x - treeWidth / 2, 
+        horizonY - treeHeight, 
+        treeWidth, 
+        treeHeight * 0.8
+      ),
+      treePaint,
+    );
+  }
+  
+  void _paintBerryBush(Canvas canvas, double x, double horizonY, int index) {
+    // Arbustos de frutos del bosque (frutillas, arándanos)
+    final bushPaint = Paint()..color = Color(0xFF32CD32);
+    
+    // Arbusto base
+    canvas.drawOval(
+      Rect.fromLTWH(x - 12, horizonY - 25, 24, 20),
+      bushPaint,
+    );
+    
+    // Frutos pequeños
+    final berryColors = [Color(0xFFFF1493), Color(0xFF4169E1), Color(0xFF8B008B)];
+    final berryPaint = Paint()..color = berryColors[index % 3];
+    
+    // Varios frutos en el arbusto
+    canvas.drawCircle(Offset(x - 6, horizonY - 18), 2, berryPaint);
+    canvas.drawCircle(Offset(x + 4, horizonY - 20), 2, berryPaint);
+    canvas.drawCircle(Offset(x - 2, horizonY - 15), 2, berryPaint);
+    canvas.drawCircle(Offset(x + 8, horizonY - 12), 2, berryPaint);
+    canvas.drawCircle(Offset(x - 8, horizonY - 10), 2, berryPaint);
   }
 
   @override

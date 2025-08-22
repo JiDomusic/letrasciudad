@@ -50,6 +50,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _playWelcomeMessage() async {
+    // Detener cualquier audio anterior antes de reproducir bienvenida
+    await _audioService.stop();
     await Future.delayed(const Duration(milliseconds: 500));
     final provider = context.read<LetterCityProvider>();
     
@@ -57,8 +59,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (provider.playerName.isEmpty || provider.playerName == 'Pequeño Explorador') {
       _showNameInputDialog();
     } else {
-      // Asegurar que se pronuncie el nombre completo, no letra por letra
-      await _audioService.speakText('¡Hola ${provider.playerName}! Soy Luna, tu guía en este parque mágico de letras. ¿Estás listo para descubrir todas las aventuras que tengo preparadas?');
+      // Solo dar bienvenida si es la primera vez o si realmente es necesario
+      // Evitar "hola otra vez" que suena raro
+      final messages = [
+        '¡Hola ${provider.playerName}! ¿Qué tal si jugamos con las letras?',
+        'Holi ${provider.playerName}, ¡me alegra verte! ¿Vamos a aprender juntos?',
+        '¡${provider.playerName}! ¿Estás listo para nuevas aventuras con las letras?',
+        'Qué bueno verte ${provider.playerName}. ¿Seguimos explorando el mundo de las letras?',
+        '¡Hola mi querido ${provider.playerName}! ¿Continuamos nuestra aventura?'
+      ];
+      
+      // Usar un mensaje aleatorio para que no sea repetitivo
+      final randomIndex = DateTime.now().millisecondsSinceEpoch % messages.length;
+      await _audioService.speakText(messages[randomIndex]);
     }
   }
 
@@ -66,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void dispose() {
     _gridAnimationController.dispose();
     _animatedElementsController.dispose();
-    // DETENER VOZ AL SALIR DE LA PÁGINA PRINCIPAL
+    // DETENER COMPLETAMENTE la voz al salir de la página principal
     _audioService.stop();
     super.dispose();
   }
@@ -888,37 +901,297 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final animals = <Widget>[];
     final size = MediaQuery.of(context).size;
     
-    // VACAS CAMINANDO POR EL PARQUE
-    animals.add(
-      AnimatedBuilder(
-        animation: _animatedElementsController,
-        builder: (context, child) {
-          final progress = (_animatedElementsController.value * 0.3) % 1.0;
-          final x = progress * (size.width - 80);
-          final bounce = math.sin(progress * 15) * 2;
-          
-          return Positioned(
-            left: x,
-            top: 400 + bounce,
-            child: Transform.scale(
-              scaleX: 1, // Siempre hacia adelante
-              child: Container(
-                width: 60,
-                height: 45,
-                decoration: BoxDecoration(
-                  color: Colors.brown[100],
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.brown[400]!, width: 2),
-                ),
-                child: const Center(
-                  child: Text('🐄', style: TextStyle(fontSize: 32)),
+    // VACAS CAMINANDO POR EL PARQUE (movimiento continuo hacia adelante)
+    for (int i = 0; i < 2; i++) {
+      animals.add(
+        AnimatedBuilder(
+          animation: _animatedElementsController,
+          builder: (context, child) {
+            // Movimiento continuo hacia adelante (de izquierda a derecha)
+            final progress = (_animatedElementsController.value * 0.2 + i * 0.5) % 1.0;
+            final x = progress * (size.width + 100) - 80; // De izquierda a derecha
+            final bounce = math.sin(progress * 10) * 3; // Movimiento de caminar más realista
+            final sway = math.sin(progress * 12) * 1; // Balanceo lateral sutil
+            
+            return Positioned(
+              left: x,
+              top: 380.0 + bounce + (i * 60.0), // Vacas en diferentes alturas
+              child: Transform.scale(
+                scaleX: -1, // Voltear horizontalmente para que mire hacia adelante
+                child: Container(
+                  width: 60,
+                  height: 45,
+                  decoration: BoxDecoration(
+                    color: Colors.brown[100],
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.brown[400]!, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 4,
+                        offset: Offset(2 + sway, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Text('🐄', style: TextStyle(fontSize: 32)),
+                  ),
                 ),
               ),
-            ),
-          );
-        },
-      ),
-    );
+            );
+          },
+        ),
+      );
+    }
+    
+    // PLANTAS Y FLORES DECORATIVAS EN EL PARQUE
+    final flowerTypes = ['🌸', '🌺', '🌻', '🌷', '🌹', '🌼', '🪻'];
+    final plantTypes = ['🌿', '🌱', '🍀', '🌾', '🪴'];
+    
+    // Flores distribuidas por el parque
+    for (int i = 0; i < 12; i++) {
+      final flower = flowerTypes[i % flowerTypes.length];
+      animals.add(
+        AnimatedBuilder(
+          animation: _animatedElementsController,
+          builder: (context, child) {
+            final sway = math.sin((_animatedElementsController.value + i * 0.2) * 2 * math.pi) * 2;
+            final baseX = (size.width / 13) * (i + 1);
+            final baseY = 300.0 + (i % 3) * 150.0; // Diferentes alturas en 3 filas
+            
+            return Positioned(
+              left: baseX + sway,
+              top: baseY,
+              child: Container(
+                width: 35,
+                height: 35,
+                decoration: BoxDecoration(
+                  color: Colors.green[50],
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.green[200]!, width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.green.withValues(alpha: 0.1),
+                      blurRadius: 3,
+                      offset: const Offset(1, 1),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(flower, style: const TextStyle(fontSize: 24)),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+    
+    // Plantas verdes adicionales
+    for (int i = 0; i < 8; i++) {
+      final plant = plantTypes[i % plantTypes.length];
+      animals.add(
+        AnimatedBuilder(
+          animation: _animatedElementsController,
+          builder: (context, child) {
+            final rustle = math.sin((_animatedElementsController.value + i * 0.3) * 3 * math.pi) * 1;
+            final baseX = 50.0 + (size.width / 9) * i;
+            final baseY = 250.0 + (i % 2) * 200.0;
+            
+            return Positioned(
+              left: baseX + rustle,
+              top: baseY,
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: Colors.green[100],
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(color: Colors.green[300]!, width: 1),
+                ),
+                child: Center(
+                  child: Text(plant, style: const TextStyle(fontSize: 20)),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+    
+    // Árboles ornamentales
+    for (int i = 0; i < 4; i++) {
+      animals.add(
+        AnimatedBuilder(
+          animation: _animatedElementsController,
+          builder: (context, child) {
+            final treeX = (size.width / 5) * (i + 1);
+            final treeY = 200.0 + (i % 2) * 300.0;
+            
+            return Positioned(
+              left: treeX,
+              top: treeY,
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.green[200],
+                  borderRadius: BorderRadius.circular(25),
+                  border: Border.all(color: Colors.green[600]!, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.green.withValues(alpha: 0.2),
+                      blurRadius: 5,
+                      offset: const Offset(2, 2),
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Text('🌳', style: TextStyle(fontSize: 35)),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+    
+    // FLORES SILVESTRES ADICIONALES (más pequeñas y dispersas)
+    final wildFlowers = ['🌼', '🌻', '🌺', '🏵️', '💐', '🌷', '🌸', '🪷'];
+    for (int i = 0; i < 15; i++) {
+      final flower = wildFlowers[i % wildFlowers.length];
+      animals.add(
+        AnimatedBuilder(
+          animation: _animatedElementsController,
+          builder: (context, child) {
+            final flutter = math.sin((_animatedElementsController.value + i * 0.4) * 4 * math.pi) * 1;
+            final baseX = 30.0 + (size.width / 16) * i;
+            final baseY = 150.0 + (i % 4) * 120.0; // 4 filas de flores silvestres
+            
+            return Positioned(
+              left: baseX + flutter,
+              top: baseY,
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: Colors.pink[50],
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.pink[100]!, width: 1),
+                ),
+                child: Center(
+                  child: Text(flower, style: const TextStyle(fontSize: 18)),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+    
+    // ARBUSTOS CON FRUTOS
+    final berryBushes = ['🫐', '🍓', '🍇', '🍒'];
+    for (int i = 0; i < 6; i++) {
+      final berry = berryBushes[i % berryBushes.length];
+      animals.add(
+        AnimatedBuilder(
+          animation: _animatedElementsController,
+          builder: (context, child) {
+            final baseX = 80.0 + (size.width / 7) * i;
+            final baseY = 180.0 + (i % 2) * 350.0;
+            
+            return Positioned(
+              left: baseX,
+              top: baseY,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.green[300],
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.green[700]!, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.green.withValues(alpha: 0.3),
+                      blurRadius: 4,
+                      offset: const Offset(2, 2),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(berry, style: const TextStyle(fontSize: 25)),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+    
+    // PLANTAS AROMÁTICAS Y HIERBAS
+    final herbs = ['🌿', '🌱', '☘️', '🍃', '🌾'];
+    for (int i = 0; i < 10; i++) {
+      final herb = herbs[i % herbs.length];
+      animals.add(
+        AnimatedBuilder(
+          animation: _animatedElementsController,
+          builder: (context, child) {
+            final sway = math.sin((_animatedElementsController.value + i * 0.25) * 3 * math.pi) * 1.5;
+            final baseX = 40.0 + (size.width / 11) * i;
+            final baseY = 320.0 + (i % 3) * 100.0;
+            
+            return Positioned(
+              left: baseX + sway,
+              top: baseY,
+              child: Container(
+                width: 25,
+                height: 25,
+                decoration: BoxDecoration(
+                  color: Colors.lightGreen[100],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.green[400]!, width: 1),
+                ),
+                child: Center(
+                  child: Text(herb, style: const TextStyle(fontSize: 16)),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
+    
+    // CACTUS Y SUCULENTAS (para variedad)
+    final succulents = ['🌵', '🪴', '🌿'];
+    for (int i = 0; i < 4; i++) {
+      final succulent = succulents[i % succulents.length];
+      animals.add(
+        AnimatedBuilder(
+          animation: _animatedElementsController,
+          builder: (context, child) {
+            final baseX = 120.0 + (size.width / 5) * i;
+            final baseY = 500.0;
+            
+            return Positioned(
+              left: baseX,
+              top: baseY,
+              child: Container(
+                width: 35,
+                height: 35,
+                decoration: BoxDecoration(
+                  color: Colors.green[200],
+                  borderRadius: BorderRadius.circular(17),
+                  border: Border.all(color: Colors.green[500]!, width: 2),
+                ),
+                child: Center(
+                  child: Text(succulent, style: const TextStyle(fontSize: 22)),
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    }
     
     // GALLINAS PICOTEANDO
     for (int i = 0; i < 3; i++) {
@@ -1790,11 +2063,72 @@ class _ParkBackgroundPainter extends CustomPainter {
       paint,
     );
 
+    // Pequeñas flores rosadas decorativas originales
     paint.color = const Color(0xFFFFB6C1);
     for (int i = 0; i < 8; i++) {
       final x = (size.width * 0.2) + (i * size.width * 0.1);
       final y = size.height * 0.75 + (i % 2 == 0 ? 5 : -5);
       canvas.drawCircle(Offset(x, y), 3, paint);
+    }
+    
+    // NUEVAS FLORES ADICIONALES para más belleza en el parque
+    
+    // Flores amarillas pequeñas
+    paint.color = const Color(0xFFFFD700);
+    for (int i = 0; i < 12; i++) {
+      final x = (size.width * 0.1) + (i * size.width * 0.08);
+      final y = size.height * 0.78 + (i % 3 == 0 ? 8 : i % 3 == 1 ? -3 : 2);
+      canvas.drawCircle(Offset(x, y), 2.5, paint);
+    }
+    
+    // Flores violetas medianas
+    paint.color = const Color(0xFF9370DB);
+    final violetPositions = [
+      Offset(size.width * 0.12, size.height * 0.68),
+      Offset(size.width * 0.35, size.height * 0.72),
+      Offset(size.width * 0.58, size.height * 0.69),
+      Offset(size.width * 0.78, size.height * 0.74),
+      Offset(size.width * 0.88, size.height * 0.71),
+    ];
+    for (final pos in violetPositions) {
+      canvas.drawCircle(pos, 4, paint);
+    }
+    
+    // Flores rojas pequeñas
+    paint.color = const Color(0xFFFF6347);
+    final redPositions = [
+      Offset(size.width * 0.25, size.height * 0.82),
+      Offset(size.width * 0.45, size.height * 0.79),
+      Offset(size.width * 0.65, size.height * 0.83),
+      Offset(size.width * 0.85, size.height * 0.80),
+    ];
+    for (final pos in redPositions) {
+      canvas.drawCircle(pos, 3, paint);
+    }
+    
+    // Flores blancas delicadas
+    paint.color = const Color(0xFFFFFAFA);
+    final whitePositions = [
+      Offset(size.width * 0.18, size.height * 0.73),
+      Offset(size.width * 0.38, size.height * 0.76),
+      Offset(size.width * 0.55, size.height * 0.74),
+      Offset(size.width * 0.72, size.height * 0.77),
+      Offset(size.width * 0.92, size.height * 0.75),
+    ];
+    for (final pos in whitePositions) {
+      canvas.drawCircle(pos, 2, paint);
+    }
+    
+    // Flores naranjas vibrantes
+    paint.color = const Color(0xFFFF8C00);
+    final orangePositions = [
+      Offset(size.width * 0.08, size.height * 0.76),
+      Offset(size.width * 0.28, size.height * 0.71),
+      Offset(size.width * 0.48, size.height * 0.77),
+      Offset(size.width * 0.68, size.height * 0.72),
+    ];
+    for (final pos in orangePositions) {
+      canvas.drawCircle(pos, 3.5, paint);
     }
 
     paint.color = Colors.white.withValues(alpha: 0.8);

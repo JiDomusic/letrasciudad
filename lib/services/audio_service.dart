@@ -45,10 +45,8 @@ class AudioService {
       await _flutterTts.setVolume(1.0);
       await _flutterTts.setPitch(1.5); // Pitch más alto para voz de niña
       
-      // Probar hablar para verificar funcionamiento (SIN DELAY para mejor sincronización)
-      debugPrint('🧪 Probando TTS con voz de niña...');
-      _flutterTts.speak("¡Hola! Soy tu amiga virtual");
-      // REMOVIDO: await Future.delayed() para respuesta inmediata
+      // REMOVIDO: No reproducir audio automáticamente en la inicialización
+      debugPrint('🧪 TTS configurado con voz de niña (sin audio de prueba)');
       
       _isInitialized = true;
       debugPrint('✅ AudioService inicializado correctamente con voz de niña');
@@ -198,8 +196,7 @@ class AudioService {
         'es-ar-x-ard-network', // Voz neural de Google Argentina
         
         // Voces tradicionales de alta calidad
-        'Google español (España)',
-        'Google español (México)',
+
         'Google español (Argentina)',
         
         // Voces Samsung
@@ -329,41 +326,64 @@ class AudioService {
     if (text.isEmpty) return;
     
     try {
-      debugPrint('🎤 Hablar INMEDIATO: "$text"');
+      debugPrint('🎤 Solicitud de voz: "$text"');
       
       if (!_isInitialized) {
-        debugPrint('⚠️ TTS no inicializado, inicialización rápida...');
+        debugPrint('⚠️ TTS no inicializado, inicializando...');
         await initialize();
       }
       
-      // RESPUESTA INMEDIATA: detener cualquier audio anterior y hablar inmediatamente
+      // DETENER COMPLETAMENTE cualquier audio anterior para evitar superposiciones
       await _flutterTts.stop();
       
-      // Small delay to prevent rapid consecutive calls that can cause crashes
-      await Future.delayed(const Duration(milliseconds: 50));
+      // Espera más larga para asegurar que se detuvo completamente
+      await Future.delayed(const Duration(milliseconds: 200));
       
-      // Configuración mínima y rápida sin delays
-      _flutterTts.setLanguage("es-ES");
-      _flutterTts.setSpeechRate(0.8); // Ligeramente más rápida para respuesta inmediata
-      _flutterTts.setPitch(1.5); // Voz de niña
-      _flutterTts.setVolume(1.0);
+      // Configuración uniforme entre web y móvil (basada en móvil que es más fluida)
+      if (kIsWeb) {
+        // Configuración web similar a móvil para mayor fluidez
+        await _flutterTts.setLanguage("es-ES");
+        await _flutterTts.setSpeechRate(0.7); // Misma velocidad que móvil
+        await _flutterTts.setPitch(1.4); // Mismo pitch que móvil
+        await _flutterTts.setVolume(1.0);
+        await _flutterTts.awaitSpeakCompletion(false); // No esperar completion
+      } else {
+        // Configuración móvil (que funciona bien)
+        await _flutterTts.setLanguage("es-ES");
+        await _flutterTts.setSpeechRate(0.7); // Velocidad estándar para móvil
+        await _flutterTts.setPitch(1.4); // Pitch más alto para móvil
+        await _flutterTts.setVolume(1.0);
+        await _flutterTts.awaitSpeakCompletion(false); // No esperar completion
+        await _flutterTts.setSharedInstance(true); // Usar instancia compartida en móvil
+      }
       
       // Procesar el texto para evitar que los nombres se deletreen
       String processedText = _processTextForNaturalSpeech(text);
       
-      // COMANDO INMEDIATO sin await para no bloquear la UI
-      _flutterTts.speak(processedText);
-      debugPrint('✅ Audio INMEDIATO enviado: "$processedText"');
+      // Usar el método móvil más fluido para ambas plataformas
+      try {
+        await _flutterTts.speak(processedText).timeout(
+          const Duration(seconds: 8),
+          onTimeout: () {
+            debugPrint('⏰ Audio timeout (${kIsWeb ? 'web' : 'móvil'})');
+            return;
+          },
+        );
+        debugPrint('✅ Audio completado (${kIsWeb ? 'web' : 'móvil'}): "$processedText"');
+      } catch (timeoutError) {
+        debugPrint('⏰ Error de timeout: $timeoutError');
+      }
       
     } catch (e) {
-      debugPrint('❌ Error audio inmediato: $e');
+      debugPrint('❌ Error reproduciendo audio: $e');
       // Reintentar con método simplificado
       try {
         await _flutterTts.stop();
+        await Future.delayed(const Duration(milliseconds: 100));
         String processedText = _processTextForNaturalSpeech(text);
-        _flutterTts.speak(processedText);
+        await _flutterTts.speak(processedText);
       } catch (retryError) {
-        debugPrint('❌ Error en reintento inmediato: $retryError');
+        debugPrint('❌ Error en reintento: $retryError');
       }
     }
   }

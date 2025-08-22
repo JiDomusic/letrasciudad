@@ -371,7 +371,7 @@ Activity(
     Letter(
       character: 'I',
       name: 'i',
-      phoneme: 'ee',
+      phoneme: 'i',
       syllables: ['i'],
       exampleWords: ['iglesia', 'isla', 'imán', 'indio'],
       imagePath: 'assets/letters/i_house.png',
@@ -415,7 +415,7 @@ Activity(
     Letter(
       character: 'J',
       name: 'jota',
-      phoneme: 'hota',
+      phoneme: 'jota',
       syllables: ['ja', 'je', 'ji', 'jo', 'ju'],
       exampleWords: ['jirafa', 'juego', 'jardín', 'joven'],
       imagePath: 'assets/letters/j_house.png',
@@ -911,7 +911,7 @@ Activity(
     Letter(
       character: 'U',
       name: 'u',
-      phoneme: 'oo',
+      phoneme: 'u',
       syllables: ['u'],
       exampleWords: ['uva', 'universo', 'unicornio', 'uno'],
       imagePath: 'assets/letters/u_house.png',
@@ -1029,7 +1029,7 @@ Activity(
     Letter(
       character: 'W',
       name: 'dobleve',
-      phoneme: 'weh',
+      phoneme: 'dobleveee',
       syllables: ['wa', 'we', 'wi', 'wo', 'wu'],
       exampleWords: ['walkman', 'waterpolo', 'wifi', 'web'],
       imagePath: 'assets/letters/w_house.png',
@@ -1095,7 +1095,7 @@ Activity(
     Letter(
       character: 'X',
       name: 'equis',
-      phoneme: 'eks',
+      phoneme: 'ekis',
       syllables: ['xa', 'xe', 'xi', 'xo', 'xu'],
       exampleWords: ['xilófono', 'examen', 'México', 'oxígeno'],
       imagePath: 'assets/letters/x_house.png',
@@ -1171,7 +1171,7 @@ Activity(
     Letter(
       character: 'Y',
       name: 'ye',
-      phoneme: 'yeh',
+      phoneme: 'ye',
       syllables: ['ya', 'ye', 'yi', 'yo', 'yu'],
       exampleWords: ['yate', 'yoga', 'yema', 'yo-yo'],
       imagePath: 'assets/letters/y_house.png',

@@ -162,9 +162,7 @@ class _LetterObjectsSelectionGameState extends State<LetterObjectsSelectionGame>
         {'emoji': '🕊️', 'name': 'Vuelo', 'correct': true},
         {'emoji': '📺', 'name': 'Video', 'correct': true},
         {'emoji': '🍇', 'name': 'Uvas', 'correct': false},
-        {'emoji': '🐶', 'name': 'Perro', 'correct': false},
-        {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-        {'emoji': '🎈', 'name': 'Globo', 'correct': false},
+
         {'emoji': '🌸', 'name': 'Flor', 'correct': false},
         {'emoji': '🐱', 'name': 'Gato', 'correct': false},
         {'emoji': '🌙', 'name': 'Luna', 'correct': false},
@@ -179,10 +177,7 @@ class _LetterObjectsSelectionGameState extends State<LetterObjectsSelectionGame>
         {'emoji': '🔍', 'name': 'Explorar', 'correct': true},
         {'emoji': '📖', 'name': 'Texto', 'correct': true},
         {'emoji': '🐄', 'name': 'Vaca', 'correct': false},
-        {'emoji': '🐶', 'name': 'Perro', 'correct': false},
-        {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-        {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-        {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+
         {'emoji': '🐱', 'name': 'Gato', 'correct': false},
         {'emoji': '🌙', 'name': 'Luna', 'correct': false},
       ],
@@ -196,10 +191,7 @@ class _LetterObjectsSelectionGameState extends State<LetterObjectsSelectionGame>
         {'emoji': '🏠', 'name': 'Kiosco', 'correct': true},
         {'emoji': '🎤', 'name': 'Karaoke', 'correct': true},
         {'emoji': '🐄', 'name': 'Vaca', 'correct': false},
-        {'emoji': '🐶', 'name': 'Perro', 'correct': false},
-        {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-        {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-        {'emoji': '🌸', 'name': 'Flor', 'correct': false},
+
         {'emoji': '🐱', 'name': 'Gato', 'correct': false},
         {'emoji': '🌙', 'name': 'Luna', 'correct': false},
       ],
@@ -213,11 +205,7 @@ class _LetterObjectsSelectionGameState extends State<LetterObjectsSelectionGame>
         {'emoji': '🏄', 'name': 'Windsurf', 'correct': true},
         {'emoji': '⌚', 'name': 'Watch', 'correct': true},
         {'emoji': '🐄', 'name': 'Vaca', 'correct': false},
-        {'emoji': '🐶', 'name': 'Perro', 'correct': false},
-        {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-        {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-        {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-        {'emoji': '🐱', 'name': 'Gato', 'correct': false},
+
         {'emoji': '🌙', 'name': 'Luna', 'correct': false},
       ],
       'Y': [
@@ -231,10 +219,7 @@ class _LetterObjectsSelectionGameState extends State<LetterObjectsSelectionGame>
         {'emoji': '🩹', 'name': 'Yodo', 'correct': true},
         {'emoji': '🐄', 'name': 'Vaca', 'correct': false},
         {'emoji': '🐶', 'name': 'Perro', 'correct': false},
-        {'emoji': '🏠', 'name': 'Casa', 'correct': false},
-        {'emoji': '🎈', 'name': 'Globo', 'correct': false},
-        {'emoji': '🌸', 'name': 'Flor', 'correct': false},
-        {'emoji': '🐱', 'name': 'Gato', 'correct': false},
+
         {'emoji': '🌙', 'name': 'Luna', 'correct': false},
       ],
     };

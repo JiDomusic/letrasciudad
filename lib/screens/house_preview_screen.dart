@@ -166,34 +166,34 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                   clipBehavior: Clip.none, // Allow content to overflow if needed
               children: [
               // Sol animado
-              _buildAnimatedSun(),
+              HousePreviewMethods.buildAnimatedSun(),
               
               // Colinas de fondo con pasto
-              _buildBackgroundHills(),
+              HousePreviewMethods.buildBackgroundHills(),
               
               // Pasto detallado
-              _buildDetailedGrass(),
+              HousePreviewMethods.buildDetailedGrass(),
               
               // Tierra extra y vegetación
-              _buildExtraGround(),
+              HousePreviewMethods.buildExtraGround(),
               
               // Plantas extra (árboles y arbustos)
-              ..._buildExtraPlants(),
+              ...HousePreviewMethods.buildExtraPlants(),
               
               // Flores dispersas
-              ..._buildFlowers(),
+              ...HousePreviewMethods.buildFlowers(),
               
               // Elementos decorativos adicionales
-              ..._buildDecorativeElements(),
+              ...HousePreviewMethods.buildDecorativeElements(),
               
               // Sendero hacia la casa
-              _buildPath(),
+              HousePreviewMethods.buildPath(),
               
               // Animales de granja
-              ..._buildFarmAnimals(),
+              ...HousePreviewMethods.buildFarmAnimals(),
               
               // Pajaritos volando
-              ..._buildFlyingBirds(),
+              ...HousePreviewMethods.buildFlyingBirds(),
               
               // Casa principal mejorada - centrada verticalmente
               Positioned.fill(
@@ -2231,4 +2231,47 @@ class ExtraGroundPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Métodos simplificados que se implementarán después
+class HousePreviewMethods {
+  static List<Widget> buildExtraPlants() {
+    return [];
+  }
+  
+  static List<Widget> buildFlowers() {
+    return [];
+  }
+  
+  static List<Widget> buildDecorativeElements() {
+    return [];
+  }
+  
+  static List<Widget> buildFarmAnimals() {
+    return [];
+  }
+  
+  static List<Widget> buildFlyingBirds() {
+    return [];
+  }
+  
+  static Widget buildAnimatedSun() {
+    return const SizedBox.shrink();
+  }
+  
+  static Widget buildBackgroundHills() {
+    return const SizedBox.shrink();
+  }
+  
+  static Widget buildDetailedGrass() {
+    return const SizedBox.shrink();
+  }
+  
+  static Widget buildExtraGround() {
+    return const SizedBox.shrink();
+  }
+  
+  static Widget buildPath() {
+    return const SizedBox.shrink();
+  }
 }

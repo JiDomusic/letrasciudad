@@ -2605,6 +2605,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   Widget _buildFindObjectsGame() {
     // Juego basado en imagen #2 - Buscar objetos que empiecen con B - RESPONSIVO
     final isPhone = MediaQuery.of(context).size.shortestSide < 600;
+    
+    // Añadir narración de voz para la letra B
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _audioService.speakText('¡Hola! Vamos a jugar con la letra B. En este juego tienes que trazar la letra B para completar palabras que empiecen con B. ¡Observa bien cada imagen y completa las palabras!');
+    });
     final iconSize = isPhone ? 48.0 : 64.0;
     final titleSize = isPhone ? 18.0 : 24.0;
     final instructionSize = isPhone ? 16.0 : 20.0;
@@ -2750,7 +2755,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                 child: MiniTracingCanvas(
                   letter: completeWord[0],
                   onTracingComplete: () {
-                    _audioService.speakText('¡Muy bien! Completaste $completeWord');
+                    _showFlowerRainEffect();
+                    _audioService.speakText('¡Excelente! Completaste la palabra $completeWord. ¡Eres fantástico!');
                   },
                   audioService: _audioService,
                 ),
@@ -2787,6 +2793,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     final iconSize = isPhone ? 48.0 : 64.0;
     final titleSize = isPhone ? 18.0 : 24.0;
     final instructionSize = isPhone ? 16.0 : 20.0;
+    
+    // Añadir narración de voz para la letra V
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _audioService.speakText('¡Bienvenido al juego de la letra V! Aquí vamos a completar palabras que empiecen con V. Traza la letra V en cada casilla y descubre palabras fantásticas. ¡Es muy divertido!');
+    });
     
     return Container(
       padding: EdgeInsets.all(isPhone ? 12 : 20),
@@ -2928,7 +2939,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                 child: MiniTracingCanvas(
                   letter: completeWord[0],
                   onTracingComplete: () {
-                    _audioService.speakText('¡Muy bien! Completaste $completeWord');
+                    _showFlowerRainEffect();
+                    _audioService.speakText('¡Fantástico! Completaste la palabra $completeWord. ¡Eres increíble!');
                   },
                   audioService: _audioService,
                 ),
@@ -2965,6 +2977,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     final iconSize = isPhone ? 48.0 : 64.0;
     final titleSize = isPhone ? 18.0 : 24.0;
     final instructionSize = isPhone ? 16.0 : 20.0;
+    
+    // Añadir narración de voz cuando se construye el juego
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _audioService.speakText('¡Hola! En este juego vamos a completar palabras que empiecen con la letra K. Traza la letra K en cada casilla para completar las palabras. ¡Vamos a comenzar!');
+    });
     
     return Container(
       padding: EdgeInsets.all(isPhone ? 12 : 20),
@@ -3106,7 +3123,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                 child: MiniTracingCanvas(
                   letter: completeWord[0],
                   onTracingComplete: () {
-                    _audioService.speakText('¡Muy bien! Completaste $completeWord');
+                    _showFlowerRainEffect();
+                    _audioService.speakText('¡Excelente! Completaste la palabra $completeWord. ¡Qué bien lo hiciste!');
                   },
                   audioService: _audioService,
                 ),
@@ -3143,6 +3161,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     final iconSize = isPhone ? 48.0 : 64.0;
     final titleSize = isPhone ? 18.0 : 24.0;
     final instructionSize = isPhone ? 16.0 : 20.0;
+    
+    // Añadir narración de voz para la letra Y
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _audioService.speakText('¡Bienvenido al juego de la letra Y! Aquí vamos a completar palabras que empiecen con Y. Traza la letra Y en cada casilla y descubre palabras fantásticas. ¡Empecemos!');
+    });
     
     return Container(
       padding: EdgeInsets.all(isPhone ? 12 : 20),
@@ -3284,7 +3307,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                 child: MiniTracingCanvas(
                   letter: completeWord[0],
                   onTracingComplete: () {
-                    _audioService.speakText('¡Muy bien! Completaste $completeWord');
+                    _showFlowerRainEffect();
+                    _audioService.speakText('¡Perfecto! Completaste la palabra $completeWord. ¡Qué inteligente eres!');
                   },
                   audioService: _audioService,
                 ),
@@ -3321,6 +3345,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     final iconSize = isPhone ? 48.0 : 64.0;
     final titleSize = isPhone ? 18.0 : 24.0;
     final instructionSize = isPhone ? 16.0 : 20.0;
+    
+    // Añadir narración de voz para la letra Ñ
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _audioService.speakText('¡Hola! Este es el juego especial de la letra Ñ. La Ñ es una letra muy especial del español. Vamos a completar palabras que tienen la letra Ñ. ¡Comencemos a trazar!');
+    });
     
     return Container(
       padding: EdgeInsets.all(isPhone ? 12 : 20),
@@ -3475,7 +3504,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                 child: MiniTracingCanvas(
                   letter: '\u00D1',
                   onTracingComplete: () {
-                    _audioService.speakText('¡Muy bien! Completaste $completeWord');
+                    _showFlowerRainEffect();
+                    _audioService.speakText('¡Maravilloso! Completaste la palabra $completeWord. ¡La Ñ es muy especial!');
                   },
                   audioService: _audioService,
                 ),
@@ -3513,6 +3543,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     final iconSize = isPhone ? 48.0 : 64.0;
     final titleSize = isPhone ? 18.0 : 24.0;
     final instructionSize = isPhone ? 16.0 : 20.0;
+    
+    // Añadir narración de voz para la letra W
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _audioService.speakText('¡Hola! Bienvenido al juego de la letra W. La W es una letra especial que usamos en palabras de otros idiomas. Vamos a completar palabras que tienen W. ¡Empecemos a trazar!');
+    });
     
     return Container(
       padding: EdgeInsets.all(isPhone ? 12 : 20),
@@ -3654,7 +3689,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                 child: MiniTracingCanvas(
                   letter: completeWord[0],
                   onTracingComplete: () {
-                    _audioService.speakText('¡Muy bien! Completaste $completeWord');
+                    _showFlowerRainEffect();
+                    _audioService.speakText('¡Genial! Completaste la palabra $completeWord. ¡Excelente trabajo!');
                   },
                   audioService: _audioService,
                 ),
@@ -3696,4 +3732,125 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       ),
     );
   }
+
+  void _showFlowerRainEffect() {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+    
+    overlayEntry = OverlayEntry(
+      builder: (context) => FlowerRainWidget(
+        onAnimationComplete: () {
+          overlayEntry.remove();
+        },
+      ),
+    );
+    
+    overlay.insert(overlayEntry);
+  }
+}
+
+class FlowerRainWidget extends StatefulWidget {
+  final VoidCallback onAnimationComplete;
+  
+  const FlowerRainWidget({
+    Key? key,
+    required this.onAnimationComplete,
+  }) : super(key: key);
+
+  @override
+  State<FlowerRainWidget> createState() => _FlowerRainWidgetState();
+}
+
+class _FlowerRainWidgetState extends State<FlowerRainWidget>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late List<FlowerParticle> _flowers;
+  final int _flowerCount = 15;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    );
+    
+    _initializeFlowers();
+    _controller.forward().then((_) {
+      widget.onAnimationComplete();
+    });
+  }
+
+  void _initializeFlowers() {
+    final size = MediaQuery.of(context).size;
+    _flowers = List.generate(_flowerCount, (index) {
+      return FlowerParticle(
+        startX: (size.width * 0.1) + (size.width * 0.8 * index / _flowerCount),
+        startY: -50.0,
+        endY: size.height + 100,
+        delay: index * 0.15,
+        emoji: ['🌸', '🌺', '🌻', '🌷', '🌹', '🌼', '🍀', '🌿'][index % 8],
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Stack(
+            children: _flowers.map((flower) {
+              final progress = (_controller.value - flower.delay).clamp(0.0, 1.0);
+              final y = flower.startY + (flower.endY - flower.startY) * progress;
+              final opacity = progress > 0.8 ? (1.0 - progress) * 5 : 1.0;
+              
+              if (progress <= 0) return const SizedBox.shrink();
+              
+              return Positioned(
+                left: flower.startX + math.sin(progress * math.pi * 2) * 25,
+                top: y,
+                child: Opacity(
+                  opacity: opacity.clamp(0.0, 1.0),
+                  child: Transform.rotate(
+                    angle: progress * math.pi * 2,
+                    child: Text(
+                      flower.emoji,
+                      style: TextStyle(
+                        fontSize: 28 + math.sin(progress * math.pi * 3) * 6,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class FlowerParticle {
+  final double startX;
+  final double startY;
+  final double endY;
+  final double delay;
+  final String emoji;
+
+  FlowerParticle({
+    required this.startX,
+    required this.startY,
+    required this.endY,
+    required this.delay,
+    required this.emoji,
+  });
 }
