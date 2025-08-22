@@ -180,8 +180,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   Widget _buildHeader() {
+    // Detectar si es móvil para usar un header más compacto
+    final isMobile = MediaQuery.of(context).size.width < 800;
+    
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isMobile ? 8 : 16),
       child: Row(
         children: [
           IconButton(
@@ -190,16 +193,16 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
               _audioService.stop();
               Navigator.of(context).pop();
             },
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back,
               color: Colors.white,
-              size: 28,
+              size: isMobile ? 24 : 28,
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: isMobile ? 4 : 8),
           Container(
-            width: 80, // Aumentado de 60 a 80
-            height: 80, // Aumentado de 60 a 80
+            width: isMobile ? 50 : 80, // Más pequeño en móvil
+            height: isMobile ? 50 : 80, // Más pequeño en móvil
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
@@ -213,32 +216,33 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
             child: Center(
               child: Text(
                 widget.letter.character.toUpperCase(),
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 32, // Aumentado de 24 a 32
+                  fontSize: isMobile ? 24 : 32, // Ajustado para móvil
                   fontWeight: FontWeight.w900,
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: isMobile ? 8 : 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Casa de la ${widget.letter.character.toUpperCase()}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 24, // Aumentado de 20 a 24
+                    fontSize: isMobile ? 18 : 24, // Más pequeño en móvil
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                if (!isMobile) // Solo mostrar subtítulo en escritorio
                 Text(
                   '¡Juegos interactivos!',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 18, // Aumentado de 14 a 18
+                    fontSize: 18,
                   ),
                 ),
               ],
@@ -313,13 +317,14 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
 
     // Detectar si es web o móvil
     final isWeb = MediaQuery.of(context).size.width > 800;
-    final gameHeight = isWeb ? 120.0 : 100.0;
-    final selectedSize = isWeb ? 110.0 : 90.0;
-    final unselectedSize = isWeb ? 90.0 : 75.0;
+    final isMobile = MediaQuery.of(context).size.width < 800;
+    final gameHeight = isWeb ? 120.0 : (isMobile ? 80.0 : 100.0); // Más compacto en móvil
+    final selectedSize = isWeb ? 110.0 : (isMobile ? 70.0 : 90.0);
+    final unselectedSize = isWeb ? 90.0 : (isMobile ? 60.0 : 75.0);
 
     return Container(
       height: gameHeight,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 16, vertical: isMobile ? 4 : 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: games.asMap().entries.map((entry) {

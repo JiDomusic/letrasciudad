@@ -51,9 +51,9 @@ class _AlphabetMainScreenState extends State<AlphabetMainScreen> {
       ),
       child: Column(
         children: [
-          // Header con estrella roja para indicar que es juego especial
+          // Header con estrella roja para indicar que es juego especial  
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(MediaQuery.of(context).size.width < 600 ? 8 : 16), // Menos padding en móvil
             child: Row(
               children: [
                 Icon(
@@ -91,7 +91,7 @@ class _AlphabetMainScreenState extends State<AlphabetMainScreen> {
           // Widget de trazado
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(MediaQuery.of(context).size.width < 600 ? 8 : 16), // Menos padding en móvil
               child: LetterTracingWidget(
                 letter: letter,
                 audioService: widget.audioService,

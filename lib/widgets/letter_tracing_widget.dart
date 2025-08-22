@@ -1669,7 +1669,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
 
   Widget _buildHeader(bool isPhone) {
     return Container(
-      padding: EdgeInsets.all(isPhone ? 8 : 20),
+      padding: EdgeInsets.all(isPhone ? 4 : 20), // Menos padding en móvil
       child: Column(
         children: [
           Row(
@@ -1680,8 +1680,8 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
                   return Transform.scale(
                     scale: 1.0 + (_celebrationAnimation.value * 0.3),
                     child: Container(
-                      width: isPhone ? 60 : 80,
-                      height: isPhone ? 60 : 80,
+                      width: isPhone ? 45 : 80, // Más pequeño en móvil
+                      height: isPhone ? 45 : 80,
                       decoration: BoxDecoration(
                         color: _isCompleted ? Colors.green : Colors.blue[600],
                         shape: BoxShape.circle,
@@ -1699,7 +1699,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
                           widget.letter.toUpperCase(),
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: isPhone ? 28 : 36,
+                            fontSize: isPhone ? 20 : 36, // Más pequeño en móvil
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -1708,7 +1708,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
                   );
                 },
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: isPhone ? 8 : 16), // Menos espacio en móvil
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1716,12 +1716,12 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
                     Text(
                       _isCompleted ? '¡COMPLETADO!' : 'Trazando letra ${widget.letter.toUpperCase()}',
                       style: TextStyle(
-                        fontSize: isPhone ? 18 : 22,
+                        fontSize: isPhone ? 14 : 22, // Más pequeño en móvil
                         fontWeight: FontWeight.bold,
                         color: _isCompleted ? Colors.green : Colors.blue[700],
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: isPhone ? 4 : 8), // Menos altura en móvil
                     AnimatedBuilder(
                       animation: _progressAnimation,
                       builder: (context, child) {
@@ -1802,7 +1802,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
 
   Widget _buildControls(bool isPhone) {
     return Container(
-      padding: EdgeInsets.all(isPhone ? 8 : 20),
+      padding: EdgeInsets.all(isPhone ? 4 : 20), // Menos padding en móvil
       child: Wrap(
         alignment: WrapAlignment.spaceEvenly,
         spacing: 8,
