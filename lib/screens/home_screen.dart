@@ -60,13 +60,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _showNameInputDialog();
     } else {
       // Solo dar bienvenida si es la primera vez o si realmente es necesario
-      // Evitar "hola otra vez" que suena raro
+      // Evitar "hola otra vez" que suena raro - usar mensajes sin interpolación
       final messages = [
-        '¡Hola ${provider.playerName}! ¿Qué tal si jugamos con las letras?',
-        'Holi ${provider.playerName}, ¡me alegra verte! ¿Vamos a aprender juntos?',
-        '¡${provider.playerName}! ¿Estás listo para nuevas aventuras con las letras?',
-        'Qué bueno verte ${provider.playerName}. ¿Seguimos explorando el mundo de las letras?',
-        '¡Hola mi querido ${provider.playerName}! ¿Continuamos nuestra aventura?'
+        '¡Hola! ¿Qué tal si jugamos con las letras?',
+        '¡Holi! Me alegra verte. ¿Vamos a aprender juntos?',
+        '¡Qué bueno que estés aquí! ¿Estás listo para nuevas aventuras con las letras?',
+        'Qué bueno verte de nuevo. ¿Seguimos explorando el mundo de las letras?',
+        '¡Hola otra vez! ¿Continuamos nuestra aventura?'
       ];
       
       // Usar un mensaje aleatorio para que no sea repetitivo
@@ -1458,12 +1458,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               if (name.isNotEmpty) {
                 context.read<LetterCityProvider>().setPlayerName(name);
                 Navigator.of(context).pop();
-                // Mensaje de bienvenida sin interpolación del nombre
-                _audioService.speakText('¡Hola! Qué nombre tan bonito. Soy Luna, tu guía en este parque mágico de letras. ¿Estás listo para descubrir todas las aventuras que tengo preparadas?');
+                // Añadir delay antes del mensaje para evitar problemas de sincronización
+                Future.delayed(const Duration(milliseconds: 300), () {
+                  // Mensaje de bienvenida sin interpolación del nombre
+                  _audioService.speakText('¡Hola! Qué nombre tan bonito. Soy Luna, tu guía en este parque mágico de letras. ¿Estás listo para descubrir todas las aventuras que tengo preparadas?');
+                });
               } else {
                 context.read<LetterCityProvider>().setPlayerName('Pequeño Explorador');
                 Navigator.of(context).pop();
-                _audioService.speakText('¡Hola pequeño explorador! Soy Luna, tu guía en este parque mágico de letras. ¿Estás listo para descubrir todas las aventuras que tengo preparadas?');
+                // Añadir delay antes del mensaje para evitar problemas de sincronización
+                Future.delayed(const Duration(milliseconds: 300), () {
+                  _audioService.speakText('¡Hola pequeño explorador! Soy Luna, tu guía en este parque mágico de letras. ¿Estás listo para descubrir todas las aventuras que tengo preparadas?');
+                });
               }
             },
             icon: const Icon(Icons.check),

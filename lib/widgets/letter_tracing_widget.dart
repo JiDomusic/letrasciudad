@@ -103,8 +103,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     
     Future.delayed(const Duration(milliseconds: 800), () {
       print('🎤 Reproduciendo instrucciones para letra ${widget.letter}');
-      final playerName = widget.playerName ?? '';
-      final greeting = playerName.isNotEmpty ? '$playerName, ' : '';
+      final greeting = (widget.playerName?.isNotEmpty ?? false) ? '${widget.playerName}, ' : '';
       
       if (widget.isSpecialLetter) {
         widget.audioService.speakText(
@@ -112,7 +111,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
         );
       } else {
         widget.audioService.speakText(
-          '¡Hola $greeting vamos a trazar la letra ${widget.letter}! Usa tu dedo para seguir las líneas grises.'
+          '¡Hola vamos a trazar la letra ${widget.letter}! Usa tu dedo para seguir las líneas grises.'
         );
       }
     });
@@ -121,21 +120,21 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
   String _getSpecialLetterInstruction(String letter, String greeting) {
     switch (letter.toUpperCase()) {
       case 'Ñ':
-        return '¡Hola $greeting! Vamos a trazar la ñ, una letra muy especial del español. Primero la N y luego su sombrerito. ¡Tú puedes!';
+        return '¡Hola campeón! Vamos a trazar la ñ, una letra muy especial del español. Primero la N y luego su sombrerito. ¡Tú puedes!';
       case 'V':
-        return '¡Hola $greeting! Vamos a hacer una V de victoria. Traza las dos líneas que se juntan abajo. ¡Como un valle entre montañas!';
+        return '¡Hola campeón! Vamos a hacer una V de victoria. Traza las dos líneas que se juntan abajo. ¡Como un valle entre montañas!';
       case 'B':
-        return '¡Hola $greeting! La B tiene una línea recta y dos pancitas redondas. ¡Vamos a hacerla bonita!';
+        return '¡Hola campeón! La B tiene una línea recta y dos pancitas redondas. ¡Vamos a hacerla bonita!';
       case 'W':
-        return '¡Hola $greeting! La W es como dos V juntas. ¡Es una letra muy especial! Sigue las líneas con calma.';
+        return '¡Hola campeón! La W es como dos V juntas. ¡Es una letra muy especial! Sigue las líneas con calma.';
       case 'X':
-        return '¡Hola $greeting! La X son dos líneas que se cruzan, como un abrazo. ¡Vamos a hacerla juntos!';
+        return '¡Hola campeón! La X son dos líneas que se cruzan, como un abrazo. ¡Vamos a hacerla juntos!';
       case 'Y':
-        return '¡Hola $greeting! La Y es como un árbol con dos ramas que se unen. ¡Qué bonita va a quedar!';
+        return '¡Hola campeón! La Y es como un árbol con dos ramas que se unen. ¡Qué bonita va a quedar!';
       case 'K':
-        return '¡Hola $greeting! La K tiene una línea recta y dos líneas que la tocan. Es especial, ¡pero tú eres muy inteligente!';
+        return '¡Hola campeón! La K tiene una línea recta y dos líneas que la tocan. Es especial, ¡pero tú eres muy inteligente!';
       default:
-        return '¡Hola $greeting vamos a trazar la letra ${letter}! Esta es una letra especial. ¡Tú puedes hacerlo!';
+        return '¡Hola vamos a trazar la letra ${letter}! Esta es una letra especial. ¡Tú puedes hacerlo!';
     }
   }
 
@@ -241,21 +240,19 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     if (_completionPercentage >= 0.5 && !_hasGiven75Feedback) {
       _hasGiven75Feedback = true;
       print('🎤 Feedback 50% para ${widget.letter} - Precisión: $_accuracyScore');
-      final playerName = widget.playerName ?? '';
-      final personalGreeting = playerName.isNotEmpty ? '$playerName, ' : '';
       
       if (widget.isSpecialLetter) {
         if (_accuracyScore > 0.3) {
-          widget.audioService.speakText(_getSpecialLetterProgressFeedback(widget.letter, personalGreeting, true));
+          widget.audioService.speakText(_getSpecialLetterProgressFeedback(widget.letter, true));
         } else {
-          widget.audioService.speakText(_getSpecialLetterProgressFeedback(widget.letter, personalGreeting, false));
+          widget.audioService.speakText(_getSpecialLetterProgressFeedback(widget.letter, false));
         }
       } else {
         final encouragingMessages = [
-          '${personalGreeting}vas muy bien con la ${widget.letter}',
-          '${personalGreeting}qué buen trazo llevas',
-          '${personalGreeting}sigue así, lo estás haciendo genial',
-          '${personalGreeting}perfecto, continúa así'
+          'Vas muy bien con la letra',
+          'Qué buen trazo llevas',
+          'Sigue así, lo estás haciendo genial',
+          'Perfecto, continúa así'
         ];
         final randomMessage = encouragingMessages[DateTime.now().millisecondsSinceEpoch % encouragingMessages.length];
         widget.audioService.speakText(randomMessage);
@@ -268,44 +265,44 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     }
   }
   
-  String _getSpecialLetterProgressFeedback(String letter, String greeting, bool isGood) {
+  String _getSpecialLetterProgressFeedback(String letter, bool isGood) {
     if (isGood) {
       switch (letter.toUpperCase()) {
         case 'Ñ':
-          return '¡$greeting ya casi tienes tu ñ! Se ve preciosa con su sombrerito. ¡Sigue así!';
+          return '¡ya casi tienes tu ñ! Se ve preciosa con su sombrerito. ¡Sigue así!';
         case 'V':
-          return '¡$greeting tu V de victoria está casi lista! ¡Qué bien la estás haciendo!';
+          return '¡Tu V de victoria está casi lista! ¡Qué bien la estás haciendo!';
         case 'B':
-          return '¡$greeting tu B bella está casi perfecta! Las pancitas se ven geniales.';
+          return '¡Tu B bella está casi perfecta! Las pancitas se ven geniales.';
         case 'W':
-          return '¡$greeting qué bien vas con la W! Es difícil pero tú eres muy inteligente.';
+          return '¡qué bien vas con la W! Es difícil pero tú eres muy inteligente.';
         case 'X':
-          return '¡$greeting tu X está casi lista! Como un abrazo gigante. ¡Sigue así!';
+          return '¡Tu X está casi lista! Como un abrazo gigante. ¡Sigue así!';
         case 'Y':
-          return '¡$greeting tu Y parece un árbol hermoso! Ya casi terminas.';
+          return '¡tu Y parece un árbol hermoso! Ya casi terminas.';
         case 'K':
-          return '¡$greeting qué inteligente eres! La K es difícil pero ya casi la tienes.';
+          return '¡qué inteligente eres! La K es difícil pero ya casi la tienes.';
         default:
-          return '¡$greeting ya casi terminas tu ${letter} especial! ¡Sigue así!';
+          return '¡ya casi terminas tu letra especial! ¡Sigue así!';
       }
     } else {
       switch (letter.toUpperCase()) {
         case 'Ñ':
-          return '¡Bien $greeting! Sigue la forma de la ñ. Primero la N, luego su sombrerito.';
+          return '¡Bien campeón! Sigue la forma de la ñ. Primero la N, luego su sombrerito.';
         case 'V':
-          return '¡Bien $greeting! La V son dos líneas que se juntan. ¡Tú puedes!';
+          return '¡Bien campeón! La V son dos líneas que se juntan. ¡Tú puedes!';
         case 'B':
-          return '¡Bien $greeting! La B tiene una línea recta y dos pancitas. ¡Sigue intentando!';
+          return '¡Bien campeón! La B tiene una línea recta y dos pancitas. ¡Sigue intentando!';
         case 'W':
-          return '¡Bien $greeting! La W es como dos V juntas. Despacio, tú puedes.';
+          return '¡Bien campeón! La W es como dos V juntas. Despacio, tú puedes.';
         case 'X':
-          return '¡Bien $greeting! La X son dos líneas que se cruzan. ¡Sigue intentando!';
+          return '¡Bien campeón! La X son dos líneas que se cruzan. ¡Sigue intentando!';
         case 'Y':
-          return '¡Bien $greeting! La Y es como un árbol. Dos ramas que se unen.';
+          return '¡Bien campeón! La Y es como un árbol. Dos ramas que se unen.';
         case 'K':
-          return '¡Bien $greeting! La K es especial, pero tú eres muy inteligente. ¡Sigue!';
+          return '¡Bien campeón! La K es especial, pero tú eres muy inteligente. ¡Sigue!';
         default:
-          return '¡Bien $greeting! Sigue la forma de la ${letter}. ¡Tú puedes!';
+          return '¡Bien campeón! Sigue la forma de la letra. ¡Tú puedes!';
       }
     }
   }
@@ -332,8 +329,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
         if (_consecutiveGoodPoints >= 6 && !_wasTracingWell) {
           _wasTracingWell = true;
           _lastFeedbackTime = now;
-          final playerName = widget.playerName ?? '';
-          final personalGreeting = playerName.isNotEmpty ? '$playerName, ' : '';
+              final personalGreeting = (widget.playerName?.isNotEmpty ?? false) ? '${widget.playerName}, ' : '';
           
           List<String> encouragements;
           if (widget.isSpecialLetter) {
@@ -358,8 +354,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
         if (_consecutiveBadPoints >= 20 && _wasTracingWell) {
           _wasTracingWell = false;
           _lastFeedbackTime = now;
-          final playerName = widget.playerName ?? '';
-          final personalName = playerName.isNotEmpty ? '$playerName, ' : '';
+              final personalName = (widget.playerName?.isNotEmpty ?? false) ? '${widget.playerName}, ' : '';
           
           List<String> corrections;
           if (widget.isSpecialLetter) {
@@ -384,51 +379,51 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     switch (letter.toUpperCase()) {
       case 'Ñ':
         return [
-          '¡Perfecto $greeting! Tu ñ se ve preciosa con su sombrerito',
-          '¡Excelente $greeting! La ñ es muy especial y tú la haces perfecta',
-          '¡Muy bien $greeting! Esa ñ parece de un libro de cuentos'
+          '¡Perfecto campeón! Tu ñ se ve preciosa con su sombrerito',
+          '¡Excelente campeón! La ñ es muy especial y tú la haces perfecta',
+          '¡Muy bien campeón! Esa ñ parece de un libro de cuentos'
         ];
       case 'V':
         return [
-          '¡Perfecto $greeting! Tu V de victoria está increíble',
-          '¡Excelente $greeting! Esa V parece las alas de un pájaro',
-          '¡Muy bien $greeting! Tu V es perfecta como un valle'
+          '¡Perfecto campeón! Tu V de victoria está increíble',
+          '¡Excelente campeón! Esa V parece las alas de un pájaro',
+          '¡Muy bien campeón! Tu V es perfecta como un valle'
         ];
       case 'B':
         return [
-          '¡Perfecto $greeting! Tu B tiene las pancitas perfectas',
-          '¡Excelente $greeting! Esa B está bella y brillante',
-          '¡Muy bien $greeting! Tu B parece de un cuento de hadas'
+          '¡Perfecto campeón! Tu B tiene las pancitas perfectas',
+          '¡Excelente campeón! Esa B está bella y brillante',
+          '¡Muy bien campeón! Tu B parece de un cuento de hadas'
         ];
       case 'W':
         return [
-          '¡Perfecto $greeting! Tu W doble se ve increíble',
-          '¡Excelente $greeting! Esa W parece montañas y valles',
-          '¡Muy bien $greeting! Tu W es como ondas del mar'
+          '¡Perfecto campeón! Tu W doble se ve increíble',
+          '¡Excelente campeón! Esa W parece montañas y valles',
+          '¡Muy bien campeón! Tu W es como ondas del mar'
         ];
       case 'X':
         return [
-          '¡Perfecto $greeting! Tu X es como un abrazo gigante',
-          '¡Excelente $greeting! Esa X se ve como estrella',
-          '¡Muy bien $greeting! Tu X cruza perfectamente'
+          '¡Perfecto campeón! Tu X es como un abrazo gigante',
+          '¡Excelente campeón! Esa X se ve como estrella',
+          '¡Muy bien campeón! Tu X cruza perfectamente'
         ];
       case 'Y':
         return [
-          '¡Perfecto $greeting! Tu Y parece un árbol hermoso',
-          '¡Excelente $greeting! Esa Y tiene brazos que se abrazan',
-          '¡Muy bien $greeting! Tu Y es como un gran bostézo'
+          '¡Perfecto campeón! Tu Y parece un árbol hermoso',
+          '¡Excelente campeón! Esa Y tiene brazos que se abrazan',
+          '¡Muy bien campeón! Tu Y es como un gran bostézo'
         ];
       case 'K':
         return [
-          '¡Perfecto $greeting! Tu K es muy inteligente',
-          '¡Excelente $greeting! Esa K se ve como un bailarín',
-          '¡Muy bien $greeting! Tu K es única y especial'
+          '¡Perfecto campeón! Tu K es muy inteligente',
+          '¡Excelente campeón! Esa K se ve como un bailarín',
+          '¡Muy bien campeón! Tu K es única y especial'
         ];
       default:
         return [
-          '¡Perfecto $greeting! Tu ${letter} especial se ve increíble',
-          '¡Excelente $greeting! Esa ${letter} está perfecta',
-          '¡Muy bien $greeting! Tu ${letter} es preciosa'
+          '¡Perfecto campeón! Tu ${letter} especial se ve increíble',
+          '¡Excelente campeón! Esa ${letter} está perfecta',
+          '¡Muy bien campeón! Tu ${letter} es preciosa'
         ];
     }
   }
@@ -437,51 +432,51 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     switch (letter.toUpperCase()) {
       case 'Ñ':
         return [
-          '${name}recuerda, primero la N y luego su sombrerito arriba',
-          '${name}la ñ es especial, sigue las líneas grises despacio',
-          '${name}mira bien la forma de la ñ, tú puedes hacerla'
+          'recuerda, primero la N y luego su sombrerito arriba',
+          'la ñ es especial, sigue las líneas grises despacio',
+          'mira bien la forma de la ñ, tú puedes hacerla'
         ];
       case 'V':
         return [
-          '${name}la V son dos líneas que se juntan abajo, como un valle',
-          '${name}sigue las líneas grises para hacer tu V perfecta',
-          '${name}despacio, la V es como las alas de un pájaro'
+          'la V son dos líneas que se juntan abajo, como un valle',
+          'sigue las líneas grises para hacer tu V perfecta',
+          'despacio, la V es como las alas de un pájaro'
         ];
       case 'B':
         return [
-          '${name}la B tiene una línea recta y dos pancitas redondas',
-          '${name}sigue la forma de la B, primero la línea, luego las curvas',
-          '${name}la B es bonita, sigue las líneas grises con calma'
+          'la B tiene una línea recta y dos pancitas redondas',
+          'sigue la forma de la B, primero la línea, luego las curvas',
+          'la B es bonita, sigue las líneas grises con calma'
         ];
       case 'W':
         return [
-          '${name}la W es como dos V juntas, sigue el camino',
-          '${name}despacio con la W, es especial pero tú puedes',
-          '${name}la W tiene cuatro líneas, síguelas una por una'
+          'la W es como dos V juntas, sigue el camino',
+          'despacio con la W, es especial pero tú puedes',
+          'la W tiene cuatro líneas, síguelas una por una'
         ];
       case 'X':
         return [
-          '${name}la X son dos líneas que se cruzan, como un abrazo',
-          '${name}sigue las líneas grises para hacer tu X perfecta',
-          '${name}la X es especial, dos líneas que se encuentran'
+          'la X son dos líneas que se cruzan, como un abrazo',
+          'sigue las líneas grises para hacer tu X perfecta',
+          'la X es especial, dos líneas que se encuentran'
         ];
       case 'Y':
         return [
-          '${name}la Y es como un árbol, dos ramas que se unen',
-          '${name}sigue la forma de la Y, como brazos que se abrazan',
-          '${name}despacio con la Y, primero las ramas, luego el tronco'
+          'la Y es como un árbol, dos ramas que se unen',
+          'sigue la forma de la Y, como brazos que se abrazan',
+          'despacio con la Y, primero las ramas, luego el tronco'
         ];
       case 'K':
         return [
-          '${name}la K es especial, una línea recta y dos que la tocan',
-          '${name}sé que puedes con la K, eres muy inteligente',
-          '${name}sigue las líneas grises, la K es única como tú'
+          'La K es especial, una línea recta y dos que la tocan',
+          'sé que puedes con la K, eres muy inteligente',
+          'sigue las líneas grises, la K es única como tú'
         ];
       default:
         return [
-          '${name}sigue las líneas grises para la ${letter}',
-          '${name}despacio, la ${letter} es especial como tú',
-          '${name}tú puedes con la ${letter}, eres increíble'
+          'sigue las líneas grises para la ${letter}',
+          'despacio, la ${letter} es especial como tú',
+          'tú puedes con la ${letter}, eres increíble'
         ];
     }
   }
@@ -512,17 +507,15 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
       _celebrationController.forward();
       _hintController.stop();
       
-      final playerName = widget.playerName ?? '';
-      final congratsName = playerName.isNotEmpty ? '$playerName, ' : '';
       
       // Felicitación estándar - las especiales se manejan en alphabet_main_screen.dart
       if (widget.isSpecialLetter) {
-        widget.audioService.speakText(_getSpecialLetterCompletionMessage(widget.letter, congratsName, finalAccuracy));
+        widget.audioService.speakText(_getSpecialLetterCompletionMessage(widget.letter, finalAccuracy));
       } else {
         if (finalAccuracy >= 0.3) {
-          widget.audioService.speakText('¡Perfecto $congratsName! Trazaste la letra ${widget.letter} de manera excelente. ¡Eres un experto!');
+          widget.audioService.speakText('¡Perfecto! Trazaste la letra de manera excelente. ¡Eres un experto!');
         } else {
-          widget.audioService.speakText('¡Muy bien $congratsName! Trazaste la letra ${widget.letter} correctamente. ¡Buen trabajo!');
+          widget.audioService.speakText('¡Muy bien! Trazaste la letra correctamente. ¡Buen trabajo!');
         }
       }
       
@@ -538,13 +531,11 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
       });
     } else {
       // No completar si no cumple con los estándares
-      final playerName = widget.playerName ?? '';
-      final encouragementName = playerName.isNotEmpty ? '$playerName, ' : '';
       
       if (widget.isSpecialLetter) {
-        widget.audioService.speakText(_getSpecialLetterRetryMessage(widget.letter, encouragementName));
+        widget.audioService.speakText(_getSpecialLetterRetryMessage(widget.letter));
       } else {
-        widget.audioService.speakText('${encouragementName}casi lo tienes. Intenta seguir mejor la forma de la letra ${widget.letter}.');
+        widget.audioService.speakText('Casi lo tienes. Intenta seguir mejor la forma de la letra.');
       }
     }
   }
@@ -1625,8 +1616,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     _demoController.forward();
     
     final playerName = widget.playerName ?? '';
-    final personalGreeting = playerName.isNotEmpty ? '$playerName, ' : '';
-    widget.audioService.speakText('${personalGreeting}mira cómo se traza la letra ${widget.letter}. Observa bien el movimiento.');
+    widget.audioService.speakText('Mira cómo se traza la letra. Observa bien el movimiento.');
     
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
@@ -1679,7 +1669,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
 
   Widget _buildHeader(bool isPhone) {
     return Container(
-      padding: EdgeInsets.all(isPhone ? 16 : 20),
+      padding: EdgeInsets.all(isPhone ? 8 : 20),
       child: Column(
         children: [
           Row(
@@ -1769,7 +1759,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
 
   Widget _buildTracingArea(bool isPhone) {
     return Container(
-      margin: EdgeInsets.all(isPhone ? 16 : 24),
+      margin: EdgeInsets.all(isPhone ? 8 : 24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -1812,7 +1802,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
 
   Widget _buildControls(bool isPhone) {
     return Container(
-      padding: EdgeInsets.all(isPhone ? 16 : 20),
+      padding: EdgeInsets.all(isPhone ? 8 : 20),
       child: Wrap(
         alignment: WrapAlignment.spaceEvenly,
         spacing: 8,
@@ -1892,44 +1882,44 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     return pronunciations[letter.toUpperCase()] ?? letter.toLowerCase();
   }
   
-  String _getSpecialLetterCompletionMessage(String letter, String name, double accuracy) {
+  String _getSpecialLetterCompletionMessage(String letter, double accuracy) {
     if (accuracy >= 0.15) {
       switch (letter.toUpperCase()) {
         case 'Ñ':
-          return '¡Increíble $name! Tu ñ es perfecta con su sombrerito. ¡Dominas las letras especiales del español!';
+          return '¡Increíble! Tu ñ es perfecta con su sombrerito. ¡Dominas las letras especiales del español!';
         case 'V':
-          return '¡Fantástico $name! Tu V de victoria es perfecta. ¡Eres un verdadero ganador!';
+          return '¡Fantástico! Tu V de victoria es perfecta. ¡Eres un verdadero ganador!';
         case 'B':
-          return '¡Bravo $name! Tu B bella quedó preciosa con sus pancitas perfectas. ¡Eres un artista!';
+          return '¡Bravo! Tu B bella quedó preciosa con sus pancitas perfectas. ¡Eres un artista!';
         case 'W':
-          return '¡Wow $name! Dominaste la W, una de las letras más difíciles. ¡Eres súper inteligente!';
+          return '¡Wow! Dominaste la W, una de las letras más difíciles. ¡Eres súper inteligente!';
         case 'X':
-          return '¡Excelente $name! Tu X es como un abrazo perfecto. ¡Qué bien cruzaste las líneas!';
+          return '¡Excelente! Tu X es como un abrazo perfecto. ¡Qué bien cruzaste las líneas!';
         case 'Y':
-          return '¡Sí $name! Tu Y parece un árbol hermoso con brazos abiertos. ¡Magnífico!';
+          return '¡Sí! Tu Y parece un árbol hermoso con brazos abiertos. ¡Magnífico!';
         case 'K':
-          return '¡Qué genial $name! La K es muy difícil pero tú la hiciste ver fácil. ¡Eres brilliantísimo!';
+          return '¡Qué genial! La K es muy difícil pero tú la hiciste ver fácil. ¡Eres brilliantísimo!';
         default:
-          return '¡Perfecto $name! Dominaste la letra ${letter}. ¡Eres increíble!';
+          return '¡Perfecto! Dominaste la letra. ¡Eres increíble!';
       }
     } else {
       switch (letter.toUpperCase()) {
         case 'Ñ':
-          return '¡Muy bien $name! Tu ñ se ve bonita. ¡Qué especial es esta letra!';
+          return '¡Muy bien! Tu ñ se ve bonita. ¡Qué especial es esta letra!';
         case 'V':
-          return '¡Genial $name! Tu V de victoria está muy bien. ¡Sigue practicando!';
+          return '¡Genial! Tu V de victoria está muy bien. ¡Sigue practicando!';
         case 'B':
-          return '¡Bien hecho $name! Tu B se ve linda. ¡Las pancitas están muy bien!';
+          return '¡Bien hecho! Tu B se ve linda. ¡Las pancitas están muy bien!';
         case 'W':
-          return '¡Buen trabajo $name! La W es difícil pero tú lo lograste. ¡Eres valiente!';
+          return '¡Buen trabajo! La W es difícil pero tú lo lograste. ¡Eres valiente!';
         case 'X':
-          return '¡Bien $name! Tu X se ve bonita. ¡Las líneas se cruzan muy bien!';
+          return '¡Bien! Tu X se ve bonita. ¡Las líneas se cruzan muy bien!';
         case 'Y':
-          return '¡Genial $name! Tu Y está muy bien. ¡Parece un árbol feliz!';
+          return '¡Genial! Tu Y está muy bien. ¡Parece un árbol feliz!';
         case 'K':
-          return '¡Bien hecho $name! La K es complicada pero tú la hiciste. ¡Eres muy inteligente!';
+          return '¡Bien hecho! La K es complicada pero tú la hiciste. ¡Eres muy inteligente!';
         default:
-          return '¡Muy bien $name! Tu ${letter} está bonita. ¡Buen trabajo!';
+          return '¡Muy bien! Tu letra está bonita. ¡Buen trabajo!';
       }
     }
   }
@@ -1955,24 +1945,24 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
     }
   }
   
-  String _getSpecialLetterRetryMessage(String letter, String name) {
+  String _getSpecialLetterRetryMessage(String letter) {
     switch (letter.toUpperCase()) {
       case 'Ñ':
-        return '${name}casi tienes la ñ. Es especial como tú. ¡Vamos a intentarlo otra vez!';
+        return 'Casi tienes la ñ. Es especial como tú. ¡Vamos a intentarlo otra vez!';
       case 'V':
-        return '${name}tu V de victoria está casi lista. ¡Tú puedes hacerlo perfecto!';
+        return 'Tu V de victoria está casi lista. ¡Tú puedes hacerlo perfecto!';
       case 'B':
-        return '${name}tu B bella está muy cerca. ¡Sigue intentando, eres increíble!';
+        return 'Tu B bella está muy cerca. ¡Sigue intentando, eres increíble!';
       case 'W':
-        return '${name}la W es difícil pero tú eres muy inteligente. ¡Vamos otra vez!';
+        return 'La W es difícil pero tú eres muy inteligente. ¡Vamos otra vez!';
       case 'X':
-        return '${name}tu X está casi perfecta. ¡Como un abrazo, intentemos otra vez!';
+        return 'Tu X está casi perfecta. ¡Como un abrazo, intentemos otra vez!';
       case 'Y':
-        return '${name}tu Y está muy bien. ¡Vamos a hacerla aún más hermosa!';
+        return 'Tu Y está muy bien. ¡Vamos a hacerla aún más hermosa!';
       case 'K':
-        return '${name}la K es especial y tú eres súper inteligente. ¡Intentemos una vez más!';
+        return 'La K es especial y tú eres súper inteligente. ¡Intentemos una vez más!';
       default:
-        return '${name}casi tienes la ${letter}. ¡Eres increíble, vamos otra vez!';
+        return 'Casi tienes la letra. ¡Eres increíble, vamos otra vez!';
     }
   }
 
