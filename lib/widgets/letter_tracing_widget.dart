@@ -2191,6 +2191,9 @@ class _LetterTracingPainter extends CustomPainter {
   }
 
   void _drawLetterGuide(Canvas canvas, Size size) {
+    // Dibujar líneas de margen/guía para ayudar a los niños a mantenerse dentro de límites
+    _drawMarginGuides(canvas, size);
+    
     // Dibujar el path correcto de la letra como guía
     final letterPath = _getLetterPathForSize(size);
     
@@ -2228,6 +2231,84 @@ class _LetterTracingPainter extends CustomPainter {
         canvas, 
         startPoints[i] - Offset(textPainter.width / 2, textPainter.height / 2)
       );
+    }
+  }
+  
+  void _drawMarginGuides(Canvas canvas, Size size) {
+    final marginPaint = Paint()
+      ..color = Colors.blue[200]!.withAlpha(100)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+    
+    final dashedPaint = Paint()
+      ..color = Colors.blue[300]!.withAlpha(150)
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+    
+    final margin = size.width * 0.1; // 10% del ancho como margen
+    
+    // Líneas de margen externo (área segura para trazar)
+    final outerRect = Rect.fromLTRB(
+      margin, 
+      margin, 
+      size.width - margin, 
+      size.height - margin
+    );
+    canvas.drawRect(outerRect, marginPaint);
+    
+    // Líneas guía horizontales (línea base, línea media, línea superior)
+    final baselineY = size.height * 0.85; // Línea base
+    final midlineY = size.height * 0.5;   // Línea media  
+    final toplineY = size.height * 0.15;  // Línea superior
+    
+    // Dibujar líneas guía punteadas
+    _drawDashedLine(canvas, 
+      Offset(margin, baselineY), 
+      Offset(size.width - margin, baselineY), 
+      dashedPaint
+    );
+    _drawDashedLine(canvas, 
+      Offset(margin, midlineY), 
+      Offset(size.width - margin, midlineY), 
+      dashedPaint
+    );
+    _drawDashedLine(canvas, 
+      Offset(margin, toplineY), 
+      Offset(size.width - margin, toplineY), 
+      dashedPaint
+    );
+    
+    // Líneas guía verticales (centro y cuartos)
+    final centerX = size.width * 0.5;
+    final quarterX = size.width * 0.25;
+    final threeQuarterX = size.width * 0.75;
+    
+    _drawDashedLine(canvas, 
+      Offset(centerX, margin), 
+      Offset(centerX, size.height - margin), 
+      marginPaint
+    );
+    _drawDashedLine(canvas, 
+      Offset(quarterX, margin), 
+      Offset(quarterX, size.height - margin), 
+      marginPaint
+    );
+    _drawDashedLine(canvas, 
+      Offset(threeQuarterX, margin), 
+      Offset(threeQuarterX, size.height - margin), 
+      marginPaint
+    );
+  }
+  
+  void _drawDashedLine(Canvas canvas, Offset start, Offset end, Paint paint) {
+    final distance = (end - start).distance;
+    final dashLength = 8.0;
+    final dashCount = (distance / (dashLength * 2)).floor();
+    
+    for (int i = 0; i < dashCount; i++) {
+      final startOffset = start + (end - start) * (i * 2 * dashLength / distance);
+      final endOffset = start + (end - start) * ((i * 2 + 1) * dashLength / distance);
+      canvas.drawLine(startOffset, endOffset, paint);
     }
   }
 

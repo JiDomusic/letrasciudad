@@ -260,7 +260,10 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(25),
-                      onTap: () => Navigator.pop(context),
+                      onTap: () {
+                        _audioService.stop(); // Detener audio antes de navegar
+                        Navigator.pop(context);
+                      },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         child: Row(
@@ -367,6 +370,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                           // Botón lúdico para volver al home
                           ElevatedButton(
                             onPressed: () {
+                              _audioService.stop(); // Detener audio antes de navegar
                               Navigator.of(context).popUntil((route) => route.isFirst);
                             },
                             style: ElevatedButton.styleFrom(
@@ -522,7 +526,10 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(25),
-                      onTap: () => Navigator.of(context).pop(),
+                      onTap: () {
+                        _audioService.stop(); // Detener audio antes de navegar
+                        Navigator.of(context).pop();
+                      },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         child: Row(
@@ -629,6 +636,7 @@ class _HousePreviewScreenState extends State<HousePreviewScreen>
                           // Botón lúdico para volver al home
                           ElevatedButton(
                             onPressed: () {
+                              _audioService.stop(); // Detener audio antes de navegar
                               Navigator.of(context).popUntil((route) => route.isFirst);
                             },
                             style: ElevatedButton.styleFrom(

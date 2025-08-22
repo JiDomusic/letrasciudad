@@ -295,6 +295,7 @@ class _ScatteredObjectsGameState extends State<ScatteredObjectsGame>
                   children: [
                     ElevatedButton.icon(
                       onPressed: () {
+                        widget.audioService.stop(); // Detener audio antes de navegar
                         Navigator.of(context).pop();
                         _resetGame();
                       },
@@ -310,6 +311,7 @@ class _ScatteredObjectsGameState extends State<ScatteredObjectsGame>
                     ),
                     ElevatedButton.icon(
                       onPressed: () {
+                        widget.audioService.stop(); // Detener audio antes de navegar
                         Navigator.of(context).pop();
                       },
                       icon: const Icon(Icons.check),

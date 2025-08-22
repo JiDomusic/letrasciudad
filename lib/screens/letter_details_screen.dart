@@ -96,7 +96,10 @@ class _LetterDetailsScreenState extends State<LetterDetailsScreen>
             ),
             child: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                _audioService.stop(); // Detener audio antes de navegar
+                Navigator.of(context).pop();
+              },
             ),
           ),
           const SizedBox(width: 16),

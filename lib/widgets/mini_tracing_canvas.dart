@@ -25,6 +25,7 @@ class _MiniTracingCanvasState extends State<MiniTracingCanvas> {
   bool _isCompleted = false;
   double _completionPercentage = 0.0;
   double _accuracyScore = 0.0;
+  Size _canvasSize = const Size(80, 100); // Tamaño por defecto
   
   // Variables para feedback inmediato y continuo
   DateTime _lastFeedbackTime = DateTime.now();
@@ -78,14 +79,20 @@ class _MiniTracingCanvasState extends State<MiniTracingCanvas> {
           }
         }
       },
-      child: CustomPaint(
-        painter: _MiniTracingPainter(
-          _strokes, 
-          _currentStroke, 
-          widget.letter,
-          _isCompleted,
-        ),
-        size: Size.infinite,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          _canvasSize = Size(constraints.maxWidth, constraints.maxHeight);
+          return CustomPaint(
+            painter: _MiniTracingPainter(
+              _strokes, 
+              _currentStroke, 
+              widget.letter,
+              _isCompleted,
+              _canvasSize,
+            ),
+            size: Size.infinite,
+          );
+        },
       ),
     );
   }
@@ -93,13 +100,13 @@ class _MiniTracingCanvasState extends State<MiniTracingCanvas> {
   void _updateCompletionPercentage() {
     if (_currentStroke.isEmpty) return;
     
-    final letterPath = _getLetterPath(widget.letter);
+    final letterPath = _getLetterPath(widget.letter, _canvasSize);
     int validPoints = 0;
     
     // Validar todos los trazos
     for (final stroke in _strokes) {
       for (final point in stroke) {
-        if (_isPointNearPath(point, letterPath)) {
+        if (_isPointNearPath(point, letterPath, _canvasSize)) {
           validPoints++;
         }
       }
@@ -107,7 +114,7 @@ class _MiniTracingCanvasState extends State<MiniTracingCanvas> {
     
     // Validar trazo actual
     for (final point in _currentStroke) {
-      if (_isPointNearPath(point, letterPath)) {
+      if (_isPointNearPath(point, letterPath, _canvasSize)) {
         validPoints++;
       }
     }
@@ -140,8 +147,8 @@ class _MiniTracingCanvasState extends State<MiniTracingCanvas> {
     // Verificar si el último punto del trazo actual está cerca del path correcto
     if (_currentStroke.isNotEmpty) {
       final lastPoint = _currentStroke.last;
-      final letterPath = _getLetterPath(widget.letter);
-      final isPointCorrect = _isPointNearPath(lastPoint, letterPath);
+      final letterPath = _getLetterPath(widget.letter, _canvasSize);
+      final isPointCorrect = _isPointNearPath(lastPoint, letterPath, _canvasSize);
       
       if (isPointCorrect) {
         _consecutiveGoodPoints++;
@@ -183,78 +190,93 @@ class _MiniTracingCanvasState extends State<MiniTracingCanvas> {
     }
   }
 
-  Path _getLetterPath(String letter) {
+  Path _getLetterPath(String letter, Size canvasSize) {
     final path = Path();
+    
+    // Escalar proporcionalmente al tamaño del canvas
+    final scaleX = canvasSize.width / 80;  // Tamaño de referencia 80
+    final scaleY = canvasSize.height / 100; // Tamaño de referencia 100
     
     switch (letter.toUpperCase()) {
       case 'V':
-        path.moveTo(10, 5);
-        path.lineTo(30, 55);
-        path.lineTo(50, 5);
+        path.moveTo(15 * scaleX, 10 * scaleY);
+        path.lineTo(40 * scaleX, 80 * scaleY);
+        path.lineTo(65 * scaleX, 10 * scaleY);
         break;
       case 'W':
-        path.moveTo(5, 5);
-        path.lineTo(15, 55);
-        path.lineTo(30, 25);
-        path.lineTo(45, 55);
-        path.lineTo(55, 5);
+        path.moveTo(10 * scaleX, 10 * scaleY);
+        path.lineTo(20 * scaleX, 80 * scaleY);
+        path.lineTo(40 * scaleX, 40 * scaleY);
+        path.lineTo(60 * scaleX, 80 * scaleY);
+        path.lineTo(70 * scaleX, 10 * scaleY);
         break;
       case 'K':
-        path.moveTo(10, 5);
-        path.lineTo(10, 55);
-        path.moveTo(10, 30);
-        path.lineTo(50, 5);
-        path.moveTo(10, 30);
-        path.lineTo(50, 55);
+        path.moveTo(15 * scaleX, 10 * scaleY);
+        path.lineTo(15 * scaleX, 80 * scaleY);
+        path.moveTo(15 * scaleX, 45 * scaleY);
+        path.lineTo(65 * scaleX, 10 * scaleY);
+        path.moveTo(15 * scaleX, 45 * scaleY);
+        path.lineTo(65 * scaleX, 80 * scaleY);
         break;
       case 'Y':
-        path.moveTo(10, 5);
-        path.lineTo(30, 30);
-        path.moveTo(50, 5);
-        path.lineTo(30, 30);
-        path.lineTo(30, 55);
+        path.moveTo(15 * scaleX, 10 * scaleY);
+        path.lineTo(40 * scaleX, 45 * scaleY);
+        path.moveTo(65 * scaleX, 10 * scaleY);
+        path.lineTo(40 * scaleX, 45 * scaleY);
+        path.lineTo(40 * scaleX, 80 * scaleY);
         break;
       case 'Ñ':
-        path.moveTo(10, 55);
-        path.lineTo(10, 5);
-        path.lineTo(50, 55);
-        path.lineTo(50, 5);
-        // Tilde
-        path.moveTo(20, 0);
-        path.quadraticBezierTo(30, -5, 40, 0);
+        path.moveTo(15 * scaleX, 80 * scaleY);
+        path.lineTo(15 * scaleX, 15 * scaleY);
+        path.lineTo(65 * scaleX, 80 * scaleY);
+        path.lineTo(65 * scaleX, 15 * scaleY);
+        // Tilde de la Ñ
+        path.moveTo(25 * scaleX, 5 * scaleY);
+        path.quadraticBezierTo(40 * scaleX, 0, 55 * scaleX, 5 * scaleY);
         break;
       case 'B':
-        path.moveTo(10, 5);
-        path.lineTo(10, 55);
-        path.moveTo(10, 5);
-        path.quadraticBezierTo(35, 5, 35, 20);
-        path.quadraticBezierTo(35, 30, 10, 30);
-        path.moveTo(10, 30);
-        path.quadraticBezierTo(40, 30, 40, 45);
-        path.quadraticBezierTo(40, 55, 10, 55);
+        path.moveTo(15 * scaleX, 10 * scaleY);
+        path.lineTo(15 * scaleX, 80 * scaleY);
+        path.moveTo(15 * scaleX, 10 * scaleY);
+        path.quadraticBezierTo(50 * scaleX, 10 * scaleY, 50 * scaleX, 30 * scaleY);
+        path.quadraticBezierTo(50 * scaleX, 45 * scaleY, 15 * scaleX, 45 * scaleY);
+        path.moveTo(15 * scaleX, 45 * scaleY);
+        path.quadraticBezierTo(55 * scaleX, 45 * scaleY, 55 * scaleX, 65 * scaleY);
+        path.quadraticBezierTo(55 * scaleX, 80 * scaleY, 15 * scaleX, 80 * scaleY);
         break;
       default:
-        // Círculo genérico
-        path.addOval(const Rect.fromLTWH(15, 15, 30, 30));
+        // Círculo genérico escalado
+        path.addOval(Rect.fromLTWH(
+          20 * scaleX, 
+          20 * scaleY, 
+          40 * scaleX, 
+          40 * scaleY
+        ));
     }
     
     return path;
   }
 
-  bool _isPointNearPath(Offset point, Path letterPath) {
-    const tolerance = 15.0; // Tolerancia menor para mini canvas
+  bool _isPointNearPath(Offset point, Path letterPath, Size canvasSize) {
+    // Tolerancia proporcional al tamaño del canvas (más generosa en móvil)
+    final scaleFactor = math.min(canvasSize.width, canvasSize.height) / 80.0;
+    final tolerance = 20.0 * scaleFactor; // Más generoso para trazado táctil
     
-    final pathMetric = letterPath.computeMetrics().first;
-    final pathLength = pathMetric.length;
+    final pathMetrics = letterPath.computeMetrics();
+    if (pathMetrics.isEmpty) return false;
     
     double minDistance = double.infinity;
     
-    for (double i = 0; i < pathLength; i += 2) {
-      final tangent = pathMetric.getTangentForOffset(i);
-      if (tangent?.position != null) {
-        final distance = (point - tangent!.position).distance;
-        if (distance < minDistance) {
-          minDistance = distance;
+    for (final pathMetric in pathMetrics) {
+      final pathLength = pathMetric.length;
+      
+      for (double i = 0; i < pathLength; i += math.max(1.0, pathLength / 50)) {
+        final tangent = pathMetric.getTangentForOffset(i);
+        if (tangent?.position != null) {
+          final distance = (point - tangent!.position).distance;
+          if (distance < minDistance) {
+            minDistance = distance;
+          }
         }
       }
     }
@@ -269,8 +291,9 @@ class _MiniTracingPainter extends CustomPainter {
   final List<Offset> currentStroke;
   final String letter;
   final bool isCompleted;
+  final Size canvasSize;
 
-  _MiniTracingPainter(this.strokes, this.currentStroke, this.letter, this.isCompleted);
+  _MiniTracingPainter(this.strokes, this.currentStroke, this.letter, this.isCompleted, this.canvasSize);
 
   @override
   void paint(Canvas canvas, Size size) {
