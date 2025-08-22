@@ -2742,25 +2742,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
               ],
             ),
           ),
-          const SizedBox(height: 20),
-          Container(
-            padding: EdgeInsets.all(isPhone ? 12 : 16),
-            decoration: BoxDecoration(
-              color: Colors.orange[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.orange[200]!, width: 2),
-            ),
-            child: Text(
-              'TRAZA PARA COMPLETAR CADA PALABRA QUE EMPIECE CON "B"',
-              style: TextStyle(
-                fontSize: instructionSize,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 8), // Reducir espacio antes del área de juego
           Expanded(
             child: _WordTracingGameB(),
           ),
@@ -2832,8 +2814,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: isPhone ? 40 : 60,
-                height: isPhone ? 50 : 70,
+                width: isPhone ? 80 : 120,
+                height: isPhone ? 90 : 130,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -2928,25 +2910,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
               ],
             ),
           ),
-          const SizedBox(height: 20),
-          Container(
-            padding: EdgeInsets.all(isPhone ? 12 : 16),
-            decoration: BoxDecoration(
-              color: Colors.teal[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.teal[200]!, width: 2),
-            ),
-            child: Text(
-              'TRAZA PARA COMPLETAR CADA PALABRA QUE EMPIECE CON \"V\"',
-              style: TextStyle(
-                fontSize: instructionSize,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 8), // Reducir espacio antes del área de juego
           Expanded(
             child: _WordTracingGameV(isPhone: isPhone),
           ),
@@ -3017,8 +2981,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: isPhone ? 40 : 60,
-                height: isPhone ? 50 : 70,
+                width: isPhone ? 80 : 120,
+                height: isPhone ? 90 : 130,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -3113,25 +3077,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
               ],
             ),
           ),
-          const SizedBox(height: 20),
-          Container(
-            padding: EdgeInsets.all(isPhone ? 12 : 16),
-            decoration: BoxDecoration(
-              color: Colors.purple[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.purple[200]!, width: 2),
-            ),
-            child: Text(
-              'TRAZA PARA COMPLETAR CADA PALABRA QUE EMPIECE CON \"K\"',
-              style: TextStyle(
-                fontSize: instructionSize,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 8), // Reducir espacio antes del área de juego
           Expanded(
             child: _WordTracingGameK(isPhone: isPhone),
           ),
@@ -3202,8 +3148,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: isPhone ? 40 : 60,
-                height: isPhone ? 50 : 70,
+                width: isPhone ? 80 : 120,
+                height: isPhone ? 90 : 130,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -3298,25 +3244,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
               ],
             ),
           ),
-          const SizedBox(height: 20),
-          Container(
-            padding: EdgeInsets.all(isPhone ? 12 : 16),
-            decoration: BoxDecoration(
-              color: Colors.yellow[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.yellow[200]!, width: 2),
-            ),
-            child: Text(
-              'TRAZA PARA COMPLETAR CADA PALABRA QUE EMPIECE CON \"Y\"',
-              style: TextStyle(
-                fontSize: instructionSize,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 8), // Reducir espacio antes del área de juego
           Expanded(
             child: _WordTracingGameY(isPhone: isPhone),
           ),
@@ -3387,8 +3315,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: isPhone ? 40 : 60,
-                height: isPhone ? 50 : 70,
+                width: isPhone ? 80 : 120,
+                height: isPhone ? 90 : 130,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -3483,25 +3411,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
               ],
             ),
           ),
-          const SizedBox(height: 4), // Reducir drásticamente el espacio entre contenedores
-          Container(
-            padding: EdgeInsets.all(isPhone ? 6 : 10), // Reducir padding del segundo contenedor
-            decoration: BoxDecoration(
-              color: Colors.brown[50],
-              borderRadius: BorderRadius.circular(8), // Reducir radio
-              border: Border.all(color: Colors.brown[200]!, width: 1), // Reducir grosor del borde
-            ),
-            child: Text(
-              'TRAZA PARA COMPLETAR CADA PALABRA CON \"Ñ\"',
-              style: TextStyle(
-                fontSize: instructionSize,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 8), // Reducir espacio antes del área de juego
           Expanded(
             child: _WordTracingGameN(isPhone: isPhone),
           ),
@@ -3585,8 +3495,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                 ),
               // Área de trazado para la Ñ
               Container(
-                width: isPhone ? 40 : 60,
-                height: isPhone ? 50 : 70,
+                width: isPhone ? 80 : 120,
+                height: isPhone ? 90 : 130,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -3771,8 +3681,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: isPhone ? 40 : 60,
-                height: isPhone ? 50 : 70,
+                width: isPhone ? 80 : 120,
+                height: isPhone ? 90 : 130,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
