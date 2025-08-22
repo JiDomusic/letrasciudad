@@ -4,7 +4,6 @@ import 'dart:math' as math;
 import '../providers/letter_city_provider.dart';
 import '../services/audio_service.dart';
 // import 'letter_details_screen.dart'; // No se usa actualmente
-import 'letter_park_3d_screen.dart';
 import 'house_preview_screen.dart';
 // import 'first_person_park_screen.dart'; // Removido
 import '../widgets/progress_header.dart';
@@ -203,23 +202,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     label: const Text('Modo Jugador'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF10B981),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _navigateTo3DPark(),
-                    icon: const Icon(Icons.threesixty),
-                    label: const Text('Parque 3D'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF8B5CF6),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
@@ -1279,14 +1261,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _showAvatarModeDialog();
   }
 
-  void _navigateTo3DPark() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const LetterPark3DScreen(),
-      ),
-    );
-  }
 
   void _navigateToAlphabetGame() {
     Navigator.push(

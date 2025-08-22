@@ -382,7 +382,7 @@ class _ScatteredObjectsGameState extends State<ScatteredObjectsGame>
 
   Widget _buildHeader(bool isCompleted) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), // Reducir padding
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.orange[400]!, Colors.red[400]!],
@@ -391,11 +391,12 @@ class _ScatteredObjectsGameState extends State<ScatteredObjectsGame>
         ),
       ),
       child: SafeArea(
+        bottom: false, // No reservar espacio inferior en SafeArea
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 35, // Reducir tamaño
+              height: 35,
               decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
@@ -405,33 +406,33 @@ class _ScatteredObjectsGameState extends State<ScatteredObjectsGame>
                   _currentLetter,
                   style: TextStyle(
                     color: Colors.orange[600],
-                    fontSize: 20,
+                    fontSize: 18, // Reducir tamaño fuente
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 8), // Reducir espacio
             Expanded(
               child: Text(
                 'Encontrá objetos con $_currentLetter',
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 14, // Reducir tamaño fuente
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), // Reducir padding
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 '${_foundObjects.length}/${_totalTargets}',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 12, // Reducir tamaño fuente
                   fontWeight: FontWeight.bold,
                   color: Colors.orange[700],
                 ),
@@ -444,37 +445,37 @@ class _ScatteredObjectsGameState extends State<ScatteredObjectsGame>
   }
 
   Widget _buildScatteredObjectsArea(Size screenSize) {
-    // Calcular zona de juego perfectamente segura
+    // Reducir drasticamente las áreas reservadas para maximizar espacio de juego
     final safeAreaTop = MediaQuery.of(context).padding.top;
-    final appBarHeight = AppBar().preferredSize.height;
-    final bottomBarHeight = 80.0;
-    final safeMargin = 60.0; // Margen más generoso para evitar bordes
+    final reducedHeaderSpace = 10.0; // Reducir espacio del header
+    final reducedBottomSpace = 20.0; // Reducir espacio inferior
+    final reducedMargin = 10.0; // Reducir márgenes laterales
     
-    // Área de juego disponible (sin tocar nada)
-    final gameAreaTop = safeAreaTop + appBarHeight + safeMargin;
-    final gameAreaBottom = screenSize.height - bottomBarHeight - safeMargin;
-    final gameAreaLeft = safeMargin;
-    final gameAreaRight = screenSize.width - safeMargin;
+    // Área de juego disponible (máximo espacio posible)
+    final gameAreaTop = safeAreaTop + reducedHeaderSpace;
+    final gameAreaBottom = screenSize.height - reducedBottomSpace;
+    final gameAreaLeft = reducedMargin;
+    final gameAreaRight = screenSize.width - reducedMargin;
     
     final gameWidth = gameAreaRight - gameAreaLeft;
     final gameHeight = gameAreaBottom - gameAreaTop;
     
-    // Posiciones perfectamente separadas evitando cualquier superposición
+    // Redistribución optimizada con más espacio y mejor accesibilidad táctil
     final positions = [
-      const Offset(0.2, 0.15),  // Objeto 1 - izquierda superior
-      const Offset(0.5, 0.15),  // Objeto 2 - centro superior  
-      const Offset(0.8, 0.15),  // Objeto 3 - derecha superior
-      const Offset(0.2, 0.4),   // Objeto 4 - izquierda centro
-      const Offset(0.8, 0.4),   // Objeto 5 - derecha centro
-      const Offset(0.2, 0.65),  // Objeto 6 - izquierda inferior
+      const Offset(0.15, 0.12),  // Objeto 1 - más cerca del borde
+      const Offset(0.5, 0.08),   // Objeto 2 - parte superior central
+      const Offset(0.85, 0.12),  // Objeto 3 - más cerca del borde derecho
+      const Offset(0.25, 0.32),  // Objeto 4 - izquierda centro, más separado
+      const Offset(0.75, 0.32),  // Objeto 5 - derecha centro, más separado
+      const Offset(0.15, 0.55),  // Objeto 6 - izquierda inferior
       
-      // Distractores distribuidos con máxima separación
-      const Offset(0.5, 0.4),   // Distractor 1 - centro exacto
-      const Offset(0.35, 0.25), // Distractor 2 - centro-izquierda superior
-      const Offset(0.65, 0.25), // Distractor 3 - centro-derecha superior
-      const Offset(0.35, 0.55), // Distractor 4 - centro-izquierda inferior
-      const Offset(0.65, 0.55), // Distractor 5 - centro-derecha inferior
-      const Offset(0.5, 0.65),  // Distractor 6 - centro inferior
+      // Distractores con mejor distribución y separación
+      const Offset(0.5, 0.32),   // Distractor 1 - centro
+      const Offset(0.5, 0.55),   // Distractor 2 - centro inferior
+      const Offset(0.85, 0.55),  // Distractor 3 - derecha inferior
+      const Offset(0.35, 0.75),  // Distractor 4 - centro-izquierda muy inferior
+      const Offset(0.65, 0.75),  // Distractor 5 - centro-derecha muy inferior
+      const Offset(0.5, 0.90),   // Distractor 6 - centro muy inferior
     ];
 
     return Stack(
@@ -504,13 +505,14 @@ class _ScatteredObjectsGameState extends State<ScatteredObjectsGame>
           final position = positions[index];
           final isFound = _foundObjects.contains(object['name']);
           
-          // Tamaños responsivos optimizados evitando superposiciones
+          // Tamaños más grandes y optimizados para toque fácil
           final isTablet = screenSize.shortestSide >= 600;
           final isDesktop = screenSize.width >= 1200;
           
-          final objectSize = isDesktop ? 120.0 : (isTablet ? 100.0 : 75.0);
-          final emojiSize = isDesktop ? 60.0 : (isTablet ? 45.0 : 35.0);
-          final textSize = isDesktop ? 16.0 : (isTablet ? 12.0 : 10.0);
+          // Aumentar significativamente los tamaños para facilitar el toque
+          final objectSize = isDesktop ? 140.0 : (isTablet ? 120.0 : 95.0);
+          final emojiSize = isDesktop ? 70.0 : (isTablet ? 55.0 : 45.0);
+          final textSize = isDesktop ? 18.0 : (isTablet ? 14.0 : 12.0);
           
           return AnimatedPositioned(
             duration: Duration(milliseconds: _animationsCompleted ? 300 : 1500),

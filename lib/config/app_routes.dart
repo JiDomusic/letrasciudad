@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../screens/splash_screen.dart';
 import '../screens/welcome_screen.dart';
 import '../screens/home_screen.dart';
-import '../screens/letter_park_3d_screen.dart';
 import '../screens/alphabet_main_screen.dart';
 import '../screens/house_preview_screen.dart';
 import '../screens/interactive_letter_games_screen.dart';
@@ -14,7 +13,6 @@ class AppRoutes {
   static const String splash = '/';
   static const String welcome = '/welcome';
   static const String home = '/home';
-  static const String letterPark3D = '/letter-park-3d';
   static const String alphabetMain = '/alphabet-main';
   static const String housePreview = '/house-preview';
   static const String letterGames = '/letter-games';
@@ -25,7 +23,6 @@ class AppRoutes {
       splash: (context) => const SplashScreen(),
       welcome: (context) => const WelcomeScreen(),
       home: (context) => const HomeScreen(),
-      letterPark3D: (context) => const LetterPark3DScreen(),
       alphabetMain: (context) => AlphabetMainScreen(audioService: AudioService()),
     };
   }
@@ -106,9 +103,6 @@ class AppRoutes {
     return Navigator.of(context).pushReplacementNamed(home);
   }
 
-  static Future<void> navigateToLetterPark3D(BuildContext context) {
-    return Navigator.of(context).pushNamed(letterPark3D);
-  }
 
   static Future<void> navigateToAlphabetMain(BuildContext context) {
     return Navigator.of(context).pushNamed(alphabetMain);

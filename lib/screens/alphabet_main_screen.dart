@@ -30,11 +30,11 @@ class _AlphabetMainScreenState extends State<AlphabetMainScreen> {
     'N', 'Ñ', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
   ];
 
-  // Letras especiales que usan el juego de trazado (estrella roja)
-  final Set<String> _tracingLetters = {'Ñ', 'V', 'B', 'W', 'X', 'Y', 'K'};
+  // Todas las letras usan el mismo juego ahora (sin juegos especiales de trazado)
+  final Set<String> _tracingLetters = <String>{}; // Set vacío - no hay letras especiales
 
   bool _shouldUseTracingGame(String letter) {
-    return _tracingLetters.contains(letter.toUpperCase());
+    return false; // Siempre usar el juego estándar, no el de trazado
   }
 
   Widget _buildTracingGameScreen(String letter) {
@@ -553,21 +553,11 @@ class _AlphabetMainScreenState extends State<AlphabetMainScreen> {
                         fontWeight: FontWeight.bold,
                         color: isSelected 
                           ? Colors.white 
-                          : (_shouldUseTracingGame(letter) ? Colors.red[700] : Colors.grey[700]),
+                          : Colors.grey[700],
                       ),
                     ),
                   ),
-                  // Estrella roja para letras especiales
-                  if (_shouldUseTracingGame(letter))
-                    Positioned(
-                      top: 2,
-                      right: 2,
-                      child: Icon(
-                        Icons.star,
-                        size: 16,
-                        color: isSelected ? Colors.yellow[300] : Colors.red[600],
-                      ),
-                    ),
+                  // Las estrellas rojas han sido eliminadas - todas las letras usan el mismo juego
                 ],
               ),
             ),
