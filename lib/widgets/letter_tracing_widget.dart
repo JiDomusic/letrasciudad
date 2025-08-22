@@ -111,7 +111,7 @@ class _LetterTracingWidgetState extends State<LetterTracingWidget>
         );
       } else {
         widget.audioService.speakText(
-          '¡Hola vamos a trazar la letra ${widget.letter}! Usa tu dedo para seguir las líneas grises.'
+          '¡Hola vamos a trazar la letra ${widget.letter}! Usa tu mano para seguir las líneas grises.'
         );
       }
     });

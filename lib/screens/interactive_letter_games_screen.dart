@@ -390,6 +390,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   Widget _buildObjectSelectionGame() {
+    // Explicación de voz para el juego de selección de objetos
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _audioService.speakText('¡Hola pequeño explorador! Bienvenido al juego de selección de objetos. Verás varios objetos en la pantalla. Tu misión es tocar solamente los objetos que empiecen con la letra ${widget.letter.character.toUpperCase()}. ¡Observa bien cada objeto, piensa en su nombre, y toca los correctos! ¡Vamos a explorar juntos!');
+    });
+    
     // Get fresh objects that haven't been used
     final objectsForLetter = _getUnusedObjectsForLetter(widget.letter.character);
     final distractorObjects = _getUnusedDistractorObjects();
@@ -627,6 +632,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   Widget _buildLetterTracingGame() {
+    // Explicación de voz para el juego de trazado de letras
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _audioService.speakText('¡Hola artista de letras! Bienvenido al juego de trazado. Aquí aprenderás a escribir la letra ${widget.letter.character.toUpperCase()} correctamente. Usa tu mano para seguir las líneas punteadas y trazar la letra. ¡Ve despacio y sigue las flechas! ¡Cuando termines, verás una hermosa animación!');
+    });
+    
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -1174,6 +1184,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   Widget _buildFindAllLettersGame() {
+    // Explicación de voz para el juego de buscar todas las letras
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _audioService.speakText('¡Hola detective de letras! Bienvenido al juego de búsqueda en el laberinto de letras. Verás muchas letras mezcladas en una cuadrícula colorida. Tu misión es encontrar y tocar todas las letras ${widget.letter.character.toUpperCase()} que estén escondidas entre las otras letras. ¡Hay 8 letras ${widget.letter.character.toUpperCase()} esperándote! ¡Búscalas todas!');
+    });
+    
     // Generar grid solo si no existe o si cambió el juego
     if (_lettersGrid == null) {
       _lettersGrid = _generateLetterGrid();
@@ -1880,6 +1895,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   Widget _buildLetterSoundGame() {
+    // Explicación de voz para el juego de sonidos de letras
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _audioService.speakText('¡Hola músico de letras! Bienvenido al juego de sonidos y pronunciación. Aquí vamos a practicar cómo suena la letra ${widget.letter.character.toUpperCase()}. Escucha atentamente el sonido de la letra, repítelo en voz alta, y después toca el botón para escucharla otra vez. ¡Vamos a aprender juntos cómo suena nuestra letra!');
+    });
+    
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -2675,14 +2695,14 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     
     // Añadir narración de voz para la letra B
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _audioService.speakText('¡Hola! Vamos a jugar con la letra B. En este juego tienes que trazar la letra B para completar palabras que empiecen con B. ¡Observa bien cada imagen y completa las palabras!');
+      _audioService.speakText('¡Hola! Bienvenido al juego especial de trazado con la letra B. Aquí verás palabras incompletas con imágenes. Tu misión es trazar la letra B con tu mano en las casillas vacías para completar las palabras. ¡Observa la imagen, adivina la palabra, y traza la B para completarla!');
     });
     final iconSize = isPhone ? 48.0 : 64.0;
     final titleSize = isPhone ? 18.0 : 24.0;
     final instructionSize = isPhone ? 16.0 : 20.0;
     
     return Container(
-      padding: EdgeInsets.all(isPhone ? 12 : 20),
+      padding: EdgeInsets.all(isPhone ? 6 : 12), // Reducir padding general
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -2693,15 +2713,15 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.all(isPhone ? 12 : 20),
+            padding: EdgeInsets.all(isPhone ? 8 : 12), // Reducir padding del contenedor
             decoration: BoxDecoration(
               color: Colors.orange[400],
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(12), // Reducir radio
               boxShadow: [
                 BoxShadow(
                   color: Colors.orange.withValues(alpha: 0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
+                  blurRadius: 6, // Reducir blur
+                  offset: const Offset(0, 3), // Reducir offset
                 ),
               ],
             ),
@@ -2864,11 +2884,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     
     // Añadir narración de voz para la letra V
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _audioService.speakText('¡Bienvenido al juego de la letra V! Aquí vamos a completar palabras que empiecen con V. Traza la letra V en cada casilla y descubre palabras fantásticas. ¡Es muy divertido!');
+      _audioService.speakText('¡Hola pequeño artista! Bienvenido al juego de colorear y trazar con la letra V. Verás dibujos de palabras que empiezan con V. Primero colorea el dibujo con tu color favorito, y después traza con tu mano la letra V en la casilla para completar la palabra. ¡Es súper divertido combinar colores y letras!');
     });
     
     return Container(
-      padding: EdgeInsets.all(isPhone ? 12 : 20),
+      padding: EdgeInsets.all(isPhone ? 6 : 12), // Reducir padding general
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -2879,15 +2899,15 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.all(isPhone ? 12 : 20),
+            padding: EdgeInsets.all(isPhone ? 8 : 12), // Reducir padding del contenedor
             decoration: BoxDecoration(
               color: Colors.teal[400],
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(12), // Reducir radio
               boxShadow: [
                 BoxShadow(
                   color: Colors.teal.withValues(alpha: 0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
+                  blurRadius: 6, // Reducir blur
+                  offset: const Offset(0, 3), // Reducir offset
                 ),
               ],
             ),
@@ -3049,11 +3069,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     
     // Añadir narración de voz cuando se construye el juego
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _audioService.speakText('¡Hola! En este juego vamos a completar palabras que empiecen con la letra K. Traza la letra K en cada casilla para completar las palabras. ¡Vamos a comenzar!');
+      _audioService.speakText('¡Hola detective de palabras! Bienvenido al juego de completar con la letra K. La K es una letra muy especial que viene de otros idiomas. Verás palabras incompletas con imágenes como pistas. Tu trabajo es trazar con tu mano la letra K en las casillas vacías para completar cada palabra. ¡Observa la imagen, piensa en la palabra, y traza la K!');
     });
     
     return Container(
-      padding: EdgeInsets.all(isPhone ? 12 : 20),
+      padding: EdgeInsets.all(isPhone ? 6 : 12), // Reducir padding general
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -3064,15 +3084,15 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.all(isPhone ? 12 : 20),
+            padding: EdgeInsets.all(isPhone ? 8 : 12), // Reducir padding del contenedor
             decoration: BoxDecoration(
               color: Colors.purple[400],
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(12), // Reducir radio
               boxShadow: [
                 BoxShadow(
                   color: Colors.purple.withValues(alpha: 0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
+                  blurRadius: 6, // Reducir blur
+                  offset: const Offset(0, 3), // Reducir offset
                 ),
               ],
             ),
@@ -3234,11 +3254,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     
     // Añadir narración de voz para la letra Y
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _audioService.speakText('¡Bienvenido al juego de la letra Y! Aquí vamos a completar palabras que empiecen con Y. Traza la letra Y en cada casilla y descubre palabras fantásticas. ¡Empecemos!');
+      _audioService.speakText('¡Hola explorador de palabras! Bienvenido al juego especial de la letra Y. La Y parece un árbol con brazos abiertos. En este juego verás palabras que empiezan con Y pero les falta la primera letra. Tu misión es trazar con tu mano la letra Y en las casillas vacías para completar las palabras. ¡Mira las imágenes, adivina las palabras, y traza la Y!');
     });
     
     return Container(
-      padding: EdgeInsets.all(isPhone ? 12 : 20),
+      padding: EdgeInsets.all(isPhone ? 6 : 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -3249,15 +3269,15 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.all(isPhone ? 12 : 20),
+            padding: EdgeInsets.all(isPhone ? 8 : 12),
             decoration: BoxDecoration(
               color: Colors.yellow[600],
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
                   color: Colors.yellow.withValues(alpha: 0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
@@ -3310,16 +3330,16 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     final completedWords = ['YATE', 'YOGUR', 'YERBA', 'YEMA', ];
     
     return Container(
-      padding: EdgeInsets.all(isPhone ? 12 : 20),
+      padding: EdgeInsets.all(isPhone ? 8 : 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.yellow[200]!, width: 3),
         boxShadow: [
           BoxShadow(
             color: Colors.yellow.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -3413,17 +3433,17 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   Widget _buildSpecialCompletionGame() {
     // Juego para la letra Ñ - RESPONSIVO
     final isPhone = MediaQuery.of(context).size.shortestSide < 600;
-    final iconSize = isPhone ? 48.0 : 64.0;
-    final titleSize = isPhone ? 18.0 : 24.0;
-    final instructionSize = isPhone ? 16.0 : 20.0;
+    final iconSize = isPhone ? 36.0 : 48.0; // Reducir tamaño del icono
+    final titleSize = isPhone ? 14.0 : 18.0; // Reducir tamaño del título
+    final instructionSize = isPhone ? 12.0 : 16.0; // Reducir tamaño de instrucciones
     
     // Añadir narración de voz para la letra Ñ
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _audioService.speakText('¡Hola! Este es el juego especial de la letra Ñ. La Ñ es una letra muy especial del español. Vamos a completar palabras que tienen la letra Ñ. ¡Comencemos a trazar!');
+      _audioService.speakText('¡Hola mi querido estudiante! Bienvenido al juego súper especial de la letra Ñ con sombrerito. La Ñ es nuestra letra argentina más especial y única. En este juego verás palabras que tienen la letra Ñ en el medio o al final, pero falta completarlas. Tu misión es trazar con tu mano la letra Ñ con su sombrerito en las casillas vacías. ¡Mira las imágenes, piensa en las palabras, y traza la Ñ!');
     });
     
     return Container(
-      padding: EdgeInsets.all(isPhone ? 12 : 20),
+      padding: EdgeInsets.all(isPhone ? 2 : 6), // Reducir aún más el padding general
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -3434,15 +3454,15 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.all(isPhone ? 12 : 20),
+            padding: EdgeInsets.all(isPhone ? 4 : 8), // Reducir aún más el padding del contenedor
             decoration: BoxDecoration(
               color: Colors.brown[400],
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
                   color: Colors.brown.withValues(alpha: 0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
@@ -3463,13 +3483,13 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 4), // Reducir drásticamente el espacio entre contenedores
           Container(
-            padding: EdgeInsets.all(isPhone ? 12 : 16),
+            padding: EdgeInsets.all(isPhone ? 6 : 10), // Reducir padding del segundo contenedor
             decoration: BoxDecoration(
               color: Colors.brown[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.brown[200]!, width: 2),
+              borderRadius: BorderRadius.circular(8), // Reducir radio
+              border: Border.all(color: Colors.brown[200]!, width: 1), // Reducir grosor del borde
             ),
             child: Text(
               'TRAZA PARA COMPLETAR CADA PALABRA CON \"Ñ\"',
@@ -3496,16 +3516,16 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     final positions = [1, 2, 2, 2, 3]; // Posición de la Ñ en cada palabra
     
     return Container(
-      padding: EdgeInsets.all(isPhone ? 12 : 20),
+      padding: EdgeInsets.all(isPhone ? 8 : 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.brown[200]!, width: 3),
         boxShadow: [
           BoxShadow(
             color: Colors.brown.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -3618,7 +3638,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     
     // Añadir narración de voz para la letra W
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _audioService.speakText('¡Hola! Bienvenido al juego de la letra W. La W es una letra especial que usamos en palabras de otros idiomas. Vamos a completar palabras que tienen W. ¡Empecemos a trazar!');
+      _audioService.speakText('¡Hola explorador digital! Bienvenido al juego especial de la letra W. La W es una letra que viene de otros idiomas y la usamos en palabras modernas como WiFi, Web y WhatsApp. En este juego verás palabras digitales incompletas, y tu trabajo es seleccionar las letras correctas para completarlas. ¡Es como escribir en una computadora! ¡Toca las opciones correctas!');
     });
     
     return Container(

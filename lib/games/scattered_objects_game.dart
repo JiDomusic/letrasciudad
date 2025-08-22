@@ -448,7 +448,7 @@ class _ScatteredObjectsGameState extends State<ScatteredObjectsGame>
     // Aumentar márgenes para evitar que los objetos toquen los bordes
     final safeAreaTop = MediaQuery.of(context).padding.top;
     final headerSpace = 25.0; // Más espacio del header
-    final bottomSpace = 100.0; // Más espacio inferior para la barra del alfabeto
+    final bottomSpace = 140.0; // Mucho más espacio inferior para la barra del alfabeto
     final sideMargin = 20.0; // Más márgenes laterales
     
     // Área de juego disponible con márgenes seguros
@@ -473,9 +473,9 @@ class _ScatteredObjectsGameState extends State<ScatteredObjectsGame>
       const Offset(0.50, 0.35),  // Distractor 1 - centro
       const Offset(0.50, 0.55),  // Distractor 2 - centro inferior
       const Offset(0.80, 0.55),  // Distractor 3 - derecha inferior, alejado del borde
-      const Offset(0.35, 0.75),  // Distractor 4 - centro-izquierda inferior
-      const Offset(0.65, 0.75),  // Distractor 5 - centro-derecha inferior
-      const Offset(0.50, 0.85),  // Distractor 6 - centro inferior, alejado del borde
+      const Offset(0.35, 0.70),  // Distractor 4 - centro-izquierda inferior, más arriba
+      const Offset(0.65, 0.70),  // Distractor 5 - centro-derecha inferior, más arriba
+      const Offset(0.50, 0.75),  // Distractor 6 - centro inferior, más arriba para evitar la barra
     ];
 
     return Stack(

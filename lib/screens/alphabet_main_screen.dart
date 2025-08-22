@@ -75,7 +75,7 @@ class _AlphabetMainScreenState extends State<AlphabetMainScreen> {
                         ),
                       ),
                       Text(
-                        'Traza la letra $letter con tu dedo',
+                        'Traza la letra $letter con tu mano',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.red[600],
@@ -424,6 +424,7 @@ class _AlphabetMainScreenState extends State<AlphabetMainScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
+            widget.audioService.stop(); // Detener audio antes de navegar
             Navigator.of(context).pop();
             widget.audioService.speakText('Volviendo al parque de letras');
           },
@@ -432,6 +433,7 @@ class _AlphabetMainScreenState extends State<AlphabetMainScreen> {
           IconButton(
             icon: const Icon(Icons.home),
             onPressed: () {
+              widget.audioService.stop(); // Detener audio antes de navegar
               Navigator.of(context).popUntil((route) => route.isFirst);
               widget.audioService.speakText('Volviendo al parque principal');
             },

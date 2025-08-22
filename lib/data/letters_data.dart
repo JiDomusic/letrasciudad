@@ -28,7 +28,7 @@ Activity(
           description: 'Aprende a trazar la letra A',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra A con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra A con tu mano siguiendo la guía',
         ),
         Activity(
           id: 'find_letter_A',
@@ -80,7 +80,7 @@ Activity(
           description: 'Aprende a trazar la letra B',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra B con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra B con tu mano siguiendo la guía',
         ),
         Activity(
           id: 'b_word_formation',
@@ -176,7 +176,7 @@ Activity(
           description: 'Aprende a trazar la letra C',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra C con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra C con tu mano siguiendo la guía',
         ),
         Activity(
           id: 'find_letter_C',
@@ -212,7 +212,7 @@ Activity(
           description: 'Aprende a trazar la letra D',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra D con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra D con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_D',
           name: 'Encuentra la letra D',
@@ -248,7 +248,7 @@ Activity(
           description: 'Aprende a trazar la letra E',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra E con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra E con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_E',
           name: 'Encuentra la letra E',
@@ -284,7 +284,7 @@ Activity(
           description: 'Aprende a trazar la letra F',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra F con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra F con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_F',
           name: 'Encuentra la letra F',
@@ -320,7 +320,7 @@ Activity(
           description: 'Aprende a trazar la letra G',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra G con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra G con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_G',
           name: 'Encuentra la letra G',
@@ -356,7 +356,7 @@ Activity(
           description: 'Aprende a trazar la letra H',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra H con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra H con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_H',
           name: 'Encuentra la letra H',
@@ -436,7 +436,7 @@ Activity(
           description: 'Aprende a trazar la letra J',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra J con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra J con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_J',
           name: 'Encuentra la letra J',
@@ -488,7 +488,7 @@ Activity(
           description: 'Aprende a trazar la letra K',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra K con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra K con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_K',
           name: 'Encuentra la letra K',
@@ -556,7 +556,7 @@ Activity(
           description: 'Aprende a trazar la letra L',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra L con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra L con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_L',
           name: 'Encuentra la letra L',
@@ -592,7 +592,7 @@ Activity(
           description: 'Aprende a trazar la letra M',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra M con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra M con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_M',
           name: 'Encuentra la letra M',
@@ -628,7 +628,7 @@ Activity(
           description: 'Aprende a trazar la letra N',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra N con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra N con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_N',
           name: 'Encuentra la letra N',
@@ -680,7 +680,7 @@ Activity(
           description: 'Aprende a trazar la letra Ñ',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra Ñ con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra Ñ con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_Ñ',
           name: 'Encuentra la letra Ñ',
@@ -716,7 +716,7 @@ Activity(
           description: 'Aprende a trazar la letra O',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra O con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra O con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_O',
           name: 'Encuentra la letra O',
@@ -752,7 +752,7 @@ Activity(
           description: 'Aprende a trazar la letra P',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra P con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra P con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_P',
           name: 'Encuentra la letra P',
@@ -788,7 +788,7 @@ Activity(
           description: 'Aprende a trazar la letra Q',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra Q con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra Q con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_Q',
           name: 'Encuentra la letra Q',
@@ -824,7 +824,7 @@ Activity(
           description: 'Aprende a trazar la letra R',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra R con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra R con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_R',
           name: 'Encuentra la letra R',
@@ -860,7 +860,7 @@ Activity(
           description: 'Aprende a trazar la letra S',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra S con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra S con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_S',
           name: 'Encuentra la letra S',
@@ -896,7 +896,7 @@ Activity(
           description: 'Aprende a trazar la letra T',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra T con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra T con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_T',
           name: 'Encuentra la letra T',
@@ -932,7 +932,7 @@ Activity(
           description: 'Aprende a trazar la letra U',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra U con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra U con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_U',
           name: 'Encuentra la letra U',
@@ -984,7 +984,7 @@ Activity(
           description: 'Aprende a trazar la letra V',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra V con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra V con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_V',
           name: 'Encuentra la letra V',
@@ -1050,7 +1050,7 @@ Activity(
           description: 'Aprende a trazar la letra W',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra W con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra W con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_W',
           name: 'Encuentra la letra W',
@@ -1132,7 +1132,7 @@ Activity(
           description: 'Aprende a trazar la letra X',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra X con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra X con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_X',
           name: 'Encuentra la letra X',
@@ -1208,7 +1208,7 @@ Activity(
           description: 'Aprende a trazar la letra Y',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra Y con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra Y con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_Y',
           name: 'Encuentra la letra Y',
@@ -1270,7 +1270,7 @@ Activity(
           description: 'Aprende a trazar la letra Z',
           type: ActivityType.pronunciation,
           difficulty: DifficultyLevel.beginner,
-          instruction: 'Traza la letra Z con tu dedo siguiendo la guía',
+          instruction: 'Traza la letra Z con tu mano siguiendo la guía',
         ),        Activity(
           id: 'find_letter_Z',
           name: 'Encuentra la letra Z',
