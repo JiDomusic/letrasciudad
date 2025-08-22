@@ -208,8 +208,8 @@ class RoundedLetterHouse extends StatelessWidget {
                           end: Alignment.bottomRight,
                           colors: [
                             _getLetterColor(letter),
-                            _getLetterColor(letter).withOpacity(0.8),
-                            _getLetterColor(letter).withOpacity(0.6),
+                            _getLetterColor(letter).withValues(alpha: 0.8),
+                            _getLetterColor(letter).withValues(alpha: 0.6),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(size * 0.06),

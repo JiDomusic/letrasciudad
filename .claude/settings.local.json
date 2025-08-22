@@ -14,7 +14,8 @@
       "Bash(find:*)",
       "Bash(/home/jido/Android/Sdk/emulator/emulator -list-avds)",
       "Bash(export:*)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

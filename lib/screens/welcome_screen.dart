@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/letter_city_provider.dart';
 import '../services/audio_service.dart';
+import '../config/app_routes.dart';
+import '../config/responsive_config.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -52,13 +54,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
       // Guardar el nombre en el provider
       context.read<LetterCityProvider>().setPlayerName(name);
       
-      // Mensaje personalizado de bienvenida
-      _audioService.speakText('¡Hola $name! Qué nombre tan bonito. Ahora sí, ¡vamos a explorar el maravilloso mundo de las letras juntos!');
+      // Mensaje personalizado de bienvenida - evitar interpolación directa
+      _audioService.speakText('¡Hola! Qué nombre tan bonito. Ahora sí, vamos a explorar el maravilloso mundo de las letras juntos.');
       
       // Ir a la pantalla principal después de un breve delay
       Future.delayed(const Duration(seconds: 3), () {
         if (context.mounted) {
-          Navigator.of(context).pushReplacementNamed('/home');
+          AppRoutes.navigateToHome(context);
         }
       });
     } else {
@@ -73,7 +75,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
     
     Future.delayed(const Duration(seconds: 2), () {
       if (context.mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
+        AppRoutes.navigateToHome(context);
       }
     });
   }
@@ -88,7 +90,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    final isWeb = MediaQuery.of(context).size.width > 800;
+    final responsivePadding = context.responsivePadding;
     
     return Scaffold(
       body: Container(
@@ -105,13 +107,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
         ),
         child: SafeArea(
           child: Center(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: Container(
-                  margin: const EdgeInsets.all(32),
-                  padding: EdgeInsets.all(isWeb ? 48 : 32),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: context.maxContentWidth,
+              ),
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: Container(
+                    margin: responsivePadding,
+                    padding: EdgeInsets.all(context.responsiveSpacing(4)),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(24),
@@ -123,16 +129,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
                       ),
                     ],
                   ),
-                  constraints: BoxConstraints(
-                    maxWidth: isWeb ? 600 : double.infinity,
-                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Luna la guía
                       Container(
-                        width: isWeb ? 120 : 100,
-                        height: isWeb ? 120 : 100,
+                        width: context.responsiveIconSize(100),
+                        height: context.responsiveIconSize(100),
                         decoration: BoxDecoration(
                           color: Colors.yellow[100],
                           shape: BoxShape.circle,
@@ -140,48 +143,50 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
                         ),
                         child: Icon(
                           Icons.face,
-                          size: isWeb ? 60 : 50,
+                          size: context.responsiveIconSize(50),
                           color: Colors.orange[600],
                         ),
                       ),
-                      SizedBox(height: isWeb ? 24 : 20),
+                      SizedBox(height: context.responsiveSpacing(2.5)),
                       
                       // Título
                       Text(
                         '¡Hola!',
                         style: TextStyle(
-                          fontSize: isWeb ? 36 : 28,
+                          fontSize: context.responsiveFontSize(28),
                           fontWeight: FontWeight.bold,
                           color: Colors.blue[700],
                         ),
                       ),
-                      SizedBox(height: isWeb ? 16 : 12),
+                      SizedBox(height: context.responsiveSpacing(1.5)),
                       
                       // Mensaje
                       Text(
                         'Soy Luna, tu guía mágica.\n¿Cómo te llamas?',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: isWeb ? 20 : 16,
+                          fontSize: context.responsiveFontSize(16),
                           color: Colors.grey[700],
                           height: 1.4,
                         ),
                       ),
-                      SizedBox(height: isWeb ? 32 : 24),
+                      SizedBox(height: context.responsiveSpacing(3)),
                       
                       // Campo de texto para el nombre
                       TextField(
                         controller: _nameController,
                         textAlign: TextAlign.center,
+                        maxLength: 15,
+                        textCapitalization: TextCapitalization.words,
                         style: TextStyle(
-                          fontSize: isWeb ? 24 : 20,
+                          fontSize: context.responsiveFontSize(20),
                           fontWeight: FontWeight.bold,
                           color: Colors.blue[700],
                         ),
                         decoration: InputDecoration(
                           hintText: 'Escribe tu nombre aquí',
                           hintStyle: TextStyle(
-                            fontSize: isWeb ? 20 : 16,
+                            fontSize: context.responsiveFontSize(16),
                             color: Colors.grey[400],
                           ),
                           border: OutlineInputBorder(
@@ -193,13 +198,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
                             borderSide: BorderSide(color: Colors.blue[500]!, width: 3),
                           ),
                           contentPadding: EdgeInsets.symmetric(
-                            horizontal: isWeb ? 24 : 20,
-                            vertical: isWeb ? 20 : 16,
+                            horizontal: context.responsiveSpacing(2.5),
+                            vertical: context.responsiveSpacing(2),
                           ),
+                          counterText: '', // Ocultar contador en móvil
                         ),
                         onSubmitted: (_) => _submitName(),
                       ),
-                      SizedBox(height: isWeb ? 32 : 24),
+                      SizedBox(height: context.responsiveSpacing(3)),
                       
                       // Botones
                       Row(
@@ -210,7 +216,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
                               onPressed: _skipName,
                               style: OutlinedButton.styleFrom(
                                 side: BorderSide(color: Colors.grey[400]!, width: 2),
-                                padding: EdgeInsets.symmetric(vertical: isWeb ? 16 : 12),
+                                padding: EdgeInsets.symmetric(vertical: context.responsiveSpacing(1.5)),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -218,13 +224,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
                               child: Text(
                                 'Saltar',
                                 style: TextStyle(
-                                  fontSize: isWeb ? 18 : 16,
+                                  fontSize: context.responsiveFontSize(16),
                                   color: Colors.grey[600],
                                 ),
                               ),
                             ),
                           ),
-                          SizedBox(width: isWeb ? 16 : 12),
+                          SizedBox(width: context.responsiveSpacing(1.5)),
                           
                           // Botón continuar
                           Expanded(
@@ -234,7 +240,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green[500],
                                 foregroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(vertical: isWeb ? 16 : 12),
+                                padding: EdgeInsets.symmetric(vertical: context.responsiveSpacing(1.5)),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -243,7 +249,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
                               child: Text(
                                 '¡Comenzar!',
                                 style: TextStyle(
-                                  fontSize: isWeb ? 20 : 18,
+                                  fontSize: context.responsiveFontSize(18),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -252,19 +258,20 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
                         ],
                       ),
                       
-                      SizedBox(height: isWeb ? 20 : 16),
+                      SizedBox(height: context.responsiveSpacing(2)),
                       
                       // Mensaje adicional
                       Text(
                         'Tu nombre me ayudará a crear una experiencia más personal',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: isWeb ? 14 : 12,
+                          fontSize: context.responsiveFontSize(12),
                           color: Colors.grey[500],
                           fontStyle: FontStyle.italic,
                         ),
                       ),
                     ],
+                    ),
                   ),
                 ),
               ),

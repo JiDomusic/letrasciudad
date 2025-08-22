@@ -129,10 +129,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           const SizedBox(height: 20),
                           _buildActionButtons(),
                           const SizedBox(height: 20),
-                          // GRID DE LETRAS SIN SCROLL HORIZONTAL
+                          // GRID DE LETRAS CON SCROLL VERTICAL
                           _buildLetterGrid(),
-                          // ESPACIO EXTRA PARA SCROLL COMPLETO
-                          const SizedBox(height: 100),
+                          // ESPACIO EXTRA AL FINAL PARA SCROLL COMPLETO
+                          const SizedBox(height: 50),
                         ],
                       ),
                     ),
@@ -267,173 +267,189 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           animation: _gridAnimation,
           builder: (context, child) {
             final size = MediaQuery.of(context).size;
-            // CONFIGURACIÓN RESPONSIVA MEJORADA
+            // CONFIGURACIÓN RESPONSIVA
             final screenWidth = size.width;
             final isMobile = screenWidth < 600;
             final isTablet = screenWidth >= 600 && screenWidth < 900;
             
-            // PARÁMETROS RESPONSIVOS OPTIMIZADOS
-            final lettersPerRow = isMobile ? 3 : (isTablet ? 4 : 6);
-            final totalRows = (27 / lettersPerRow).ceil();
-            final rowHeight = isMobile ? 140.0 : 180.0;
-            final baseHeight = isMobile ? 100.0 : 150.0;
-            final extraSpace = isMobile ? 200.0 : 300.0;
-            final contentHeight = baseHeight + (totalRows * rowHeight) + extraSpace;
-            
-            // ALTURA DINÁMICA SEGÚN DISPOSITIVO
-            final baseMobileHouseSize = screenWidth < 400 ? 60.0 : 70.0; // Más grande para móviles
-            final finalHeight = isMobile 
-                ? (totalRows * (baseMobileHouseSize + 35)) + baseHeight + extraSpace 
-                : contentHeight;
-            
-            // ALTURA MÍNIMA GARANTIZADA PARA EL SCROLL
-            final minContentHeight = math.max(
-              finalHeight, 
-              size.height * 1.5, // Al menos 1.5 veces la altura de pantalla
-            );
-            
-            return SizedBox(
-              width: size.width,
-              height: minContentHeight, // Altura garantizada para el scroll
-              child: Stack(
-                children: [
-                  // COLINAS Y LOMAS DEL PARQUE
-                  ..._buildParkHills(size),
-                  
-                  // Paisaje de parque real con senderos y áreas verdes
-                  Positioned.fill(
-                    child: RollingHillsTerrain(
-                      terrainSize: Size(size.width, 800),
-                    ),
-                  ),
-                  
-                  // Senderos curvos del parque
-                  ..._buildParkPaths(size),
-                  
-                  // Carrusel central divertido
-                  _buildCentralPlayground(size),
-                  
-                  // Árboles decorativos
-                  ..._buildParkTrees(size),
-                  
-                  // Sol animado
-                  _buildAnimatedSun(),
-                  
-                  // Globos flotantes
-                  ..._buildFloatingBalloons(),
-                  
-                  // Efectos de videojuego: partículas brillantes
-                  ..._buildSparkleEffects(),
-                  
-                  // Mariposas animadas
-                  ..._buildAnimatedButterflies(),
-                  
-                  // Animales de granja en el parque
-                  ..._buildFarmAnimals(),
-
-                  // Avatar del jugador caminando por el sendero del parque
-                  AnimatedBuilder(
-                    animation: _animatedElementsController,
-                    builder: (context, child) {
-                      final walkBounce = math.sin(_animatedElementsController.value * 6 * math.pi) * 3;
+            // CALCULAR ALTURA NECESARIA PARA MÓVIL
+            if (isMobile) {
+              final housesPerRow = screenWidth < 350 ? 2 : (screenWidth < 500 ? 3 : 4);
+              final totalRows = (sortedLetters.length / housesPerRow).ceil(); // Usar sortedLetters.length para exactitud
+              final houseSize = 85.0; // Tamaño máximo de casa
+              final verticalSpacing = houseSize + 30;
+              final mobileContentHeight = 50.0 + (totalRows * verticalSpacing) + 100.0; // Espacio extra al final
+              
+              return SizedBox(
+                width: size.width,
+                height: mobileContentHeight,
+                child: Stack(
+                  children: [
+                    // Casas de letras en grid ordenado para móvil
+                    ...sortedLetters.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final letter = entry.value;
+                      final position = _calculateOptimalPosition(index, sortedLetters.length, size);
+                      
                       return Positioned(
-                        left: size.width * 0.2,
-                        top: 200 + walkBounce,
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            gradient: const RadialGradient(
-                              colors: [
-                                Color(0xFF42A5F5),
-                                Color(0xFF1976D2),
-                              ],
-                            ),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.blue.withValues(alpha: 0.3),
-                                blurRadius: 20,
-                                offset: const Offset(2, 8),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.child_care,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  
-                  // Casas coloridas distribuidas naturalmente por el terreno
-                  ...sortedLetters.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final letter = entry.value;
-                    final position = _calculateOptimalPosition(index, sortedLetters.length, size);
-                    final elevation = position['elevation'] ?? 0.0;
-                    final zone = position['zone'] ?? 0;
-                    
-                    // EFECTOS VISUALES MEJORADOS PARA CASAS GRANDES
-                    final depthScale = 1.0 - (zone * 0.02); // Efecto profundidad basado en zona
-                    final depthOpacity = 1.0 - (zone * 0.015); // Transparencia basada en zona
-                    
-                    // ANIMACIÓN EN CASCADA ALFABÉTICA MEJORADA
-                    final alphabetDelay = index * 60; // Delay más rápido y fluido
-
-                    // VALIDACIÓN FINAL PARA EVITAR CASAS FUERA DEL CONTENEDOR
-                    final safeX = (position['x'] ?? 0.0).clamp(0.0, size.width - (position['size'] ?? 55.0));
-                    final safeY = (position['y'] ?? 0.0).clamp(0.0, minContentHeight - (position['size'] ?? 55.0) * 1.4);
-                    
-                    return Positioned(
-                      left: safeX,
-                      top: safeY,
-                      child: Transform.scale(
-                        scale: _gridAnimation.value * depthScale.clamp(0.92, 1.0), // Escala más consistente
-                        child: AnimatedOpacity(
-                          duration: Duration(milliseconds: 500 + alphabetDelay),
-                          opacity: (_gridAnimation.value * depthOpacity).clamp(0.0, 1.0), // Opacidad segura
-                          child: Container(
-                            // SOMBRAS MEJORADAS PARA CASAS GRANDES
-                            decoration: BoxDecoration(
-                              boxShadow: [
-                                // Sombra principal más prominente
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.25),
-                                  blurRadius: 12 + (elevation * 6), // Sombras más suaves y grandes
-                                  offset: Offset(
-                                    4 + (elevation * 3), // Sombra hacia la derecha
-                                    6 + (elevation * 4), // Sombra hacia abajo
-                                  ),
-                                ),
-                                // Sombra secundaria para más profundidad
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
-                                  blurRadius: 20 + (elevation * 8),
-                                  offset: Offset(
-                                    6 + (elevation * 4),
-                                    8 + (elevation * 5),
-                                  ),
-                                ),
-                              ],
-                            ),
+                        left: position['x']!,
+                        top: position['y']!,
+                        child: Transform.scale(
+                          scale: _gridAnimation.value,
+                          child: AnimatedOpacity(
+                            duration: Duration(milliseconds: 300 + (index * 50)),
+                            opacity: _gridAnimation.value,
                             child: RoundedLetterHouse(
                               letter: letter.character,
-                              size: position['size'] ?? (isMobile ? 70.0 : 75.0), // Tamaño más grande para móviles
+                              size: position['size']!,
                               onTap: () => _onLetterTap(letter.character),
                               isUnlocked: letter.isUnlocked,
                             ),
                           ),
                         ),
+                      );
+                    }),
+                  ],
+                ),
+              );
+            } else {
+              // VERSIÓN WEB CON TODOS LOS EFECTOS
+              final contentHeight = size.height * 2.0; // Altura para web
+              
+              return SizedBox(
+                width: size.width,
+                height: contentHeight,
+                child: Stack(
+                  children: [
+                    // COLINAS Y LOMAS DEL PARQUE
+                    ..._buildParkHills(size),
+                    
+                    // Paisaje de parque real con senderos y áreas verdes
+                    Positioned.fill(
+                      child: RollingHillsTerrain(
+                        terrainSize: Size(size.width, 800),
                       ),
-                    );
-                  }),
-                ],
-              ),
-            );
+                    ),
+                    
+                    // Senderos curvos del parque
+                    ..._buildParkPaths(size),
+                    
+                    // Carrusel central divertido
+                    _buildCentralPlayground(size),
+                    
+                    // Árboles decorativos
+                    ..._buildParkTrees(size),
+                    
+                    // Sol animado
+                    _buildAnimatedSun(),
+                    
+                    // Globos flotantes
+                    ..._buildFloatingBalloons(),
+                    
+                    // Efectos de videojuego: partículas brillantes
+                    ..._buildSparkleEffects(),
+                    
+                    // Mariposas animadas
+                    ..._buildAnimatedButterflies(),
+                    
+                    // Animales de granja en el parque
+                    ..._buildFarmAnimals(),
+
+                    // Avatar del jugador caminando por el sendero del parque
+                    AnimatedBuilder(
+                      animation: _animatedElementsController,
+                      builder: (context, child) {
+                        final walkBounce = math.sin(_animatedElementsController.value * 6 * math.pi) * 3;
+                        return Positioned(
+                          left: size.width * 0.2,
+                          top: 200 + walkBounce,
+                          child: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              gradient: const RadialGradient(
+                                colors: [
+                                  Color(0xFF42A5F5),
+                                  Color(0xFF1976D2),
+                                ],
+                              ),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 3),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.blue.withValues(alpha: 0.3),
+                                  blurRadius: 20,
+                                  offset: const Offset(2, 8),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.child_care,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    
+                    // Casas coloridas distribuidas naturalmente por el terreno (WEB)
+                    ...sortedLetters.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final letter = entry.value;
+                      final position = _calculateOptimalPosition(index, sortedLetters.length, size);
+                      final elevation = position['elevation'] ?? 0.0;
+                      final zone = position['zone'] ?? 0;
+                      
+                      // EFECTOS VISUALES PARA WEB
+                      final depthScale = 1.0 - (zone * 0.02);
+                      final depthOpacity = 1.0 - (zone * 0.015);
+                      final alphabetDelay = index * 60;
+                      
+                      return Positioned(
+                        left: position['x']!,
+                        top: position['y']!,
+                        child: Transform.scale(
+                          scale: _gridAnimation.value * depthScale.clamp(0.92, 1.0),
+                          child: AnimatedOpacity(
+                            duration: Duration(milliseconds: 500 + alphabetDelay),
+                            opacity: (_gridAnimation.value * depthOpacity).clamp(0.0, 1.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.25),
+                                    blurRadius: 12 + (elevation * 6),
+                                    offset: Offset(
+                                      4 + (elevation * 3),
+                                      6 + (elevation * 4),
+                                    ),
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.1),
+                                    blurRadius: 20 + (elevation * 8),
+                                    offset: Offset(
+                                      6 + (elevation * 4),
+                                      8 + (elevation * 5),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              child: RoundedLetterHouse(
+                                letter: letter.character,
+                                size: position['size']!,
+                                onTap: () => _onLetterTap(letter.character),
+                                isUnlocked: letter.isUnlocked,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              );
+            }
           },
         );
       },
@@ -458,68 +474,40 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
   
-  // POSICIONAMIENTO MÓVIL: ORGÁNICO PERO CON ORDEN ALFABÉTICO VISUAL
+  // POSICIONAMIENTO MÓVIL: GRID ORGANIZADO Y RESPONSIVO
   Map<String, double> _calculateMobilePosition(int index, int totalLetters, Size size) {
     final screenWidth = size.width;
-    final screenHeight = size.height;
     
-    // ESPACIADO RESPONSIVO MEJORADO PARA SCROLL
-    final headerSpace = 120.0; // Espacio fijo para el header
-    final sideSpace = math.max(screenWidth * 0.05, 15.0); // Mínimo 5% de la pantalla o 15px
+    // ESPACIADO RESPONSIVO PARA MÓVIL
+    final sideSpace = 16.0; // Espacio lateral fijo
     final availableWidth = screenWidth - (sideSpace * 2);
     
     // CASAS POR FILA RESPONSIVAS
-    final housesPerRow = screenWidth < 400 ? 2 : 3;
+    final housesPerRow = screenWidth < 350 ? 2 : (screenWidth < 500 ? 3 : 4);
     
-    // TAMAÑO ADAPTATIVO CON VERIFICACIÓN DE CONTENEDOR
-    final maxHouseSize = (availableWidth / housesPerRow) - 15; // Restar espaciado
-    final idealHouseSize = screenWidth < 400 ? 60.0 : (screenWidth < 500 ? 65.0 : 70.0); // Más grandes
-    final houseSize = math.min(idealHouseSize, maxHouseSize).clamp(50.0, 80.0); // Rango más grande
+    // TAMAÑO DE CASA RESPONSIVO
+    final spacing = 12.0; // Espaciado entre casas
+    final maxHouseSize = (availableWidth - ((housesPerRow - 1) * spacing)) / housesPerRow;
+    final houseSize = math.min(maxHouseSize, 85.0).clamp(50.0, 85.0);
+    
     final row = (index / housesPerRow).floor();
     final col = index % housesPerRow;
     
-    // DISTRIBUCIÓN PERFECTAMENTE CENTRADA PARA MÓVIL
-    final houseSpacing = math.max((availableWidth - (housesPerRow * houseSize)) / (housesPerRow + 1), 8.0);
-    final totalContentWidth = (housesPerRow * houseSize) + ((housesPerRow - 1) * houseSpacing);
+    // POSICIÓN X: CENTRADO PERFECTO
+    final totalContentWidth = (housesPerRow * houseSize) + ((housesPerRow - 1) * spacing);
     final startX = (screenWidth - totalContentWidth) / 2;
+    final x = startX + (col * (houseSize + spacing));
     
-    final baseX = startX + (col * (houseSize + houseSpacing));
-    
-    // ESPACIADO VERTICAL MEJORADO PARA SCROLL
-    final verticalSpacing = houseSize * 1.4 + 20; // Más espacio entre filas
-    final baseY = headerSpace + (row * verticalSpacing) + 50; // Empezar más abajo
-    
-    // VARIACIONES MÍNIMAS PARA MANTENER ORDEN EN MÓVIL
-    final letterSeed = index * 89 + 23;
-    
-    // Variaciones muy pequeñas para efecto natural sin desorden
-    final organicX = ((letterSeed * 37) % 100) / 100 * 8 - 4; // ±4px máximo
-    final organicY = ((letterSeed * 59) % 100) / 100 * 8 - 4; // ±4px máximo
-    
-    // POSICIÓN FINAL: CENTRADA Y ORDENADA PARA MÓVIL CON SCROLL
-    final naturalX = baseX + organicX;
-    final naturalY = baseY + organicY;
-    
-    // GARANTIZAR QUE LAS CASAS ESTÉN COMPLETAMENTE DENTRO DEL CONTENEDOR
-    final minX = sideSpace;
-    final maxX = screenWidth - houseSize - sideSpace;
-    final finalX = naturalX.clamp(minX, maxX);
-    final finalY = math.max(naturalY, headerSpace + 50); // Asegurar que no estén muy arriba
-    
-    // SIN DETECCIÓN DE COLISIONES EN MÓVIL - USAR POSICIÓN CALCULADA
-    final position = {'x': finalX, 'y': finalY};
-    
-    // PROPIEDADES VISUALES ORGÁNICAS PARA MÓVIL
-    final radiusGenerator = (letterSeed * 47 + index * 19) % 10000;
-    final elevation = 0.4 + (radiusGenerator / 10000) * 0.6;
-    final walkSpeed = 0.6 + ((index * 113) % 100) / 300.0;
+    // POSICIÓN Y: ESPACIADO VERTICAL AMPLIO PARA SCROLL
+    final verticalSpacing = houseSize + 30; // Más espacio vertical
+    final y = 50.0 + (row * verticalSpacing); // Empezar desde arriba
     
     return {
-      'x': position['x']!,
-      'y': position['y']!,
-      'size': houseSize, // Tamaño consistente en móvil
-      'walkProgress': walkSpeed,
-      'elevation': elevation,
+      'x': x,
+      'y': y,
+      'size': houseSize,
+      'walkProgress': 0.5,
+      'elevation': 0.5,
       'zone': row.toDouble(),
       'progress': index / (totalLetters - 1),
     };
@@ -1470,8 +1458,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               if (name.isNotEmpty) {
                 context.read<LetterCityProvider>().setPlayerName(name);
                 Navigator.of(context).pop();
-                // Asegurar que se pronuncie el nombre completo, no letra por letra
-                _audioService.speakText('¡Hola ${name}! Qué nombre tan bonito. Soy Luna, tu guía en este parque mágico de letras. ¿Estás listo para descubrir todas las aventuras que tengo preparadas?');
+                // Mensaje de bienvenida sin interpolación del nombre
+                _audioService.speakText('¡Hola! Qué nombre tan bonito. Soy Luna, tu guía en este parque mágico de letras. ¿Estás listo para descubrir todas las aventuras que tengo preparadas?');
               } else {
                 context.read<LetterCityProvider>().setPlayerName('Pequeño Explorador');
                 Navigator.of(context).pop();

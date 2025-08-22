@@ -6,7 +6,6 @@ import '../providers/letter_city_provider.dart';
 import '../services/audio_service.dart';
 import '../models/letter.dart';
 import '../widgets/mini_tracing_canvas.dart';
-// import '../widgets/kids_ai_chat.dart'; // Removed to fix errors
 import '../widgets/letter_tracing_widget.dart';
 
 class InteractiveLetterGamesScreen extends StatefulWidget {
@@ -36,6 +35,10 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   
   // Letters grid for find game
   List<Map<String, dynamic>>? _lettersGrid;
+  
+  // Sistema de seguimiento de palabras completadas
+  final Set<int> _completedWordsIndices = {};
+  bool _allWordsCompleted = false;
 
   @override
   void initState() {
@@ -73,6 +76,65 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   void _skipNarration() {
     // Permite al niño saltar la narración
     _audioService.stop();
+  }
+  
+  void _onWordCompleted(int wordIndex, String completedWord) {
+    setState(() {
+      _completedWordsIndices.add(wordIndex);
+    });
+    
+    // Verificar si todas las palabras están completadas
+    _checkAllWordsCompleted();
+  }
+  
+  void _checkAllWordsCompleted() {
+    final letter = widget.letter.character.toUpperCase();
+    int totalWords = _getTotalWordsForLetter(letter);
+    
+    if (_completedWordsIndices.length >= totalWords && !_allWordsCompleted) {
+      setState(() {
+        _allWordsCompleted = true;
+      });
+      
+      // Mensaje especial cuando todas las palabras están completadas
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        _audioService.speakText(_getAllWordsCompletedMessage(letter));
+      });
+    }
+  }
+  
+  int _getTotalWordsForLetter(String letter) {
+    switch (letter) {
+      case 'Ñ': return 3; // ['ÑANDÚ', 'NIÑO', 'MOÑO']
+      case 'B': return 5; // ['BARCO', 'BEBÉ', 'BALDE', 'BOTELLA', 'BICICLETA']
+      case 'V': return 5; // ['VACA', 'VASO', 'VELA', 'VIOLÍN', 'VOLCÁN']
+      case 'W': return 4; // ['WIFI', 'WEB', 'WALKMAN', 'WESTERN']
+      case 'Y': return 4; // ['YATE', 'YOGA', 'YEMA', 'YERBA']
+      case 'X': return 4; // ['XILÓFONO', 'ÉXITO', 'EXACTO', 'EXAMEN']
+      case 'K': return 4; // ['KOALA', 'KIWI', 'KAYAK', 'KARATE']
+      default: return 0;
+    }
+  }
+  
+  String _getAllWordsCompletedMessage(String letter) {
+    switch (letter) {
+      case 'Ñ':
+        return '¡Increíble! Completaste todas las palabras con Ñ. ¡Eres un experto en la letra más especial del español! ¡Felicitaciones!';
+      case 'B':
+        return '¡Fantástico! Trazaste todas las palabras con B perfectamente. ¡Qué buen trabajo has hecho! ¡Eres genial!';
+      case 'V':
+        return '¡Excelente! Completaste todas las palabras con V. ¡Tu victoria está asegurada! ¡Felicitaciones!';
+      case 'W':
+        return '¡Maravilloso! Dominaste todas las palabras con W. ¡Qué inteligente eres con esta letra especial!';
+      case 'Y':
+        return '¡Perfecto! Completaste todas las palabras con Y. ¡Eres un verdadero campeón! ¡Felicitaciones!';
+      case 'X':
+        return '¡Extraordinario! Trazaste todas las palabras con X. ¡Qué habilidad tan especial tienes! ¡Excelente!';
+      case 'K':
+        return '¡Genial! Completaste todas las palabras con K. ¡Dominas las letras más difíciles! ¡Felicitaciones!';
+      default:
+        return '¡Increíble! Completaste todas las palabras. ¡Qué buen trabajo has hecho!';
+    }
   }
 
   @override
@@ -2757,6 +2819,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                   onTracingComplete: () {
                     _showFlowerRainEffect();
                     _audioService.speakText('¡Excelente! Completaste la palabra $completeWord. ¡Eres fantástico!');
+                    _onWordCompleted(index, completeWord);
                   },
                   audioService: _audioService,
                 ),
@@ -2941,6 +3004,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                   onTracingComplete: () {
                     _showFlowerRainEffect();
                     _audioService.speakText('¡Fantástico! Completaste la palabra $completeWord. ¡Eres increíble!');
+                    _onWordCompleted(index, completeWord);
                   },
                   audioService: _audioService,
                 ),
@@ -3125,6 +3189,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                   onTracingComplete: () {
                     _showFlowerRainEffect();
                     _audioService.speakText('¡Excelente! Completaste la palabra $completeWord. ¡Qué bien lo hiciste!');
+                    _onWordCompleted(index, completeWord);
                   },
                   audioService: _audioService,
                 ),
@@ -3309,6 +3374,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                   onTracingComplete: () {
                     _showFlowerRainEffect();
                     _audioService.speakText('¡Perfecto! Completaste la palabra $completeWord. ¡Qué inteligente eres!');
+                    _onWordCompleted(index, completeWord);
                   },
                   audioService: _audioService,
                 ),
@@ -3506,6 +3572,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                   onTracingComplete: () {
                     _showFlowerRainEffect();
                     _audioService.speakText('¡Maravilloso! Completaste la palabra $completeWord. ¡La Ñ es muy especial!');
+                    _onWordCompleted(index, completeWord);
                   },
                   audioService: _audioService,
                 ),
@@ -3691,6 +3758,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                   onTracingComplete: () {
                     _showFlowerRainEffect();
                     _audioService.speakText('¡Genial! Completaste la palabra $completeWord. ¡Excelente trabajo!');
+                    _onWordCompleted(index, completeWord);
                   },
                   audioService: _audioService,
                 ),
