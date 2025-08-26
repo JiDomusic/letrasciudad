@@ -1151,16 +1151,28 @@ Activity(
           data: {
             'words': [
               {
-                'availableLetters': ['x', 'i', 'l', 'ó', 'f', 'o', 'n', 'o'],
-                'targetWord': 'xilófono',
-                'imageUrl': 'assets/images/xilofono.png',
-                'audioUrl': 'assets/audio/words/xilofono.mp3',
+                'availableLetters': ['x', 'i', 'l', 'ó', 'f', 'o', 'n'],
+                'targetWord': 'xilófon',
+                'imageUrl': 'assets/images/xilofon.png',
+                'audioUrl': 'assets/audio/words/xilofon.mp3',
               },
               {
-                'availableLetters': ['e', 'x', 'a', 'm', 'e', 'n'],
-                'targetWord': 'examen',
-                'imageUrl': 'assets/images/examen.png',
-                'audioUrl': 'assets/audio/words/examen.mp3',
+                'availableLetters': ['a', 'u', 'x', 'i', 'l', 'i', 'o'],
+                'targetWord': 'auxilio',
+                'imageUrl': 'assets/images/auxilio.png',
+                'audioUrl': 'assets/audio/words/auxilio.mp3',
+              },
+              {
+                'availableLetters': ['é', 'x', 'i', 't', 'o'],
+                'targetWord': 'éxito',
+                'imageUrl': 'assets/images/exito.png',
+                'audioUrl': 'assets/audio/words/exito.mp3',
+              },
+              {
+                'availableLetters': ['t', 'a', 'x', 'i'],
+                'targetWord': 'taxi',
+                'imageUrl': 'assets/images/taxi.png',
+                'audioUrl': 'assets/audio/words/taxi.mp3',
               },
             ]
           },

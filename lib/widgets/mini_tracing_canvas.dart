@@ -248,6 +248,14 @@ class _MiniTracingCanvasState extends State<MiniTracingCanvas> {
         path.quadraticBezierTo(55 * scaleX, 45 * scaleY, 55 * scaleX, 65 * scaleY);
         path.quadraticBezierTo(55 * scaleX, 80 * scaleY, 15 * scaleX, 80 * scaleY);
         break;
+      case 'X':
+        // Primera diagonal: superior izquierda a inferior derecha
+        path.moveTo(15 * scaleX, 10 * scaleY);
+        path.lineTo(65 * scaleX, 80 * scaleY);
+        // Segunda diagonal: superior derecha a inferior izquierda
+        path.moveTo(65 * scaleX, 10 * scaleY);
+        path.lineTo(15 * scaleX, 80 * scaleY);
+        break;
       default:
         // Círculo genérico escalado
         path.addOval(Rect.fromLTWH(

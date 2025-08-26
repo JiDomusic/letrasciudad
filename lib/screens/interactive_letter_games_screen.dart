@@ -33,6 +33,9 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   // Contador específico para letra Ñ
   int _nAttempts = 0;
   
+  // Control de mensaje inicial - solo una vez
+  bool _hasSpokenInitialMessage = false;
+  
   // Letters grid for find game
   List<Map<String, dynamic>>? _lettersGrid;
   
@@ -303,8 +306,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       {'icon': Icons.volume_up, 'title': 'Sonidos', 'color': Colors.orange[400]!},
     ];
     
-    // Agregar quinto juego SOLO para las letras B, V, K, Y, Ñ, W
-    final specialLetters = ['B', 'V', 'K', 'Y', 'Ñ', 'W'];
+    // Agregar quinto juego SOLO para las letras B, V, K, Y, Ñ, W, X
+    final specialLetters = ['B', 'V', 'K', 'Y', 'Ñ', 'W', 'X'];
     final games = [...baseGames];
     
     if (specialLetters.contains(widget.letter.character)) {
@@ -334,6 +337,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
 
           return GestureDetector(
             onTap: () {
+              // Detener audio anterior antes de cambiar
+              _audioService.stop();
               setState(() {
                 _selectedGameIndex = index;
                 // Reset used words when switching games
@@ -341,6 +346,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                 _usedDistractors.clear();
                 // Reset letters grid when switching games
                 _lettersGrid = null;
+                // Reset mensaje inicial
+                _hasSpokenInitialMessage = false;
               });
               _audioService.speakText('¡${game['title']}! ¡Qué divertido!');
             },
@@ -390,10 +397,17 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   Widget _buildObjectSelectionGame() {
-    // Explicación de voz para el juego de selección de objetos
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _audioService.speakText('¡Hola pequeño explorador! Bienvenido al juego de selección de objetos. Verás varios objetos en la pantalla. Tu misión es tocar solamente los objetos que empiecen con la letra ${widget.letter.character.toUpperCase()}. ¡Observa bien cada objeto, piensa en su nombre, y toca los correctos! ¡Vamos a explorar juntos!');
-    });
+    // Explicación de voz para el juego de selección de objetos - SOLO UNA VEZ
+    if (!_hasSpokenInitialMessage) {
+      _hasSpokenInitialMessage = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (widget.letter.character.toUpperCase() == 'X') {
+          _audioService.speakText('¡Hola! Toca los objetos que contengan la letra X.');
+        } else {
+          _audioService.speakText('¡Hola! Toca los objetos que empiecen con ${widget.letter.character.toUpperCase()}.');
+        }
+      });
+    }
     
     // Get fresh objects that haven't been used
     final objectsForLetter = _getUnusedObjectsForLetter(widget.letter.character);
@@ -466,7 +480,9 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Toca todos los objetos que empiecen con "${widget.letter.character.toUpperCase()}"',
+                    widget.letter.character.toUpperCase() == 'X' 
+                      ? 'Toca todos los objetos que contengan la letra "${widget.letter.character.toUpperCase()}"'
+                      : 'Toca todos los objetos que empiecen con "${widget.letter.character.toUpperCase()}"',
                     style: const TextStyle(
                       fontSize: 20, // Aumentado de 16 a 20
                       fontWeight: FontWeight.bold,
@@ -520,6 +536,9 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         return wordLower.startsWith('ñ');
       case 'qu':
         return wordLower.startsWith('qu');
+      case 'x':
+        // X puede estar al inicio, en el medio, o ser la palabra "equis"
+        return wordLower.contains('x') || wordLower == 'equis';
       default:
         return wordLower.startsWith(letterLower);
     }
@@ -948,7 +967,15 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     
     final isCorrect = obj['correct'] as bool;
     if (isCorrect) {
-      _audioService.speakText('¡Excelente! ${obj['name']} empieza con ${widget.letter.character.toUpperCase()}');
+      if (widget.letter.character.toUpperCase() == 'X' && obj['name'] == 'Equis') {
+        _audioService.speakText('¡Perfecto! Equis es la letra X');
+      } else if (widget.letter.character.toUpperCase() == 'X' && obj['name'] == 'Saxofón') {
+        _audioService.speakText('¡Bien! Saxofón tiene X');
+      } else if (widget.letter.character.toUpperCase() == 'X') {
+        _audioService.speakText('¡Bien! ${obj['name']} tiene X');
+      } else {
+        _audioService.speakText('¡Bien! ${obj['name']} empieza con ${widget.letter.character.toUpperCase()}');
+      }
       _showCelebrationStars();
       context.read<LetterCityProvider>().completeActivity('magical_search_${widget.letter.character}', 10);
     } else {
@@ -2353,17 +2380,15 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       ],
       'X': [
         {'emoji': '❌', 'name': 'Equis', 'correct': true},
-        {'emoji': '❌', 'name': 'Xi', 'correct': true},
-        {'emoji': '🎷', 'name': 'Saxofón', 'correct': false},
-        {'emoji': '🗂️', 'name': 'Expediente', 'correct': false},
-        {'emoji': '🧪', 'name': 'Experimento', 'correct': false},
+        {'emoji': '🎷', 'name': 'Saxofón', 'correct': true},
+        {'emoji': '🧪', 'name': 'Experimento', 'correct': true},
+        {'emoji': '🔍', 'name': 'Explorar', 'correct': true},
+        {'emoji': '📊', 'name': 'Examen', 'correct': true},
+        {'emoji': '🎼', 'name': 'Xilófono', 'correct': true},
         {'emoji': '🦴', 'name': 'Hueso', 'correct': false},
         {'emoji': '🎭', 'name': 'Teatro', 'correct': false},
         {'emoji': '📱', 'name': 'Teléfono', 'correct': false},
-        {'emoji': '🔍', 'name': 'Explorar', 'correct': false},
         {'emoji': '🏛️', 'name': 'Templo', 'correct': false},
-        {'emoji': '📊', 'name': 'Examen', 'correct': false},
-        {'emoji': '🖥️', 'name': 'Xerox', 'correct': false},
       ],
       'Y': [
         {'emoji': '🛥️', 'name': 'Yate', 'correct': true},
@@ -2426,6 +2451,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
   }
 
   List<Map<String, dynamic>> _getUnusedDistractorObjects() {
+    // Lista reducida de distractors para menos frustración
     final allDistractors = [
       {'emoji': '🌟', 'name': 'Estrella', 'correct': false},
       {'emoji': '🌸', 'name': 'Flor', 'correct': false},
@@ -2434,19 +2460,11 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
       {'emoji': '🏠', 'name': 'Casa', 'correct': false},
       {'emoji': '🌙', 'name': 'Luna', 'correct': false},
       {'emoji': '☀️', 'name': 'Sol', 'correct': false},
-      {'emoji': '🎯', 'name': 'Diana', 'correct': false},
       {'emoji': '🎁', 'name': 'Regalo', 'correct': false},
       {'emoji': '⚽', 'name': 'Pelota', 'correct': false},
       {'emoji': '🍌', 'name': 'Banana', 'correct': false},
       {'emoji': '🐱', 'name': 'Gato', 'correct': false},
-      {'emoji': '🐘', 'name': 'Elefante', 'correct': false},
-      {'emoji': '🦒', 'name': 'Jirafa', 'correct': false},
-      {'emoji': '🐻', 'name': 'Oso', 'correct': false},
-      {'emoji': '🎂', 'name': 'Pastel', 'correct': false},
       {'emoji': '🐕', 'name': 'Perro', 'correct': false},
-      {'emoji': '🌮', 'name': 'Taco', 'correct': false},
-      {'emoji': '🎾', 'name': 'Tenis', 'correct': false},
-      {'emoji': '🦄', 'name': 'Unicornio', 'correct': false},
     ];
     
     // Filter out words that start with the current letter and used distractors
@@ -2464,7 +2482,7 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
     }
     
     validDistractors.shuffle();
-    return validDistractors.take(2).toList(); // Hasta 2 distractors no usados
+    return validDistractors.take(1).toList(); // Solo 1 distractor para menos frustración
   }
 
 
@@ -2684,6 +2702,8 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
         return _buildSpecialCompletionGame(); // Juego completar TA_I, SA_O 
       case 'W':
         return _buildDigitalSelectionGame(); // Juego digital de selección
+      case 'X':
+        return _buildWordPuzzleGame(); // Juego de rompecabezas de palabras con X
       default:
         return _buildObjectSelectionGame();
     }
@@ -3732,6 +3752,170 @@ class _InteractiveLetterGamesScreenState extends State<InteractiveLetterGamesScr
           'Juego de sonidos próximamente',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
+      ),
+    );
+  }
+
+  Widget _buildWordPuzzleGame() {
+    // Juego de trazado para completar palabras con X
+    final words = [
+      {'incomplete': 'E_AMEN', 'complete': 'EXAMEN', 'emoji': '📝'},
+      {'incomplete': 'TA_I', 'complete': 'TAXI', 'emoji': '🚕'},
+      {'incomplete': 'TE_TO', 'complete': 'TEXTO', 'emoji': '📄'},
+      {'incomplete': 'BO_EO', 'complete': 'BOXEO', 'emoji': '🥊'},
+    ];
+
+    final isPhone = MediaQuery.of(context).size.shortestSide < 600;
+    
+    return Container(
+      padding: EdgeInsets.all(isPhone ? 12 : 20),
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(isPhone ? 12 : 16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.touch_app, color: Colors.red[600], size: 24),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Traza la letra X para completar las palabras',
+                    style: TextStyle(
+                      fontSize: isPhone ? 18 : 20,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF2E7D32),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: isPhone ? 1 : 2,
+                childAspectRatio: isPhone ? 2.2 : 1.8,
+                crossAxisSpacing: isPhone ? 10 : 20,
+                mainAxisSpacing: isPhone ? 10 : 20,
+              ),
+              itemCount: words.length,
+              itemBuilder: (context, index) {
+                final word = words[index];
+                return _buildXTracingCard(word, isPhone);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildXTracingCard(Map<String, dynamic> word, bool isPhone) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: EdgeInsets.all(isPhone ? 8 : 12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Emoji - más pequeño para ahorrar espacio
+            Flexible(
+              flex: 1,
+              child: Text(
+                word['emoji']!,
+                style: TextStyle(fontSize: isPhone ? 24 : 32),
+              ),
+            ),
+            SizedBox(height: isPhone ? 4 : 6),
+            
+            // Palabra incompleta - texto más pequeño
+            Flexible(
+              flex: 1,
+              child: Text(
+                word['incomplete']!,
+                style: TextStyle(
+                  fontSize: isPhone ? 20 : 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red[600],
+                  letterSpacing: 2,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            SizedBox(height: isPhone ? 4 : 6),
+            
+            // Área de trazado con MiniTracingCanvas - más pequeña
+            Flexible(
+              flex: 2,
+              child: Container(
+                constraints: BoxConstraints(
+                  maxHeight: isPhone ? 80 : 100,
+                  maxWidth: isPhone ? 80 : 100,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[400]!, width: 2),
+                ),
+                child: MiniTracingCanvas(
+                  letter: 'X',
+                  audioService: _audioService,
+                  onTracingComplete: () {
+                    // Cuando completa el trazado, mostrar palabra completa y celebrar
+                    _audioService.speakText('¡Excelente! ${word['complete']}');
+                    _showWordCompletion(word['complete']!);
+                  },
+                ),
+              ),
+            ),
+            SizedBox(height: isPhone ? 2 : 4),
+            
+            // Instrucción - más pequeña
+            Flexible(
+              flex: 1,
+              child: Text(
+                'Traza la X',
+                style: TextStyle(
+                  fontSize: isPhone ? 12 : 14,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showWordCompletion(String completeWord) {
+    // Mostrar animación de palabra completada
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 8),
+            Text('¡Completaste: $completeWord!', 
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        backgroundColor: Colors.green[600],
+        duration: const Duration(seconds: 2),
       ),
     );
   }
